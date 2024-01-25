@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python Server
+api_keys.csv
+logs/*
+venv/*
+*.pyc
