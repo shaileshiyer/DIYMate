@@ -178,15 +178,36 @@ def query():
     session_id = content["session_id"]
     thread_id = content["thread_id"]
     messages = content["messages"]
+    response_format = content["response_format"]
+    max_tokens = content["max_tokens"]
+    n = content["n"]
+    
+    top_p = content["top_p"]
+    temperature = content["temperature"]
+    frequency_penalty = content["frequency_penalty"]
+    presence_penalty = content["presence_penalty"]
+    stop_sequence = content["stop_sequence"]
+    
+            
     # Add chat completion api here 
     response = client.chat.completions.create(
         model=my_assistant.model,
         messages=messages,
-        response_format={"type":"json_object"}
+        response_format=response_format,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        n=n,
+        top_p=top_p,
+        frequency_penalty=frequency_penalty,
+        presence_penalty=presence_penalty,
+        stop=stop_sequence
     )
     
     result["response"] = response
-    result["status"] = SUCCESS
+    if response.choices[0].finish_reason == "stop":
+        result["status"] = SUCCESS
+    else:
+        result["status"] = FAILURE
     return jsonify(result)
 
 if __name__ == "__main__":
