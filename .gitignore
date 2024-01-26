@@ -26,5 +26,6 @@ dist-ssr
 # Python Server
 api_keys.csv
 logs/*
-venv/*
+.venv/*
 *.pyc
+.env
