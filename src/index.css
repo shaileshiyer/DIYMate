@@ -1,17 +1,58 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Default color scheme */
+  --primary-color:#ffbf00;
+  --secondary-color: #0040ff;
+  --text-color: #213547;
+  /*Additional variable colors to make development easier  */
+  --blue: #3490dc;
+  --dark_blue: #0668b8;
+  --green: #02730a;
+  --light-blue: #d5ecff;
+  --lighter-blue: #e5f1fb;
+  --light-gray: rgb(238, 236, 236);
+  --medium-gray: #ccc;
+  --dark-gray: #999;
+  --white: #fff;
+  --black:#111;
+  --gray: #ccc;
+  --gradient: linear-gradient(-15deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  --loop-gradient: linear-gradient(
+    75deg,
+    #ee7752,
+    #e73c7e,
+    #23a6d5,
+    #23d5ab,
+    #23a6d5,
+    #e73c7e,
+    #ee7752
+  );
+  --default-font-family:Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; 
+  --editor-font-family: 'Merriweather', serif;
+  --sidebar-left-width: 400px;
+  --sidebar-right-width: 450px;
+  --text-selection: rgb(178, 216, 252);
+  font-family: var(--default-font-family);
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--text-color);
+  background-color: var(--white);
+
 }
+
+
+/* Color Theme Swatches in Hex */
+.LLMs-and-DIY-Tutorial-Authorship-1-hex { color: #FFC000; }
+.LLMs-and-DIY-Tutorial-Authorship-2-hex { color: #FFF30D; }
+.LLMs-and-DIY-Tutorial-Authorship-3-hex { color: #19BBFF; }
+.LLMs-and-DIY-Tutorial-Authorship-4-hex { color: #6C19FF; }
+.LLMs-and-DIY-Tutorial-Authorship-5-hex { color: #FF8E0D; }
+
 
 a {
   font-weight: 500;
@@ -19,15 +60,12 @@ a {
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #747bff;
 }
 
 body {
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
 }
 
 h1 {
@@ -42,7 +80,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -52,17 +90,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }
