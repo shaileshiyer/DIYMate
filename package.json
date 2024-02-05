@@ -11,12 +11,17 @@
     "server": "python backend/api_server.py --config_dir './config' --log_dir './logs' --port 5555 --proj_name 'diy_mate' --debug"
   },
   "dependencies": {
+    "@material/web": "^1.2.0",
+    "@mdxeditor/editor": "^2.7.0",
+    "mobx": "^6.12.0",
+    "mobx-react-lite": "^4.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
-    "zustand": "^4.5.0"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@lit/react": "^1.0.3",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
