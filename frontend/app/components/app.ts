@@ -30,7 +30,7 @@ import {customElement} from 'lit/decorators.js';
 import {styleMap} from 'lit/directives/style-map.js';
 
 import {SnackbarComponent} from '@components/shared_components/primitives/snackbar';
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {AppService} from '@services/app_service';
 import {DialogService} from '@services/dialog_service';
 import {KeyboardService} from '@services/keyboard_service';
@@ -42,21 +42,21 @@ import {styles} from './app.css';
 import {styles as sharedStyles} from './shared.css';
 
 /**
- * Root component for the wordcraft app
+ * Root component for the diymate app
  */
-@customElement('wordcraft-app')
+@customElement('diymate-app')
 export class AppComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, styles];
   }
 
-  private readonly appService = wordcraftCore.getService(AppService);
-  private readonly dialogService = wordcraftCore.getService(DialogService);
+  private readonly appService = diymateCore.getService(AppService);
+  private readonly dialogService = diymateCore.getService(DialogService);
   private readonly documentStoreService =
-    wordcraftCore.getService(DocumentStoreService);
-  private readonly keyboardService = wordcraftCore.getService(KeyboardService);
+    diymateCore.getService(DocumentStoreService);
+  private readonly keyboardService = diymateCore.getService(KeyboardService);
   private readonly localStorageService =
-    wordcraftCore.getService(LocalStorageService);
+    diymateCore.getService(LocalStorageService);
 
   private registerDialog(id: string) {
     const dialog = this.shadowRoot!.getElementById(id) as Dialog;
@@ -80,7 +80,7 @@ export class AppComponent extends MobxLitElement {
 
   override render() {
     return html`
-      <div id="wordcraft-app">
+      <div id="diymate-app">
         ${this.renderContent()} ${this.renderDialogs()}
         ${this.renderSnackbars()}
       </div>
@@ -118,9 +118,9 @@ export class AppComponent extends MobxLitElement {
         ${this.dialogService.messageBody}
       </mwc-dialog>
       <mwc-dialog id="welcome-dialog" hideActions>
-        <wordcraft-welcome-dialog
+        <diymate-welcome-dialog
           .close=${() => void this.dialogService.closeWelcomeDialog()}
-        ></wordcraft-welcome-dialog>
+        ></diymate-welcome-dialog>
       </mwc-dialog>
       <mwc-dialog id="confirm">
         ${this.dialogService.messageBody}
@@ -138,31 +138,31 @@ export class AppComponent extends MobxLitElement {
 
   renderSnackbars() {
     return html`
-      <wordcraft-snackbar id="bot-warning-snackbar" leading>
+      <diymate-snackbar id="bot-warning-snackbar" leading>
         <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
-      </wordcraft-snackbar>
-      <wordcraft-snackbar id="message-snackbar" leading>
+      </diymate-snackbar>
+      <diymate-snackbar id="message-snackbar" leading>
         <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
-      </wordcraft-snackbar>
-      <wordcraft-snackbar id="error-snackbar" leading>
+      </diymate-snackbar>
+      <diymate-snackbar id="error-snackbar" leading>
         <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
-      </wordcraft-snackbar>
+      </diymate-snackbar>
     `;
   }
 
   renderOnboarding() {
-    return html`<wordcraft-onboarding></wordcraft-onboarding>`;
+    return html`<diymate-onboarding></diymate-onboarding>`;
   }
 
   renderLoading() {
-    return html`<wordcraft-loading-screen></wordcraft-loading-screen> `;
+    return html`<diymate-loading-screen></diymate-loading-screen> `;
   }
 
   renderApp() {
     return html`
       <div id="main-panel">${this.renderEditor()}</div>
       <div id="sidebar-right">
-        <wordcraft-sidebar-right></wordcraft-sidebar-right>
+        <diymate-sidebar-right></diymate-sidebar-right>
       </div>
     `;
   }
@@ -194,19 +194,19 @@ export class AppComponent extends MobxLitElement {
     };
 
     return html`
-      <wordcraft-text-editor
+      <diymate-text-editor
         ?showWordCount=${true}
         placeholder=${'Once upon a time...'}
         .onInitialized=${onInitialized}
         .onDisconnect=${onDisconnect}
         .onDisabledOverlayClick=${onDisabledOverlayClick}
-      ></wordcraft-text-editor>
+      ></diymate-text-editor>
     `;
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-app': AppComponent;
+    'diymate-app': AppComponent;
   }
 }

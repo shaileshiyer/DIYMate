@@ -20,7 +20,7 @@ import {TemplateResult} from 'lit';
 
 import {Operation} from '../operations/operation';
 import {Model} from '@models/model';
-import {WordcraftContext} from '../../context';
+import {DIYmateContext} from '../../context';
 
 import {
   ModelResults,
@@ -32,7 +32,7 @@ import {
 
 export type MakePromptHandlerFn<T> = (
   model: Model,
-  context: WordcraftContext
+  context: DIYmateContext
 ) => (params: T) => Promise<ModelResults>;
 
 export interface ModelQueryParams {

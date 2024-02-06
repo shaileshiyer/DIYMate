@@ -18,12 +18,12 @@
  */
 
 import {MetaPromptPromptParams} from '@core/shared/interfaces';
-import {MetaPromptExample, WordcraftContext} from '../../../context';
+import {MetaPromptExample, DIYmateContext} from '../../../context';
 import {OperationType} from '@core/shared/types';
 import {endsWithPunctuation} from '@lib/parse_sentences/utils';
 import {PalmModel} from '..';
 
-export function makePromptHandler(model: PalmModel, context: WordcraftContext) {
+export function makePromptHandler(model: PalmModel, context: DIYmateContext) {
   function generatePrompt(text: string) {
     const prefix = model.getStoryPrefix();
     const suffix = 'Next prompt:';

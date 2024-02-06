@@ -25,7 +25,7 @@ import {customElement, property} from 'lit/decorators.js';
 /**
  * A generic error message component usable in different contexts in the app.
  */
-@customElement('wordcraft-error-message')
+@customElement('diymate-error-message')
 export class ErrorMessageComponent extends MobxLitElement {
   @property({type: Object}) onClose = () => {};
   @property({type: Object}) getMessage: () => TemplateResult = () => html``;
@@ -78,6 +78,6 @@ export class ErrorMessageComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-error-message': ErrorMessageComponent;
+    'diymate-error-message': ErrorMessageComponent;
   }
 }

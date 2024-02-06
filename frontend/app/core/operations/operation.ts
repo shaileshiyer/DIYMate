@@ -55,7 +55,7 @@ export interface ServiceProvider {
 /**
  * For now, we'll maintain a single global data processor instance that's
  * responsible for parsing the OperationData. This will eventually be brought
- * into a service that uses a dataProcessor that's part of the wordcraft context
+ * into a service that uses a dataProcessor that's part of the diymate context
  * so we can define different data->prompt pipelines for different domains and
  * track the actual data that's used to create prompts.
  */
@@ -307,7 +307,7 @@ export abstract class Operation {
   static globalControls = {
     lookahead: new ToggleControl({
       prefix: 'lookahead',
-      description: 'Whether Wordcraft will account for text after the cursor.',
+      description: 'Whether DIYmate will account for text after the cursor.',
       value: true,
     }),
   };

@@ -19,11 +19,11 @@
 
 import {parseSentences} from '@lib/parse_sentences';
 import {RewriteEndOfSentencePromptParams} from '@core/shared/interfaces';
-import {RewriteEndOfSentenceExample, WordcraftContext} from '../../../context';
+import {RewriteEndOfSentenceExample, DIYmateContext} from '../../../context';
 import {OperationType} from '@core/shared/types';
 import {PalmModel} from '..';
 
-export function makePromptHandler(model: PalmModel, context: WordcraftContext) {
+export function makePromptHandler(model: PalmModel, context: DIYmateContext) {
   function generatePrompt(
     textBeforeBlank: string,
     textAfterBlank: string,

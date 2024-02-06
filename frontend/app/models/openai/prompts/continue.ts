@@ -1,9 +1,9 @@
 import { ContinuePromptParams } from "@core/shared/interfaces";
-import { ContinueExample,WordcraftContext } from "@context/index";
+import { ContinueExample,DIYmateContext } from "@context/index";
 import { OperationType } from "@core/shared/types";
 import { OpenAIModel } from "..";
 
-export function makePromptHandler(model:OpenAIModel,context:WordcraftContext) {
+export function makePromptHandler(model:OpenAIModel,context:DIYmateContext) {
     function generatePrompt(text:string){
         const prefix = model.getStoryPrefix;
         const suffix = 'Continue the story';

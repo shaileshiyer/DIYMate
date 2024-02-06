@@ -29,7 +29,7 @@ import {html, TemplateResult} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {AppService} from '@services/app_service';
 import {DocumentStoreService} from '@services/document_store_service';
 import {InitializationService} from '@services/initialization_service';
@@ -44,22 +44,22 @@ import {styles as sidebarRightStyles} from './sidebar_right.css';
 /**
  * The right sidebar component
  */
-@customElement('wordcraft-sidebar-right')
+@customElement('diymate-sidebar-right')
 export class SidebarComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, sidebarStyles, sidebarRightStyles];
   }
 
-  private readonly appService = wordcraftCore.getService(AppService);
+  private readonly appService = diymateCore.getService(AppService);
   private readonly documentStoreService =
-    wordcraftCore.getService(DocumentStoreService);
-  private readonly initializationService = wordcraftCore.getService(
+    diymateCore.getService(DocumentStoreService);
+  private readonly initializationService = diymateCore.getService(
     InitializationService
   );
-  private readonly modelService = wordcraftCore.getService(ModelService);
+  private readonly modelService = diymateCore.getService(ModelService);
   private readonly operationsService =
-    wordcraftCore.getService(OperationsService);
-  private readonly starredResultsService = wordcraftCore.getService(
+    diymateCore.getService(OperationsService);
+  private readonly starredResultsService = diymateCore.getService(
     StarredResultsService
   );
 
@@ -127,10 +127,10 @@ export class SidebarComponent extends MobxLitElement {
       return this.renderControls();
     }
     if (tabIndex === 1) {
-      return html`<wordcraft-chat></wordcraft-chat>`;
+      return html`<diymate-chat></diymate-chat>`;
     }
     if (tabIndex === 2) {
-      return html`<wordcraft-starred-choices></wordcraft-starred-choices>`;
+      return html`<diymate-starred-choices></diymate-starred-choices>`;
     }
 
     return html``;
@@ -150,7 +150,7 @@ export class SidebarComponent extends MobxLitElement {
     let bottom: TemplateResult = html``;
 
     if (this.operationsService.currentOperation != null) {
-      top = html`<wordcraft-operation></wordcraft-operation>`;
+      top = html`<diymate-operation></diymate-operation>`;
       bottom = html``;
     }
     // If the operation has errored, we'll add a message in the sidebar
@@ -165,15 +165,15 @@ export class SidebarComponent extends MobxLitElement {
         `;
       };
       top = html`
-        <wordcraft-error-message
+        <diymate-error-message
           .onClose=${onClose}
           .getMessage=${getMessage}
-        ></wordcraft-error-message>
+        ></diymate-error-message>
       `;
     }
     // Otherwise show all available operations
     else {
-      top = html`<wordcraft-operations></wordcraft-operations>`;
+      top = html`<diymate-operations></diymate-operations>`;
 
       const documentRow = html`
         ${this.renderMainMenuButton()} ${this.renderSaveButton()}
@@ -221,6 +221,6 @@ export class SidebarComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-sidebar-right': SidebarComponent;
+    'diymate-sidebar-right': SidebarComponent;
   }
 }

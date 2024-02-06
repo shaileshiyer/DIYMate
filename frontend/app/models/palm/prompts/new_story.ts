@@ -18,11 +18,11 @@
  */
 
 import {NewStoryPromptParams} from '@core/shared/interfaces';
-import {NewStoryExample, WordcraftContext} from '../../../context';
+import {NewStoryExample, DIYmateContext} from '../../../context';
 import {OperationType} from '@core/shared/types';
 import {PalmModel} from '..';
 
-export function makePromptHandler(model: PalmModel, context: WordcraftContext) {
+export function makePromptHandler(model: PalmModel, context: DIYmateContext) {
   function getPromptContext() {
     const examples = context.getExampleData<NewStoryExample>(
       OperationType.NEW_STORY

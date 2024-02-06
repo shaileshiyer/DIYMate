@@ -62,7 +62,7 @@ export class ChatService extends Service {
   }
 
   private getPreamble() {
-    return "Hello, I'm Wordcraft, your Tutorial writing assistant. What would you like me to help with?";
+    return "Hello, I'm DIYmate, your Tutorial writing assistant. What would you like me to help with?";
   }
 
   private getUserStoryAndResponse() {

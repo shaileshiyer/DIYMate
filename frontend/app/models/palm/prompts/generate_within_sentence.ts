@@ -22,12 +22,12 @@ import {normalizeSentenceSpaces, reverseString, shuffle} from '@lib/utils';
 import {GenerateWithinSentencePromptParams} from '@core/shared/interfaces';
 import {
   GenerateWithinSentenceExample,
-  WordcraftContext,
+  DIYmateContext,
 } from '../../../context';
 import {OperationType} from '@core/shared/types';
 import {PalmModel} from '..';
 
-export function makePromptHandler(model: PalmModel, context: WordcraftContext) {
+export function makePromptHandler(model: PalmModel, context: DIYmateContext) {
   function generatePrompt(
     textBeforeBlank: string,
     textAfterBlank: string,

@@ -19,11 +19,11 @@
 
 import {shuffle} from '@lib/utils';
 import {RewriteSentencePromptParams} from '@core/shared/interfaces';
-import {RewriteSentenceExample, WordcraftContext} from '../../../context';
+import {RewriteSentenceExample, DIYmateContext} from '../../../context';
 import {OperationType} from '@core/shared/types';
 import {PalmModel} from '..';
 
-export function makePromptHandler(model: PalmModel, context: WordcraftContext) {
+export function makePromptHandler(model: PalmModel, context: DIYmateContext) {
   function insertBlank(pre: string, post: string) {
     return `${pre}${model.getBlank()}${post}`;
   }

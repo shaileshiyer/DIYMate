@@ -19,11 +19,11 @@
 
 import {shuffle} from '@lib/utils';
 import {FreeformPromptParams} from '@core/shared/interfaces';
-import {FreeformExample, WordcraftContext} from '../../../context';
+import {FreeformExample, DIYmateContext} from '../../../context';
 import {OperationType} from '@core/shared/types';
 import {PalmModel} from '..';
 
-export function makePromptHandler(model: PalmModel, context: WordcraftContext) {
+export function makePromptHandler(model: PalmModel, context: DIYmateContext) {
   function getPromptContext() {
     const examples = context.getExampleData<FreeformExample>(
       OperationType.FREEFORM

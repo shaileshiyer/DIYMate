@@ -61,7 +61,7 @@ interface TextEditorConfig {
  * key commands and managing serialization.
  *
  * MobileDoc is a fairly lightweight and flexible Rich Text Editor library
- * that does almosty everything we need in the context of the Wordcraft Editor.
+ * that does almosty everything we need in the context of the DIYmate Editor.
  */
 export class TextEditorService extends Service {
   constructor(private readonly serviceProvider: ServiceProvider) {

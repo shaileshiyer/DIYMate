@@ -44,7 +44,7 @@ const translateFeatureFlagValueToConfig = (flag: ConfigKey, value: string) => {
 };
 
 /**
- * Determines configuration of the app from a wordcraftConfig object that's
+ * Determines configuration of the app from a diymateConfig object that's
  * bootstrapped onto the page.
  */
 export class ConfigService extends Service {
@@ -58,7 +58,7 @@ export class ConfigService extends Service {
 
   getConfigObject(): ConfigObject {
     // tslint:disable-next-line:no-any
-    const localConfig = (window as any).wordcraftConfig;
+    const localConfig = (window as any).diymateConfig;
     const routeConfig = Object.keys(DEFAULT_CONFIG).reduce((acc, curr) => {
       const value: string = this.featureFlagsService.getFeature(
         curr as FeatureFlag

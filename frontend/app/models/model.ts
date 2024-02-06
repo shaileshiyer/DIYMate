@@ -32,7 +32,7 @@ import {
   RewriteSentencePromptParams,
   SuggestRewritePromptParams,
 } from '@core/shared/interfaces';
-import {WordcraftContext} from '../context';
+import {DIYmateContext} from '../context';
 import {ContextService, StatusService} from '@services/services';
 import {ModelResults} from '@core/shared/types';
 
@@ -45,11 +45,11 @@ interface ServiceProvider {
 
 export type MakePromptHandlerFn<T> = (
   model: Model,
-  context: WordcraftContext
+  context: DIYmateContext
 ) => (params: T) => Promise<ModelResults>;
 
 /**
- * A base class for all Models queried by the wordcraft app
+ * A base class for all Models queried by the diymate app
  */
 // tslint:disable:no-any
 export abstract class Model {

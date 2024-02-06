@@ -20,7 +20,7 @@ import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {KeyboardService} from '@services/keyboard_service';
 import {getMetaKeyString, KeyCommand} from '@core/shared/keyboard';
 import {styles as sharedStyles} from '../shared.css';
@@ -31,7 +31,7 @@ import {styles} from './key_command.css';
 /**
  * The sidebar component that displays a key command and button control
  */
-@customElement('wordcraft-key-command-small')
+@customElement('diymate-key-command-small')
 export class KeyCommandSmallComponent extends MobxLitElement {
   @property({type: String}) message = '';
   @property({type: Object}) keyCommand = new KeyCommand('notImplemented');
@@ -43,7 +43,7 @@ export class KeyCommandSmallComponent extends MobxLitElement {
     return [sharedStyles, controlsStyles, styles];
   }
 
-  private readonly keyboardService = wordcraftCore.getService(KeyboardService);
+  private readonly keyboardService = diymateCore.getService(KeyboardService);
 
   private clearKeyHandler = () => {};
 
@@ -103,6 +103,6 @@ export class KeyCommandSmallComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-key-command-small': KeyCommandSmallComponent;
+    'diymate-key-command-small': KeyCommandSmallComponent;
   }
 }

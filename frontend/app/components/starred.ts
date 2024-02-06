@@ -24,7 +24,7 @@ import {html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {Choices} from '@lib/choices';
 import {preventDefault} from '@lib/utils';
 import {KeyboardService} from '@services/keyboard_service';
@@ -38,18 +38,18 @@ import {styles as sharedStyles} from './shared.css';
 /**
  * Displays a list of starred choices to add to the editor.
  */
-@customElement('wordcraft-starred-choices')
+@customElement('diymate-starred-choices')
 export class StarredChoicesComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, choicesStyles];
   }
 
-  private readonly keyboardService = wordcraftCore.getService(KeyboardService);
-  private readonly starredResultsService = wordcraftCore.getService(
+  private readonly keyboardService = diymateCore.getService(KeyboardService);
+  private readonly starredResultsService = diymateCore.getService(
     StarredResultsService
   );
   private readonly textEditorService =
-    wordcraftCore.getService(TextEditorService);
+    diymateCore.getService(TextEditorService);
 
   private readonly keyboardServiceHelper =
     this.keyboardService.makeHelper('starred');
@@ -168,6 +168,6 @@ export class StarredChoicesComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-starred-choices': StarredChoicesComponent;
+    'diymate-starred-choices': StarredChoicesComponent;
   }
 }

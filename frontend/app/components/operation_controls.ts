@@ -25,7 +25,7 @@ import {MobxLitElement} from '@adobe/lit-mobx';
 import {css, html, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {
   StepSliderControl,
   TextareaControl,
@@ -58,7 +58,7 @@ export class OperationControlsComponent extends MobxLitElement {
   }
 
   private readonly operationsService =
-    wordcraftCore.getService(OperationsService);
+    diymateCore.getService(OperationsService);
 
   @property({type: Object}) controls!: OperationControls;
   @property({type: Object}) onEnter = () => {};

@@ -27,7 +27,7 @@ import {style} from './snackbar_styles';
  * A forked version of the mwc-snackbar component that lets us pass in strings
  * or html template results in as the content.
  */
-@customElement('wordcraft-snackbar')
+@customElement('diymate-snackbar')
 export class SnackbarComponent extends Snackbar {
   static override get styles() {
     return [style];
@@ -101,6 +101,6 @@ export class SnackbarComponent extends Snackbar {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-snackbar': SnackbarComponent;
+    'diymate-snackbar': SnackbarComponent;
   }
 }

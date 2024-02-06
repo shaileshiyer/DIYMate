@@ -24,7 +24,7 @@ import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {Operation} from '@operations/operation';
 import {ConfigService} from '@services/config_service';
 import {OperationsService} from '@services/operations_service';
@@ -39,14 +39,14 @@ import {styles as sharedStyles} from './shared.css';
 /**
  * The sidebar component that displays available operations.
  */
-@customElement('wordcraft-operations')
+@customElement('diymate-operations')
 export class OperationsComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, styles];
   }
 
   private readonly operationsService =
-    wordcraftCore.getService(OperationsService);
+    diymateCore.getService(OperationsService);
 
   override firstUpdated() {
     this.operationsService.clearHoverTooltip();
@@ -73,7 +73,7 @@ export class OperationsComponent extends MobxLitElement {
         // clang-format off
         return html`
           <div class="operation-row">
-            <wordcraft-key-command
+            <diymate-key-command
               message=${buttonLabel}
               .keyCommand=${keyCommand}
               .action=${(triggerSource: OperationTrigger) => {
@@ -90,7 +90,7 @@ export class OperationsComponent extends MobxLitElement {
                   this.operationsService.clearHoverTooltip();
                 }
               }}
-            ></wordcraft-key-command>
+            ></diymate-key-command>
             ${this.renderOperationControls(operationClass)}
           </div>
         `;
@@ -132,6 +132,6 @@ export class OperationsComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-operations': OperationsComponent;
+    'diymate-operations': OperationsComponent;
   }
 }

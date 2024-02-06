@@ -24,7 +24,7 @@ import {MobxLitElement} from '@adobe/lit-mobx';
  * eliminates encapsulated CSS but makes Shadow-DOM craziness go away. Also
  * extends the MobxLitElement class so all derived subcomponents are reactive.
  */
-export class WordcraftComponent extends MobxLitElement {
+export class DIYmateComponent extends MobxLitElement {
   override createRenderRoot() {
     return this;
   }

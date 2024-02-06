@@ -25,7 +25,7 @@ import {html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {preventDefault} from '@lib/utils';
 import {ChoiceOperation, Operation} from '@core/operations';
 import {ChoiceStep} from '@operations/steps';
@@ -40,20 +40,20 @@ import {styles as sharedStyles} from './shared.css';
 
 /**
  * A component that displays the choices available for the current choice step
- * in the wordcraft sidebar.
+ * in the diymate sidebar.
  */
-@customElement('wordcraft-choices')
+@customElement('diymate-choices')
 export class ChoicesComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, styles];
   }
 
-  private readonly keyboardService = wordcraftCore.getService(KeyboardService);
-  private readonly starredResultsService = wordcraftCore.getService(
+  private readonly keyboardService = diymateCore.getService(KeyboardService);
+  private readonly starredResultsService = diymateCore.getService(
     StarredResultsService
   );
   private readonly operationsService =
-    wordcraftCore.getService(OperationsService);
+    diymateCore.getService(OperationsService);
 
   @property({type: Object}) choiceStep!: ChoiceStep;
 
@@ -163,13 +163,13 @@ export class ChoicesComponent extends MobxLitElement {
     const {message, keyCommand, keyLabel, action} = params;
     return html`
       <div class="action-button-wrapper">
-        <wordcraft-key-command-small
+        <diymate-key-command-small
           message=${message}
           .keyCommand=${keyCommand}
           keyLabel=${keyLabel}
           .action=${action}
         >
-        </wordcraft-key-command-small>
+        </diymate-key-command-small>
       </div>
     `;
   }
@@ -310,6 +310,6 @@ export class ChoicesComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-choices': ChoicesComponent;
+    'diymate-choices': ChoicesComponent;
   }
 }

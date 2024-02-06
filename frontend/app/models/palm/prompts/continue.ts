@@ -18,11 +18,11 @@
  */
 
 import {ContinuePromptParams} from '@core/shared/interfaces';
-import {ContinueExample, WordcraftContext} from '../../../context';
+import {ContinueExample, DIYmateContext} from '../../../context';
 import {OperationType} from '@core/shared/types';
 import {PalmModel} from '..';
 
-export function makePromptHandler(model: PalmModel, context: WordcraftContext) {
+export function makePromptHandler(model: PalmModel, context: DIYmateContext) {
   function generatePrompt(text: string) {
     const prefix = model.getStoryPrefix();
     const suffix = 'Continue the story: ';

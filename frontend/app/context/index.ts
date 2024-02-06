@@ -50,7 +50,7 @@ import suggestRewriteJson from './json/suggest_rewrite.json';
 
 import {OperationType} from '@core/shared/types';
 
-export class WordcraftContext {
+export class DIYmateContext {
   constructor() {
     this.registerExamples(OperationType.CONTINUE, continueSchema, continueJson);
     this.registerExamples(

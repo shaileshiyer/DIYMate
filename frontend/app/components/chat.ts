@@ -24,7 +24,7 @@ import {html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {ChatService} from '@services/chat_service';
 import {ConfigService} from '@services/config_service';
 
@@ -35,13 +35,13 @@ import {styles as sharedStyles} from './shared.css';
  * A component that displays a chat interface for basic back and
  * forth conversation with an AI agent.
  */
-@customElement('wordcraft-chat')
+@customElement('diymate-chat')
 export class ChatComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, styles];
   }
 
-  private readonly chatService = wordcraftCore.getService(ChatService);
+  private readonly chatService = diymateCore.getService(ChatService);
   private nMessages = 0;
 
   private readonly onKeyDown = (e: KeyboardEvent) => {
@@ -74,8 +74,8 @@ export class ChatComponent extends MobxLitElement {
 
     const isSendButtonDisabled = isLoading || currentMessage.length === 0;
 
-    const placeholder = 'Say something to Wordcraft...';
-    const toggleLabel = 'Let Wordcraft read your story';
+    const placeholder = 'Say something to DIYmate...';
+    const toggleLabel = 'Let DIYmate read your story';
 
     // clang-format off
     return html`
@@ -176,6 +176,6 @@ export class ChatComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-chat': ChatComponent;
+    'diymate-chat': ChatComponent;
   }
 }

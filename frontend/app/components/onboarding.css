@@ -19,7 +19,7 @@ a {
   margin-left: 15px;
 }
 
-.wordcraft-description {
+.diymate-description {
   font-size: 18px;
 }
 
@@ -29,7 +29,7 @@ h1 {
   margin-bottom: 20px;
 }
 
-h1 > .text {
+/* h1 > .text {
   margin-top: 0;
   background: var(--loop-gradient);
   background-size: 200% 200%;
@@ -37,7 +37,7 @@ h1 > .text {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: MOVE-BG 10s linear infinite;
-}
+} */
 
 @keyframes MOVE-BG {
   0% {

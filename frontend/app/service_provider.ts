@@ -18,7 +18,7 @@
  */
 
 // Core Services
-import {WordcraftCore} from '@core/wordcraft_core';
+import {DIYmateCore} from '@core/diymate_core';
 import {AppService} from '@services/app_service';
 import {ChatService} from '@services/chat_service';
 import {ConfigService} from '@services/config_service';
@@ -42,7 +42,7 @@ import {TextEditorService} from '@services/text_editor_service';
 /**
  * Defines a map of services to their identifier
  */
-export function makeServiceProvider(self: WordcraftCore) {
+export function makeServiceProvider(self: DIYmateCore) {
   const serviceProvider = {
     get appService() {
       return self.getService(AppService);

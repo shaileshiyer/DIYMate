@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 /**
- * A base class for all Wordcraft services that allows the Wordcraft App to
+ * A base class for all DIYmate services that allows the DIYmate App to
  * provide dependencies to components.
  */
 export abstract class Service {}

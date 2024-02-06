@@ -18,7 +18,7 @@
  */
 
 /**
- * An enum describing all operations in the Wordcraft App.
+ * An enum describing all operations in the DIYmate App.
  */
 export const enum OperationType {
   CONTINUE = 'CONTINUE',

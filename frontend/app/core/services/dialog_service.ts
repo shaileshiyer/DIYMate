@@ -125,7 +125,7 @@ export class DialogService extends Service {
     if (dialog instanceof Dialog) {
       const welcomeComponent =
         // tslint:disable-next-line:no-any no-unnecessary-type-assertion
-        dialog.querySelector('wordcraft-welcome-dialog') as any;
+        dialog.querySelector('diymate-welcome-dialog') as any;
       welcomeComponent.hasBeenWelcomed = hasBeenWelcomed;
 
       dialog.addEventListener('closed', () => {

@@ -26,7 +26,7 @@ interface ServiceProvider {
 
 /**
  * The core app module, which is responsible for instantiating and initializing
- * all of the wordcraft singleton services. In order to resolve inter-service
+ * all of the diymate singleton services. In order to resolve inter-service
  * dependencies, the services are constructed with a ServiceProvider object
  * which provides access to the other lazily-constructed services. This way,
  * each service can specify which services it depends on via an interface.
@@ -34,7 +34,7 @@ interface ServiceProvider {
  * Services are responsible for providing this ServiceProvider into the
  * constructors of the various objects that they build (Operations, etc).
  */
-export class WordcraftCore {
+export class DIYmateCore {
   private readonly services = new Map<Constructor<Service>, Service>();
 
   getService<T extends Service>(t: Constructor<T>): T {
@@ -51,7 +51,7 @@ export class WordcraftCore {
   }
 
   initialize = (
-    makeServiceProvider: (core: WordcraftCore) => ServiceProvider
+    makeServiceProvider: (core: DIYmateCore) => ServiceProvider
   ) => {
     console.log('🚀', 'initialize');
     const serviceProvider = makeServiceProvider(this);
@@ -63,7 +63,7 @@ export class WordcraftCore {
           return target[propKey];
         }
         throw new Error(
-          `ServiceProvider in WordcraftCore has not been built with ${propKey}.`
+          `ServiceProvider in DIYmateCore has not been built with ${propKey}.`
         );
       },
     };
@@ -76,4 +76,4 @@ export class WordcraftCore {
   serviceProvider: ServiceProvider = {};
 }
 
-export const wordcraftCore = new WordcraftCore();
+export const diymateCore = new DIYmateCore();

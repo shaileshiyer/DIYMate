@@ -16,18 +16,18 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {WordcraftContext} from '../../context';
+import {DIYmateContext} from '../../context';
 
 import {Service} from './service';
 
 /**
- * Determines context of the app from a WordcraftContext object that we
+ * Determines context of the app from a DIYmateContext object that we
  * initialize the editor / application with.
  */
 export class ContextService extends Service {
-  private context!: WordcraftContext;
+  private context!: DIYmateContext;
 
-  initialize(context: WordcraftContext) {
+  initialize(context: DIYmateContext) {
     this.context = context;
   }
 

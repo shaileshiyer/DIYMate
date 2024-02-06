@@ -27,9 +27,9 @@ import {styles} from './loading.css';
 import {styles as sharedStyles} from './shared.css';
 
 /**
- * Loading screen for the wordcraft editor
+ * Loading screen for the diymate editor
  */
-@customElement('wordcraft-loading-screen')
+@customElement('diymate-loading-screen')
 export class LoadingScreenComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, styles];
@@ -77,6 +77,6 @@ decorate(LoadingScreenComponent, {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-loading-scrsen': LoadingScreenComponent;
+    'diymate-loading-scrsen': LoadingScreenComponent;
   }
 }

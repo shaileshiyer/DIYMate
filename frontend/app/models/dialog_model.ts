@@ -26,7 +26,7 @@ interface ServiceProvider {
 }
 
 /**
- * A base class for the dialog model used in the chat feature of the Wordcraft
+ * A base class for the dialog model used in the chat feature of the DIYmate
  * app.
  */
 // tslint:disable:no-any

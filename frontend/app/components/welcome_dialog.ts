@@ -28,7 +28,7 @@ import {styles} from './welcome_dialog.css';
 /**
  * A welcome dialog.
  */
-@customElement('wordcraft-welcome-dialog')
+@customElement('diymate-welcome-dialog')
 export class WelcomeDialogComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, styles];
@@ -39,8 +39,8 @@ export class WelcomeDialogComponent extends MobxLitElement {
 
   override render() {
     const welcomeMessage = this.hasBeenWelcomed
-      ? 'About Wordcraft'
-      : 'Welcome to Wordcraft!';
+      ? 'About DIYmate'
+      : 'Welcome to DIYmate!';
 
     // clang-format off
     return html`
@@ -51,7 +51,7 @@ export class WelcomeDialogComponent extends MobxLitElement {
         <div class="main">
           <div class="title">✨✍️${welcomeMessage}</div>
           <p>
-            Wordcraft is a text editor that enables collaborative writing with a
+            DIYmate is a text editor that enables collaborative writing with a
             powerful language model, with a suite of built-in controls: from
             generating new content to rewriting text, even suggesting what to
             try next.
@@ -76,7 +76,7 @@ export class WelcomeDialogComponent extends MobxLitElement {
             conversation with the AI about your story to develop new ideas and
             get feedback.
           </p>
-          <p>❤️ - Wordcraft</p>
+          <p>❤️ - DIYmate</p>
         </div>
         ${this.renderGetStarted()}
       </div>
@@ -99,6 +99,6 @@ export class WelcomeDialogComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-welcome-dialog': WelcomeDialogComponent;
+    'diymate-welcome-dialog': WelcomeDialogComponent;
   }
 }

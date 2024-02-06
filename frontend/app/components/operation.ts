@@ -25,7 +25,7 @@ import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {ChoiceStep, ControlsStep, LoadingStep} from '@operations/steps';
 import {OperationsService} from '@services/operations_service';
 import {Operation} from '@operations/operation';
@@ -35,16 +35,16 @@ import {styles} from './operation.css';
 import {styles as sharedStyles} from './shared.css';
 
 /**
- * A component that displays the current operation in the wordcraft sidebar
+ * A component that displays the current operation in the diymate sidebar
  */
-@customElement('wordcraft-operation')
+@customElement('diymate-operation')
 export class OperationComponent extends MobxLitElement {
   static override get styles() {
     return [sharedStyles, styles];
   }
 
   private readonly operationsService =
-    wordcraftCore.getService(OperationsService);
+    diymateCore.getService(OperationsService);
 
   override render() {
     const operation = this.operationsService.currentOperation;
@@ -58,7 +58,7 @@ export class OperationComponent extends MobxLitElement {
 
     if (currentStep instanceof ChoiceStep) {
       return html`
-        <wordcraft-choices .choiceStep=${currentStep}></wordcraft-choices>
+        <diymate-choices .choiceStep=${currentStep}></diymate-choices>
       `;
     }
 
@@ -145,19 +145,19 @@ export class OperationComponent extends MobxLitElement {
   }) {
     const {message, keyCommand, keyLabel, action} = params;
     return html`
-      <wordcraft-key-command-small
+      <diymate-key-command-small
         message=${message}
         .keyCommand=${keyCommand}
         keyLabel=${keyLabel}
         .action=${action}
       >
-      </wordcraft-key-command-small>
+      </diymate-key-command-small>
     `;
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-operation': OperationComponent;
+    'diymate-operation': OperationComponent;
   }
 }

@@ -34,7 +34,7 @@ export interface LocalStorageState {
   savedDocuments: SavedDocuments;
 }
 
-const STATE_PREFIX = 'wordcraft-state';
+const STATE_PREFIX = 'diymate-state';
 const EDITOR_SNAPSHOT_KEY = STATE_PREFIX + '@editor-snapshot';
 const HAS_BEEN_WELCOMED_KEY = STATE_PREFIX + '@has-been-welcomed';
 const LOG_KEY = STATE_PREFIX + '@log';

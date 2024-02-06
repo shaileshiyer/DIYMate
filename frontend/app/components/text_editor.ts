@@ -21,7 +21,7 @@ import {html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {TextEditorService} from '@services/text_editor_service';
 
 import {styles} from './text_editor.css';
@@ -31,14 +31,14 @@ import {styles} from './text_editor.css';
  * container (#text-editor) are maintained imperatively by the TextEditorService
  * which is a wrapper for the Mobiledoc-kit library.
  */
-@customElement('wordcraft-text-editor')
+@customElement('diymate-text-editor')
 export class TextEditorComponent extends MobxLitElement {
   static override get styles() {
     return [styles];
   }
 
   private readonly textEditorService =
-    wordcraftCore.getService(TextEditorService);
+    diymateCore.getService(TextEditorService);
 
   @property({type: Boolean}) showWordCount = false;
   @property({type: String}) defaultText = '';
@@ -123,6 +123,6 @@ export class TextEditorComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-text-editor': TextEditorComponent;
+    'diymate-text-editor': TextEditorComponent;
   }
 }

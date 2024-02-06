@@ -22,22 +22,22 @@ import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 import {AppService} from '@services/app_service';
 import {DocumentStoreService} from '@services/document_store_service';
 
 import {styles} from './onboarding.css';
 import {styles as sharedStyles} from './shared.css';
-
+import '@material/web/button/outlined-button'
 /**
- * The wordcraft onboarding flow - allows the user to choose what to "seed"
+ * The diymate onboarding flow - allows the user to choose what to "seed"
  * their story with.
  */
-@customElement('wordcraft-onboarding')
+@customElement('diymate-onboarding')
 export class OnboardingComponent extends MobxLitElement {
-  private readonly appService = wordcraftCore.getService(AppService);
+  private readonly appService = diymateCore.getService(AppService);
   private readonly documentStoreService =
-    wordcraftCore.getService(DocumentStoreService);
+    diymateCore.getService(DocumentStoreService);
 
   static override get styles() {
     return [sharedStyles, styles];
@@ -50,7 +50,7 @@ export class OnboardingComponent extends MobxLitElement {
   override render() {
     return html`
       <div class="onboarding-wrapper">
-        <h1><span class="text">Wordcraft</span> ✨✍️</h1>
+        <h1>DIY-Tutorial-Mate</h1>
         ${this.renderDescription()} ${this.renderGetStarted()}
         ${this.renderUserStories()}
       </div>
@@ -59,8 +59,8 @@ export class OnboardingComponent extends MobxLitElement {
 
   renderDescription() {
     return html`
-      <div class="wordcraft-description">
-        Wordcraft is an AI-assisted text editor for writing stories.
+      <div class="diymate-description">
+        DIY-Tutorial-Mate is an LLM powered text editor for writing DIY tutorials.
       </div>
     `;
   }
@@ -72,7 +72,7 @@ export class OnboardingComponent extends MobxLitElement {
 
     return html`
       <div class="get-started">
-        <button @click=${getStarted}>Start a New Story</button>
+        <md-outlined-button @click=${getStarted}>Start new DIY</md-outlined-button>
       </div>
     `;
   }
@@ -124,6 +124,6 @@ export class OnboardingComponent extends MobxLitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wordcraft-onboarding': OnboardingComponent;
+    'diymate-onboarding': OnboardingComponent;
   }
 }

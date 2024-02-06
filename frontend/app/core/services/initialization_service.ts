@@ -31,7 +31,7 @@ import {
   TextEditorService,
 } from './services';
 import {ConfigService} from './config_service';
-import {WordcraftContext} from '../../context';
+import {DIYmateContext} from '../../context';
 
 import {DocumentStoreService} from './document_store_service';
 
@@ -66,7 +66,7 @@ export class InitializationService extends Service {
   private isResetting = false;
   private beforeUnload = () => {};
 
-  initialize(context: WordcraftContext) {
+  initialize(context: DIYmateContext) {
     const {
       appService,
       contextService,

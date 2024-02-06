@@ -18,14 +18,14 @@
  */
 
 import {AppComponent} from './components/app';
-import {wordcraftCore} from '@core/wordcraft_core';
+import {diymateCore} from '@core/diymate_core';
 
 import * as Operations from '@core/operations';
 
 import {ModelService} from '@services/model_service';
 import {OperationsService} from '@services/operations_service';
 
-import {WordcraftContext} from './context';
+import {DIYmateContext} from './context';
 import {makeServiceProvider} from './service_provider';
 import {InitializationService} from '@services/initialization_service';
 import {PalmModel} from '@models/palm';
@@ -34,14 +34,14 @@ import { OpenAIModel } from '@models/openai';
 import { OpenAIDialogModel } from '@models/openai/dialog';
 
 
-wordcraftCore.initialize(makeServiceProvider);
+diymateCore.initialize(makeServiceProvider);
 
-const initializationService = wordcraftCore.getService(InitializationService);
-const context = new WordcraftContext();
+const initializationService = diymateCore.getService(InitializationService);
+const context = new DIYmateContext();
 initializationService.initialize(context);
 
 // Register Operations
-const operationsService = wordcraftCore.getService(OperationsService);
+const operationsService = diymateCore.getService(OperationsService);
 operationsService.registerOperations(
   Operations.ContinuationOperation,
   Operations.ElaborationOperation,
@@ -57,7 +57,7 @@ operationsService.registerOperations(
 );
 
 // Register prompts with models
-const modelService = wordcraftCore.getService(ModelService);
+const modelService = diymateCore.getService(ModelService);
 
 // modelService.useModel(PalmModel);
 // modelService.useDialogModel(PalmDialogModel);
