@@ -31,8 +31,8 @@ import {OperationsService} from '@services/operations_service';
 import {Operation} from '@operations/operation';
 import {KeyCommand} from '@core/shared/keyboard';
 
-import {styles} from './operation_styles.ts';
-import {styles as sharedStyles} from './shared_styles.ts';
+import {styles} from './operation.css';
+import {styles as sharedStyles} from './shared.css';
 
 /**
  * A component that displays the current operation in the wordcraft sidebar

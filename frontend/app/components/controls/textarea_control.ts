@@ -21,9 +21,9 @@ import {html, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 import {TextareaControl} from '@operations/operation_controls';
-import {styles as sharedStyles} from '../shared_styles.ts';
+import {styles as sharedStyles} from '../shared.css';
 
-import {styles} from './controls_styles.ts';
+import {styles} from './controls.css';
 
 /**
  * A component that displays a textarea control for an operation

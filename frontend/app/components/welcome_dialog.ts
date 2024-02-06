@@ -22,8 +22,8 @@ import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import {styles as sharedStyles} from './shared_styles.ts';
-import {styles} from './welcome_dialog_styles.ts';
+import {styles as sharedStyles} from './shared.css';
+import {styles} from './welcome_dialog.css';
 
 /**
  * A welcome dialog.

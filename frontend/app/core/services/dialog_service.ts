@@ -18,13 +18,13 @@
  */
 import {Dialog} from '@material/mwc-dialog';
 import {html, TemplateResult} from 'lit';
-import {makeObservable, observable} from 'mobx';
+import {decorate, observable} from 'mobx';
 
 import {SnackbarComponent} from '@components/shared_components/primitives/snackbar';
 import {
   KeyboardService,
   KeyboardServiceHelper,
-} from './keyboard_service';
+} from '../services/keyboard_service';
 import {LocalStorageService, TextEditorService} from './services';
 
 import {Service} from './service';
@@ -203,7 +203,7 @@ export class DialogService extends Service {
   }
 }
 
-makeObservable(DialogService, {
+decorate(DialogService, {
   messageBody: observable,
   messageHeader: observable,
 });

@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 import {TemplateResult} from 'lit';
-import {makeObservable, observable} from 'mobx';
+import {decorate, observable} from 'mobx';
 
 import {
   ControlPrefix,
@@ -55,16 +55,15 @@ export class ToggleControl extends OperationControl {
   constructor(params: ToggleControlParams) {
     const {prefix, description, value} = params;
     super(prefix, description);
-    makeObservable(this, {
-      value: observable,
-    });
     this.value = value;
   }
 
   override value: boolean;
 }
 
-
+decorate(ToggleControl, {
+  value: observable,
+});
 
 export interface StepSliderControlParams<T> extends ControlParams {
   value: number;
@@ -76,10 +75,6 @@ export class StepSliderControl<T> extends OperationControl {
   constructor(params: StepSliderControlParams<T>) {
     const {prefix, suffix, description, value, steps} = params;
     super(prefix, description);
-    makeObservable(this, {
-      value: observable,
-      steps: observable,
-    });
     this.value = value;
     this.steps = steps;
     this.suffix = suffix;
@@ -101,7 +96,10 @@ export class StepSliderControl<T> extends OperationControl {
   }
 }
 
-
+decorate(StepSliderControl, {
+  value: observable,
+  steps: observable,
+});
 
 export interface TextInputControlParams extends ControlParams {
   value: string;
@@ -119,9 +117,7 @@ export class TextInputControl extends OperationControl {
       placeholder = '',
     } = params;
     super(prefix, description);
-    makeObservable(this, {
-      value: observable,
-    });
+
     this.value = value;
     this.helperOperation = helperOperation;
     this.placeholder = placeholder;
@@ -136,7 +132,9 @@ export class TextInputControl extends OperationControl {
   }
 }
 
-
+decorate(TextInputControl, {
+  value: observable,
+});
 
 export interface TextAreaControlParams extends ControlParams {
   id?: string;
@@ -156,10 +154,6 @@ export class TextareaControl extends OperationControl {
       placeholder = '',
     } = params;
     super(prefix, description);
-    
-  makeObservable(this, {
-    value: observable,
-  });
 
     this.id = id;
     this.value = value;
@@ -176,3 +170,7 @@ export class TextareaControl extends OperationControl {
     return this.helperOperation != null;
   }
 }
+
+decorate(TextareaControl, {
+  value: observable,
+});

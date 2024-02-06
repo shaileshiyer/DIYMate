@@ -28,8 +28,8 @@ import {wordcraftCore} from '@core/wordcraft_core';
 import {ChatService} from '@services/chat_service';
 import {ConfigService} from '@services/config_service';
 
-import {styles} from './chat_styles.ts';
-import {styles as sharedStyles} from './shared_styles.ts';
+import {styles} from './chat.css';
+import {styles as sharedStyles} from './shared.css';
 
 /**
  * A component that displays a chat interface for basic back and

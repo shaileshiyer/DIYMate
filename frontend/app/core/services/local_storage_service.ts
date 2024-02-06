@@ -18,7 +18,7 @@
  */
 import {StateSnapshot} from '@lib/mobiledoc';
 import {ModelResult, SerializedLog} from '../shared/types';
-import {SavedDocument} from './document_store_service';
+import {SavedDocument} from '../services/document_store_service';
 import {uuid} from '@lib/uuid';
 
 import {Service} from './service';

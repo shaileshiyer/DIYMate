@@ -24,10 +24,10 @@ import {wordcraftCore} from '@core/wordcraft_core';
 import {KeyboardService} from '@services/keyboard_service';
 import {getMetaKeyString, KeyCommand} from '@core/shared/keyboard';
 import {OperationTrigger} from '@core/shared/types';
-import {styles as sharedStyles} from '../shared_styles.ts';
+import {styles as sharedStyles} from '../shared.css';
 
-import {styles as controlsStyles} from './controls_styles.ts';
-import {styles} from './key_command_styles.ts';
+import {styles as controlsStyles} from './controls.css';
+import {styles} from './key_command.css';
 
 /**
  * The sidebar component that displays a key command and button control

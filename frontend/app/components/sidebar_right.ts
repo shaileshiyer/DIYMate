@@ -37,9 +37,9 @@ import {ModelService} from '@services/model_service';
 import {OperationsService} from '@services/operations_service';
 import {StarredResultsService} from '@services/starred_results_service';
 
-import {styles as sharedStyles} from './shared_styles.ts';
-import {styles as sidebarStyles} from './sidebar_styles.ts';
-import {styles as sidebarRightStyles} from './sidebar_right_styles.ts';
+import {styles as sharedStyles} from './shared.css';
+import {styles as sidebarStyles} from './sidebar.css';
+import {styles as sidebarRightStyles} from './sidebar_right.css';
 
 /**
  * The right sidebar component

@@ -24,7 +24,7 @@ import {classMap} from 'lit/directives/class-map.js';
 import {wordcraftCore} from '@core/wordcraft_core';
 import {TextEditorService} from '@services/text_editor_service';
 
-import {styles} from './text_editor_styles.ts';
+import {styles} from './text_editor.css';
 
 /**
  * The rich text editor component. The actual text and contents of the editor

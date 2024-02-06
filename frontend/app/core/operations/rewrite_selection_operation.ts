@@ -16,7 +16,7 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {computed, makeObservable} from 'mobx';
+import {computed, decorate} from 'mobx';
 
 import {createModelResult} from '@models/utils';
 import * as helpers from '../operation_data/helpers';
@@ -175,6 +175,6 @@ export class RewriteSelectionOperation extends ChoiceOperation {
   };
 }
 
-makeObservable(RewriteSelectionOperation, {
+decorate(RewriteSelectionOperation, {
   howToRewrite: computed,
 });

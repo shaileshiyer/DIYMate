@@ -24,9 +24,9 @@ import {customElement, property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 
 import {TextInputControl} from '@operations/operation_controls';
-import {styles as sharedStyles} from '../shared_styles.ts';
+import {styles as sharedStyles} from '../shared.css';
 
-import {styles} from './controls_styles.ts';
+import {styles} from './controls.css';
 
 /**
  * A component that displays an input text control for an operation

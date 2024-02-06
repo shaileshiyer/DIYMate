@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 import * as Mobiledoc from 'mobiledoc-kit';
-import {computed, makeObservable, observable} from 'mobx';
+import {computed, decorate, observable} from 'mobx';
 
 import {
   findMobiledocSectionAtIndex,
@@ -246,7 +246,7 @@ function makeEmptySerializedRange(): SerializedRange {
   return {head: [0, 0], tail: [0, 0], direction: 1};
 }
 
-makeObservable(CursorService, {
+decorate(CursorService, {
   currentSectionIndex: computed,
   cursorOffset: computed,
   isCursorAtEndOfSection: computed,

@@ -173,7 +173,7 @@ export abstract class Operation {
     return Object.keys(this.instanceControls).length > 0;
   }
 
-  // We're using a decorator here because the mobx makeObservable function can't
+  // We're using a decorator here because the mobx decorate function can't
   // handle decorating abstract classes...
   @observable.ref currentStep: Step = new NotStartedStep();
   setCurrentStep(step: Step) {

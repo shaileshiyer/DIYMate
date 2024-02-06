@@ -36,7 +36,7 @@ import {OperationsService} from '@services/operations_service';
 import {OperationControl, OperationControls} from '@core/shared/interfaces';
 import {OperationTrigger} from '@core/shared/types';
 
-import {styles as sharedStyles} from './shared_styles.ts';
+import {styles as sharedStyles} from './shared.css';
 
 /**
  * A component that displays the controls for a given operation.

@@ -35,8 +35,8 @@ import {StarredResultsService} from '@services/starred_results_service';
 import {OperationClass, OperationControls} from '@core/shared/interfaces';
 import {KeyCommand} from '@core/shared/keyboard';
 
-import {styles} from './choices_styles.ts';
-import {styles as sharedStyles} from './shared_styles.ts';
+import {styles} from './choices.css';
+import {styles as sharedStyles} from './shared.css';
 
 /**
  * A component that displays the choices available for the current choice step

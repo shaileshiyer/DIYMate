@@ -33,8 +33,8 @@ import {OperationClass} from '@core/shared/interfaces';
 import {KeyCommand} from '@core/shared/keyboard';
 import {OperationTrigger} from '@core/shared/types';
 
-import {styles} from './operations_styles.ts';
-import {styles as sharedStyles} from './shared_styles.ts';
+import {styles} from './operations.css';
+import {styles as sharedStyles} from './shared.css';
 
 /**
  * The sidebar component that displays available operations.

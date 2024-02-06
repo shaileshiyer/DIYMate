@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 
-import {action, computed, makeObservable, observable, toJS} from 'mobx';
+import {action, computed, decorate, observable, toJS} from 'mobx';
 
 /** A simple type for the callback supplied to the UndoManager */
 export type ApplyStateCallback<T> = (stateSnapshot: T) => void;
@@ -114,7 +114,7 @@ function deepCopy<T extends {}>(object: T): T {
   return JSON.parse(str) as T;
 }
 
-makeObservable(UndoManager, {
+decorate(UndoManager, {
   undoSteps: observable.shallow,
   redoSteps: observable.shallow,
   canUndo: computed,

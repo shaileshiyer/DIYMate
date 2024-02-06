@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 import * as Mobiledoc from 'mobiledoc-kit';
-import {computed, makeObservable, observable} from 'mobx';
+import {computed, decorate, observable} from 'mobx';
 
 import {SerializedRange} from '@lib/mobiledoc';
 import {parseSentences} from '@lib/parse_sentences';
@@ -290,7 +290,7 @@ export class SentencesService extends Service {
   }
 }
 
-makeObservable(SentencesService, {
+decorate(SentencesService, {
   cursorSpan: computed,
   currentSentence: computed,
   currentSentenceIndex: computed,

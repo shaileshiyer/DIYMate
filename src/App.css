@@ -1,0 +1,24 @@
+#home {
+    margin:0 auto;
+    padding: 2em 4em;
+    place-items: center;
+    min-height: 100vh;
+}
+
+#new-diy {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 1280px;
+    margin:auto auto;
+    padding: 2em auto;
+    place-items: center;
+    min-height: 100vh;
+}
+
+.outline-prompt {
+    max-width:40rem;
+    border:1px solid var(--md-sys-color-secondary);
+    background-color: var(--white);
+
+}
