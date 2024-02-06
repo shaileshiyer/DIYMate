@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .controls-step-title {
   font-weight: 700;
   color: var(--blue);
@@ -46,3 +49,4 @@ mwc-circular-progress-four-color {
   --mdc-circular-progress-bar-color-3: #ffc107;
   --mdc-circular-progress-bar-color-4: #03dac5;
 }
+`;

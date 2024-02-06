@@ -20,7 +20,7 @@ import '@material/mwc-icon';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {css, html, TemplateResult} from 'lit';
-import {customElement, property} from 'lit/decorators';
+import {customElement, property} from 'lit/decorators.js';
 
 /**
  * A generic error message component usable in different contexts in the app.

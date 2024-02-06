@@ -22,7 +22,7 @@ import './operation_controls';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement} from 'lit/decorators';
+import {customElement} from 'lit/decorators.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {Operation} from '@operations/operation';
@@ -33,8 +33,8 @@ import {OperationClass} from '@core/shared/interfaces';
 import {KeyCommand} from '@core/shared/keyboard';
 import {OperationTrigger} from '@core/shared/types';
 
-import {styles} from './operations.css';
-import {styles as sharedStyles} from './shared.css';
+import {styles} from './operations_styles.ts';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * The sidebar component that displays available operations.

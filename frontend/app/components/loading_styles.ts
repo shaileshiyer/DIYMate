@@ -1,3 +1,6 @@
+import { css } from "lit"; 
+
+export const styles= css`
 .loading-wrapper {
   display: flex;
   flex-direction: row;
@@ -15,3 +18,4 @@
   background-size: 400% 400%;
   animation: gradient 5s ease infinite;
 }
+`;

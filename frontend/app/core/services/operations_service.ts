@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 import {TemplateResult} from 'lit';
-import {computed, decorate, observable} from 'mobx';
+import {computed, makeObservable, observable} from 'mobx';
 
 import {CancelOperationError} from '@lib/errors';
 import {Constructor} from '@lib/types';
@@ -348,7 +348,7 @@ function isOperationClass(obj: OperationClass | OperationFactory) {
   return false;
 }
 
-decorate(OperationsService, {
+makeObservable(OperationsService, {
   allOperations: observable,
   availableOperations: computed,
   operationStack: observable,

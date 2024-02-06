@@ -16,7 +16,7 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {computed, decorate, observable, reaction} from 'mobx';
+import {computed, makeObservable, observable, reaction} from 'mobx';
 
 import {LocalStorageService} from './services';
 import {ModelResult} from '../shared/types';
@@ -94,7 +94,7 @@ export class StarredResultsService extends Service {
   }
 }
 
-decorate(StarredResultsService, {
+makeObservable(StarredResultsService, {
   entries: observable,
   starredResults: computed,
   shouldShowStarredTab: observable,

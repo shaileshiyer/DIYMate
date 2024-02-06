@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 import {html} from 'lit';
-import {styleMap} from 'lit/directives/style-map';
+import {styleMap} from 'lit/directives/style-map.js';
 
 import {createModelResult} from '@models/utils';
 import {ModelResult, OperationType} from '../shared/types';

@@ -18,7 +18,7 @@
  */
 import {Dialog} from '@material/mwc-dialog';
 import {html, TemplateResult} from 'lit';
-import {decorate, observable} from 'mobx';
+import {makeObservable, observable} from 'mobx';
 
 import {SnackbarComponent} from '@components/shared_components/primitives/snackbar';
 import {
@@ -203,7 +203,7 @@ export class DialogService extends Service {
   }
 }
 
-decorate(DialogService, {
+makeObservable(DialogService, {
   messageBody: observable,
   messageHeader: observable,
 });

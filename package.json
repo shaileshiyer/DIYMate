@@ -6,12 +6,34 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "server": "python backend/api_server.py --config_dir './config' --log_dir './logs' --port 5555 --proj_name 'diy_mate' --debug"
   },
   "dependencies": {
-    "lit": "^3.1.0"
+    "@adobe/lit-mobx": "^2.2.2",
+    "@material/mwc-checkbox": "^0.27.0",
+    "@material/mwc-circular-progress-four-color": "^0.27.0",
+    "@material/mwc-dialog": "^0.27.0",
+    "@material/mwc-fab": "^0.27.0",
+    "@material/mwc-icon": "^0.27.0",
+    "@material/mwc-icon-button": "^0.27.0",
+    "@material/mwc-snackbar": "^0.27.0",
+    "@material/mwc-tab": "^0.27.0",
+    "@material/mwc-tab-bar": "^0.27.0",
+    "@webcomponents/webcomponentsjs": "^2.8.0",
+    "lit": "^3.1.0",
+    "mobiledoc-kit": "^0.15.0",
+    "mobx": "^6.12.0",
+    "openai": "^4.26.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/eslint": "^8.56.2",
+    "@types/jasmine": "^5.1.4",
+    "@types/node": "^20.11.16",
+    "@types/resize-observer-browser": "^0.1.11",
+    "eslint-plugin-lit": "^1.11.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
   }

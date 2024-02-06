@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .operation-button-row,
 .operation-control-row {
   display: flex;
@@ -32,3 +35,4 @@
   flex: 1;
   height: 1px;
 }
+`;

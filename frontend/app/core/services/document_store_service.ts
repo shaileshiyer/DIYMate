@@ -16,7 +16,7 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {decorate, observable} from 'mobx';
+import {makeObservable, observable} from 'mobx';
 
 import {StateSnapshot} from '@lib/mobiledoc';
 import {Service} from './service';
@@ -52,6 +52,12 @@ export interface SavedDocument {
 export class DocumentStoreService extends Service {
   constructor(private readonly serviceProvider: ServiceProvider) {
     super();
+    makeObservable(this, {
+      isDeleting: observable,
+      isLoading: observable,
+      isSaving: observable,
+      userDocuments: observable,
+    });
   }
 
   private autoSaveIntervalId = 0;
@@ -217,10 +223,3 @@ export class DocumentStoreService extends Service {
     clearInterval(this.autoSaveIntervalId);
   }
 }
-
-decorate(DocumentStoreService, {
-  isDeleting: observable,
-  isLoading: observable,
-  isSaving: observable,
-  userDocuments: observable,
-});

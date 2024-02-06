@@ -20,13 +20,13 @@ import '@material/mwc-icon';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html, TemplateResult} from 'lit';
-import {customElement, property} from 'lit/decorators';
-import {classMap} from 'lit/directives/class-map';
+import {customElement, property} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
 
 import {TextInputControl} from '@operations/operation_controls';
-import {styles as sharedStyles} from '../shared.css';
+import {styles as sharedStyles} from '../shared_styles.ts';
 
-import {styles} from './controls.css';
+import {styles} from './controls_styles.ts';
 
 /**
  * A component that displays an input text control for an operation

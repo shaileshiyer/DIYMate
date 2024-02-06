@@ -16,7 +16,7 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {computed, decorate, observable} from 'mobx';
+import {computed, makeObservable, observable} from 'mobx';
 
 import {DialogService} from './services';
 
@@ -78,7 +78,7 @@ export class StatusService extends Service {
   }
 }
 
-decorate(StatusService, {
+makeObservable(StatusService, {
   errorEvents: observable,
   errorMessage: computed,
   errorMessages: computed,

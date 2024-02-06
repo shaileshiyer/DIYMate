@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .key-command-button {
   display: flex;
   flex-direction: row;
@@ -36,3 +39,4 @@ span.key-command-small {
   padding: 4px;
   font-size: 70%;
 }
+`;

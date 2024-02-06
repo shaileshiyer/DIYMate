@@ -25,9 +25,9 @@ import './welcome_dialog';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {Dialog} from '@material/mwc-dialog';
-import {html} from 'lit';
-import {customElement} from 'lit/decorators';
-import {styleMap} from 'lit/directives/style-map';
+import {html,css} from 'lit';
+import {customElement} from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 
 import {SnackbarComponent} from '@components/shared_components/primitives/snackbar';
 import {wordcraftCore} from '@core/wordcraft_core';
@@ -38,8 +38,8 @@ import {LocalStorageService} from '@services/local_storage_service';
 import {KeyCommand} from '@core/shared/keyboard';
 import {DocumentStoreService} from '@services/document_store_service';
 
-import {styles} from './app.css';
-import {styles as sharedStyles} from './shared.css';
+import {styles} from './app_styles.ts';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * Root component for the wordcraft app

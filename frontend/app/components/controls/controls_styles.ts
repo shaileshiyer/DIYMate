@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .input-control {
   margin: 0;
   padding: 2px;
@@ -99,3 +102,4 @@ button.helper-operation:hover {
   background-color: inherit;
   color: inherit;
 }
+`;

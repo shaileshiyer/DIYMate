@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .sidebar-contents {
   display: flex;
   flex-direction: column;
@@ -79,3 +82,4 @@
   left: 100vw - var(--sidebar-right-width) + 30px;
   background: rgba(255, 255, 255, 0.8);
 }
+`;

@@ -18,13 +18,13 @@
  */
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement, property} from 'lit/decorators';
-import {classMap} from 'lit/directives/class-map';
+import {customElement, property} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {TextEditorService} from '@services/text_editor_service';
 
-import {styles} from './text_editor.css';
+import {styles} from './text_editor_styles.ts';
 
 /**
  * The rich text editor component. The actual text and contents of the editor

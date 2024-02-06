@@ -21,8 +21,8 @@ import '@material/mwc-tab';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement} from 'lit/decorators';
-import {classMap} from 'lit/directives/class-map';
+import {customElement} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {Choices} from '@lib/choices';
@@ -32,8 +32,8 @@ import {StarredResultsService} from '@services/starred_results_service';
 import {TextEditorService} from '@services/text_editor_service';
 import {ModelResult} from '@core/shared/types';
 
-import {styles as choicesStyles} from './choices.css';
-import {styles as sharedStyles} from './shared.css';
+import {styles as choicesStyles} from './choices_styles.ts';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * Displays a list of starred choices to add to the editor.

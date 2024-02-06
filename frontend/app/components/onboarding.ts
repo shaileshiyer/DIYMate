@@ -20,14 +20,14 @@ import '@components/shared_components/primitives/error_message';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement} from 'lit/decorators';
+import {customElement} from 'lit/decorators.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {AppService} from '@services/app_service';
 import {DocumentStoreService} from '@services/document_store_service';
 
-import {styles} from './onboarding.css';
-import {styles as sharedStyles} from './shared.css';
+import {styles} from './onboarding_styles.ts';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * The wordcraft onboarding flow - allows the user to choose what to "seed"

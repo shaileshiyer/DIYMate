@@ -20,13 +20,13 @@ import '@material/mwc-checkbox';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html, TemplateResult} from 'lit';
-import {customElement, property} from 'lit/decorators';
-import {styleMap} from 'lit/directives/style-map';
+import {customElement, property} from 'lit/decorators.js';
+import {styleMap} from 'lit/directives/style-map.js';
 
 import {ToggleControl} from '@operations/operation_controls';
-import {styles as sharedStyles} from '../shared.css';
+import {styles as sharedStyles} from '../shared_styles.ts';
 
-import {styles} from './controls.css';
+import {styles} from './controls_styles.ts';
 
 /**
  * A component that displays a step slider input control for an operation

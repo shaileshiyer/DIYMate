@@ -23,7 +23,7 @@ import './controls/step_slider_control';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {css, html, TemplateResult} from 'lit';
-import {customElement, property} from 'lit/decorators';
+import {customElement, property} from 'lit/decorators.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {
@@ -36,7 +36,7 @@ import {OperationsService} from '@services/operations_service';
 import {OperationControl, OperationControls} from '@core/shared/interfaces';
 import {OperationTrigger} from '@core/shared/types';
 
-import {styles as sharedStyles} from './shared.css';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * A component that displays the controls for a given operation.

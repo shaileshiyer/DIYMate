@@ -21,15 +21,15 @@ import './operation_controls';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement} from 'lit/decorators';
-import {classMap} from 'lit/directives/class-map';
+import {customElement} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {ChatService} from '@services/chat_service';
 import {ConfigService} from '@services/config_service';
 
-import {styles} from './chat.css';
-import {styles as sharedStyles} from './shared.css';
+import {styles} from './chat_styles.ts';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * A component that displays a chat interface for basic back and

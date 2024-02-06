@@ -16,7 +16,7 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {computed, decorate, observable, reaction} from 'mobx';
+import {computed, makeObservable, observable, reaction} from 'mobx';
 
 import {delay} from '@lib/utils';
 import {
@@ -45,6 +45,12 @@ interface ServiceProvider {
 export class AppService extends Service {
   constructor(private readonly serviceProvider: ServiceProvider) {
     super();
+    makeObservable(this, {
+      activeSidebarTabIndex: observable,
+      isReady: observable,
+      lifeCycleState: observable,
+    });
+    
   }
 
   initialize() {
@@ -86,9 +92,3 @@ export class AppService extends Service {
     return 'An elderly man was sitting alone on a dark path. ';
   }
 }
-
-decorate(AppService, {
-  activeSidebarTabIndex: observable,
-  isReady: observable,
-  lifeCycleState: observable,
-});

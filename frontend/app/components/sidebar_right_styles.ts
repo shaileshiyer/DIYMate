@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 :host {
   height: 100%;
   display: flex;
@@ -17,3 +20,4 @@ mwc-tab-bar.disabled {
 .sidebar-contents {
   flex: 1;
 }
+`;

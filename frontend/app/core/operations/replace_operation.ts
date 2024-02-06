@@ -16,7 +16,7 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {computed, decorate} from 'mobx';
+import {computed, makeObservable} from 'mobx';
 
 import {createModelResult} from '@models/utils';
 import * as helpers from '../operation_data/helpers';
@@ -139,6 +139,6 @@ export class ReplaceOperation extends ChoiceOperation {
   };
 }
 
-decorate(ReplaceOperation, {
+makeObservable(ReplaceOperation, {
   nWords: computed,
 });

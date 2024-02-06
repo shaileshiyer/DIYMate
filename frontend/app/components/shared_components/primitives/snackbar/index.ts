@@ -18,8 +18,8 @@
  */
 import {Snackbar} from '@material/mwc-snackbar';
 import {html, TemplateResult} from 'lit';
-import {customElement, property, query} from 'lit/decorators';
-import {classMap} from 'lit/directives/class-map';
+import {customElement, property, query} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
 
 import {style} from './snackbar_styles';
 

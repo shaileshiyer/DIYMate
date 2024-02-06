@@ -23,7 +23,7 @@ import './controls/key_command_small';
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement} from 'lit/decorators';
+import {customElement} from 'lit/decorators.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {ChoiceStep, ControlsStep, LoadingStep} from '@operations/steps';
@@ -31,8 +31,8 @@ import {OperationsService} from '@services/operations_service';
 import {Operation} from '@operations/operation';
 import {KeyCommand} from '@core/shared/keyboard';
 
-import {styles} from './operation.css';
-import {styles as sharedStyles} from './shared.css';
+import {styles} from './operation_styles.ts';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * A component that displays the current operation in the wordcraft sidebar

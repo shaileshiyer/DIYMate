@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .dialog-wrapper {
   padding: 0 10px;
 }
@@ -66,3 +69,4 @@ p:last-of-type {
   align-items: center;
   justify-content: center;
 }
+`;

@@ -18,15 +18,15 @@
  */
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement, property} from 'lit/decorators';
+import {customElement, property} from 'lit/decorators.js';
 
 import {wordcraftCore} from '@core/wordcraft_core';
 import {KeyboardService} from '@services/keyboard_service';
 import {getMetaKeyString, KeyCommand} from '@core/shared/keyboard';
-import {styles as sharedStyles} from '../shared.css';
+import {styles as sharedStyles} from '../shared_styles.ts';
 
-import {styles as controlsStyles} from './controls.css';
-import {styles} from './key_command.css';
+import {styles as controlsStyles} from './controls_styles.ts';
+import {styles} from './key_command_styles.ts';
 
 /**
  * The sidebar component that displays a key command and button control

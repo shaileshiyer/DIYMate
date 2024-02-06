@@ -18,12 +18,12 @@
  */
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html, TemplateResult} from 'lit';
-import {customElement, property} from 'lit/decorators';
+import {customElement, property} from 'lit/decorators.js';
 
 import {StepSliderControl} from '@operations/operation_controls';
-import {styles as sharedStyles} from '../shared.css';
+import {styles as sharedStyles} from '../shared_styles.ts';
 
-import {styles} from './controls.css';
+import {styles} from './controls_styles.ts';
 
 /**
  * A component that displays a step slider input control for an operation

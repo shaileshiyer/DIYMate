@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 :host {
   display: flex;
   flex-direction: column;
@@ -99,3 +102,4 @@
 .choice-paragraph:last-of-type {
   margin-bottom: 0;
 }
+`;

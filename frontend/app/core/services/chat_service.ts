@@ -16,7 +16,7 @@
  * limitations under the License.
  * ==============================================================================
  */
-import {computed, decorate, observable} from 'mobx';
+import {computed, makeObservable, observable} from 'mobx';
 
 import {ConfigService, ModelService, TextEditorService} from './services';
 
@@ -134,7 +134,7 @@ export class ChatService extends Service {
   }
 }
 
-decorate(ChatService, {
+makeObservable(ChatService, {
   currentMessage: observable,
   isLoading: observable,
   messages: observable,

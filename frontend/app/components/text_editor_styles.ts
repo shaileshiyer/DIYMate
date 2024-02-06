@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .__mobiledoc-editor.__has-no-content:before {
   content: attr(data-placeholder);
   position: absolute;
@@ -137,3 +140,4 @@
     background-position: 0% 50%;
   }
 }
+`;

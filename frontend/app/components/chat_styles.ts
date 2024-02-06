@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 :host {
   display: flex;
   flex-direction: column;
@@ -181,3 +184,4 @@ mwc-checkbox {
     opacity: 0.3;
   }
 }
+`;

@@ -18,27 +18,39 @@
  */
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {html} from 'lit';
-import {customElement} from 'lit/decorators';
-import {computed, decorate, observable} from 'mobx';
+import {customElement} from 'lit/decorators.js';
+import {computed, makeAutoObservable, makeObservable, observable} from 'mobx';
 
 import {getRandomLoadingMessage} from '@lib/loading_messages';
 
-import {styles} from './loading.css';
-import {styles as sharedStyles} from './shared.css';
+
+import {styles} from './loading_styles.ts';
+import {styles as sharedStyles} from './shared_styles.ts';
 
 /**
  * Loading screen for the wordcraft editor
  */
 @customElement('wordcraft-loading-screen')
 export class LoadingScreenComponent extends MobxLitElement {
+  currentMessage = getRandomLoadingMessage();
+  nPeriods = 3;
+  
   static override get styles() {
     return [sharedStyles, styles];
   }
 
-  currentMessage = getRandomLoadingMessage();
-  nPeriods = 3;
+  constructor(){
+    super();
+    makeObservable(this, {
+      currentMessage: observable,
+      loadingMessage: computed,
+    });
+  }
+
+
 
   private messageTimeout: number = -1;
+
 
   get loadingMessage() {
     const periods = [...new Array(this.nPeriods)].map(() => '.').join('');
@@ -70,10 +82,6 @@ export class LoadingScreenComponent extends MobxLitElement {
   }
 }
 
-decorate(LoadingScreenComponent, {
-  currentMessage: observable,
-  loadingMessage: computed,
-});
 
 declare global {
   interface HTMLElementTagNameMap {

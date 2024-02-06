@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 import * as Mobiledoc from 'mobiledoc-kit';
-import {computed, decorate, observable} from 'mobx';
+import {computed, makeObservable, observable} from 'mobx';
 
 import {
   clearAllMarkupFromSnapshot,
@@ -798,7 +798,7 @@ function findActiveElementWithinShadow(
   return element;
 }
 
-decorate(TextEditorService, {
+makeObservable(TextEditorService, {
   editorInFocus: observable,
   isEmpty: computed,
   isEnabled: observable,

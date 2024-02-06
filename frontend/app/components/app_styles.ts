@@ -1,3 +1,5 @@
+import { css } from "lit";
+export const styles = css`
 #wordcraft-app {
   display: flex;
   flex-direction: row;
@@ -56,3 +58,4 @@ mwc-snackbar {
   vertical-align: bottom;
   margin-bottom: -2px;
 }
+`;

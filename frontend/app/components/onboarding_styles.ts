@@ -1,3 +1,6 @@
+import { css } from "lit";
+
+export const styles = css`
 .onboarding-wrapper {
   margin-left: 80px;
 }
@@ -98,3 +101,4 @@ h1 > .text {
 .delete-icon:hover {
   color: var(--black);
 }
+`;
