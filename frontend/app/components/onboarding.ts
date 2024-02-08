@@ -29,6 +29,7 @@ import {DocumentStoreService} from '@services/document_store_service';
 import {styles} from './onboarding.css';
 import {styles as sharedStyles} from './shared.css';
 import '@material/web/button/outlined-button'
+import '@material/web/button/filled-button'
 /**
  * The diymate onboarding flow - allows the user to choose what to "seed"
  * their story with.
@@ -67,12 +68,17 @@ export class OnboardingComponent extends MobxLitElement {
 
   renderGetStarted() {
     const getStarted = () => {
+      this.appService.goToNewDIY();
+    };
+
+    const starteditor = () => {
       this.appService.initializeEditor();
     };
 
     return html`
       <div class="get-started">
-        <md-outlined-button @click=${getStarted}>Start new DIY</md-outlined-button>
+        <md-outlined-button @click=${starteditor}>Story editor</md-outlined-button>
+        <md-filled-button @click=${getStarted}>Start new DIY</md-filled-button>
       </div>
     `;
   }

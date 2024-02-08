@@ -22,6 +22,7 @@ import './onboarding';
 import './sidebar_right';
 import './text_editor';
 import './welcome_dialog';
+import './new_diy'
 
 import {MobxLitElement} from '@adobe/lit-mobx';
 import {Dialog} from '@material/mwc-dialog';
@@ -78,14 +79,6 @@ export class AppComponent extends MobxLitElement {
     this.registerSnackbar('error-snackbar');
   }
 
-  override render() {
-    return html`
-      <div id="diymate-app">
-        ${this.renderContent()} ${this.renderDialogs()}
-        ${this.renderSnackbars()}
-      </div>
-    `;
-  }
 
   renderContent() {
     if (!this.appService.isReady) {
@@ -100,6 +93,8 @@ export class AppComponent extends MobxLitElement {
       return this.renderLoading();
     } else if (lifeCycleState === 'EDITING') {
       return this.renderApp();
+    } else if (lifeCycleState === 'NEW_DIY'){
+      return this.renderNewDIY();
     }
     return '';
   }
@@ -160,9 +155,11 @@ export class AppComponent extends MobxLitElement {
 
   renderApp() {
     return html`
+      <div id="diymate-editor">
       <div id="main-panel">${this.renderEditor()}</div>
       <div id="sidebar-right">
         <diymate-sidebar-right></diymate-sidebar-right>
+      </div>
       </div>
     `;
   }
@@ -201,6 +198,22 @@ export class AppComponent extends MobxLitElement {
         .onDisconnect=${onDisconnect}
         .onDisabledOverlayClick=${onDisabledOverlayClick}
       ></diymate-text-editor>
+    `;
+  }
+
+  renderNewDIY(){
+    return html`
+      <diymate-new-diy></diymate-new-diy>
+    `
+  }
+  
+  override render() {
+    return html`
+      <div id="diymate-app">
+        ${this.renderContent()} 
+        ${this.renderDialogs()}
+        ${this.renderSnackbars()}
+      </div>
     `;
   }
 }

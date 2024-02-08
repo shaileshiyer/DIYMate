@@ -85,6 +85,14 @@ export class AppService extends Service {
   getDefaultText() {
     return 'An elderly man was sitting alone on a dark path. ';
   }
+
+  goToNewDIY() {
+    this.lifeCycleState = 'NEW_DIY';
+  }
+
+  goToOnboarding() {
+    this.lifeCycleState = 'ONBOARDING';
+  }
 }
 
 decorate(AppService, {

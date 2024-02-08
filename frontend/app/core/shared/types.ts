@@ -80,7 +80,7 @@ export interface EditorMetaText {
   outline: string;
 }
 
-export type Lifecycle = 'ONBOARDING' | 'INITIALIZING' | 'EDITING';
+export type Lifecycle = 'ONBOARDING' | 'INITIALIZING' | 'EDITING' | 'NEW_DIY';
 
 export interface ModelResult {
   text: string;
