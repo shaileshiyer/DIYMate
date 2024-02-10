@@ -1,18 +1,21 @@
 import { LitElement, html, css, PropertyValueMap } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { MobxLitElement } from "@adobe/lit-mobx";
-import { Router } from "@vaadin/router";
 import './pages/diymate-home';
+import './pages/new_diy'
+import { diymateCore } from "@core/diymate_core";
+import { RouterService } from "@core/services/router_service";
 
 @customElement('diymate-app')
 export class DIYMateApp extends MobxLitElement {
+    private readonly routerService = diymateCore.getService(RouterService);
 
     protected firstUpdated(): void {
-        const router = new Router(this.shadowRoot?.querySelector('#diy-mate-wrapper'));
+        const routerOutlet = this.shadowRoot?.querySelector('#diy-mate-wrapper');
+        if (!!routerOutlet){
+            this.routerService.initializeRouter(routerOutlet);
+        }
 
-        router.setRoutes([
-            { path: '/', component: 'diymate-home' }
-        ])
     }
 
     render() {

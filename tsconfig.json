@@ -16,9 +16,20 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "plugins": [
+      {"name": "ts-lit-plugin"}
+    ],
+    "baseUrl": "src/",
+    "paths": {
+      "@core/*":["core/*"],
+      "@services/*": ["core/services/*"],
+    }
+    
   },
-  "include": ["src"]
+  
+  "include": ["./src"],
+  "exclude": ["./node_modules"]
 }

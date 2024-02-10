@@ -1,9 +1,19 @@
 import { defineConfig } from 'vite'
 import { hmrPlugin, presets } from 'vite-plugin-web-components-hmr'
+import {resolve} from 'path'
+
+function resolveDir(relativeDir) {
+  return resolve(__dirname, relativeDir);
+}
 
 export default defineConfig({
   server:{
     port:5000
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      tsconfig: 'tsconfig.json'
+    }
   },
   plugins: [
     hmrPlugin({
@@ -11,4 +21,10 @@ export default defineConfig({
       presets: [presets.lit],
     }),
   ],
+  resolve:{
+    alias:{
+      '@core':resolveDir('./src/core'),
+      '@services': resolveDir('./src/core/services'),
+    }
+  }
 })

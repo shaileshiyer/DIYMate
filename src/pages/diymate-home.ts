@@ -8,7 +8,7 @@ import { customElement, property } from "lit/decorators.js";
 class DIYMateHome extends LitElement {
 
     @property({type:Number})
-    count = 0;    
+    private count = 0;    
 
 
     static override get styles() {
@@ -30,14 +30,25 @@ class DIYMateHome extends LitElement {
     } 
 
 
+    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+        const countVal:string|null = window.localStorage.getItem('count');
+        if (countVal!== null){
+            const count:number = Number.parseInt(countVal);
+            this.count = count;
+        }
+    }
 
+    protected storeCount(){
+        window.localStorage.setItem('count',this.count.toString())
+    }
 
     protected render(): TemplateResult {
         return html`
             <div id="home">
                 <h1>DIY-Tutorial-Mate</h1>
                 <p>An LLM-powered Text editor to help you write a DIY tutorial</p>
-                <md-filled-button @click=${this.increment}>Start DIY Tutorial</md-filled-button>
+                <md-filled-button @click=${this.storeCount} href="/new">Start DIY Tutorial</md-filled-button>
+                <md-filled-button @click=${this.increment}>Increase count</md-filled-button>
                 <div> Count is ${this.count}</div>
                 <hr />
             </div>
