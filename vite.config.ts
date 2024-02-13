@@ -25,6 +25,7 @@ export default defineConfig({
     alias:{
       '@core':resolveDir('./src/core'),
       '@services': resolveDir('./src/core/services'),
+      '@models':resolveDir('./src/models'),
     }
   }
 })

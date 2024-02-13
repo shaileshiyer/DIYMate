@@ -95,7 +95,7 @@ def save_log_to_json(path, log):
 
 
 def save_log_to_jsonl(path, log):
-    with open(path, 'w') as f:  # Overwrite existing file
+    with open(path, 'a') as f:  # Append to existing file
         for entry in log:
             json.dump(entry, f)
             f.write('\n')

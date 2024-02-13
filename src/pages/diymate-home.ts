@@ -2,6 +2,8 @@ import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
 import { MobxLitElement } from "@adobe/lit-mobx";
 import '@material/web/button/filled-button'
 import { customElement, property } from "lit/decorators.js";
+import { diymateCore } from "@core/diymate_core";
+import { LocalStorageService } from "@core/services/local_storage_service";
 
 
 @customElement('diymate-home')
@@ -10,6 +12,8 @@ class DIYMateHome extends LitElement {
     @property({type:Number})
     private count = 0;    
 
+    private localStorageService = diymateCore.getService(LocalStorageService);
+    
 
     static override get styles() {
         const style = css`
@@ -31,15 +35,11 @@ class DIYMateHome extends LitElement {
 
 
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        const countVal:string|null = window.localStorage.getItem('count');
-        if (countVal!== null){
-            const count:number = Number.parseInt(countVal);
-            this.count = count;
-        }
+        this.count = this.localStorageService.getCount();
     }
 
     protected storeCount(){
-        window.localStorage.setItem('count',this.count.toString())
+        this.localStorageService.setCount(this.count);
     }
 
     protected render(): TemplateResult {

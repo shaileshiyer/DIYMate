@@ -8,12 +8,18 @@ dependencies:
   '@adobe/lit-mobx':
     specifier: ^2.2.2
     version: 2.2.2(lit@3.1.2)(mobx@6.12.0)
+  '@lit/task':
+    specifier: ^1.0.0
+    version: 1.0.0
   '@material/web':
     specifier: ^1.2.0
     version: 1.2.0
   '@vaadin/router':
     specifier: ^1.7.5
     version: 1.7.5
+  lexical:
+    specifier: ^0.13.1
+    version: 0.13.1
   lit:
     specifier: ^3.1.2
     version: 3.1.2
@@ -540,6 +546,12 @@ packages:
       '@lit-labs/ssr-dom-shim': 1.2.0
     dev: false
 
+  /@lit/task@1.0.0:
+    resolution: {integrity: sha512-7jocGBh3yGlo3kKxQggZph2txK4X5GYNWp2FAsmV9u2spzUypwrzRzXe8I72icAb02B00+k2nlvxVcrQB6vyrw==}
+    dependencies:
+      '@lit/reactive-element': 2.0.4
+    dev: false
+
   /@material/web@1.2.0:
     resolution: {integrity: sha512-1+s9J7K2wtZid8HpNstGoFwNFE0/4bXgSYZx2Hy01aZL/8oOMZ6rN733onTJMgf3zz9xKizDQUscxB28ZtkDFQ==}
     dependencies:
@@ -964,6 +976,10 @@ packages:
     resolution: {integrity: sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==}
     engines: {node: '>=6'}
     dev: true
+
+  /lexical@0.13.1:
+    resolution: {integrity: sha512-jaqRYzVEfBKbX4FwYpd/g+MyOjRaraAel0iQsTrwvx3hyN0bswUZuzb6H6nGlFSjcdrc77wKpyKwoWj4aUd+Bw==}
+    dev: false
 
   /lit-analyzer@2.0.3:
     resolution: {integrity: sha512-XiAjnwVipNrKav7r3CSEZpWt+mwYxrhPRVC7h8knDmn/HWTzzWJvPe+mwBcL2brn4xhItAMzZhFC8tzzqHKmiQ==}

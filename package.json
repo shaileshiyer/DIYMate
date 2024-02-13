@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@adobe/lit-mobx": "^2.2.2",
+    "@lit/task": "^1.0.0",
     "@material/web": "^1.2.0",
     "@vaadin/router": "^1.7.5",
+    "lexical": "^0.13.1",
     "lit": "^3.1.2",
     "mobx": "^6.12.0",
     "zod": "^3.22.4"

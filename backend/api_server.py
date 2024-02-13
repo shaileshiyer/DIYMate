@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import NotFoundError, OpenAI
 
 from helper import (
     append_session_to_file,
@@ -89,7 +89,6 @@ def end_session():
     log = content["logs"]
 
     path = os.path.join(proj_dir, session_id) + ".jsonl"
-
     results = {}
     results["path"] = path
     try:
@@ -158,9 +157,9 @@ def chat():
     
     run = wait_on_run(run,thread)
     
-    messages = client.beta.threads.messages.list(thread_id=thread_id)
-    
-    result["response"] = messages
+    messages = client.beta.threads.messages.list(thread_id=thread_id,order='asc',after=message.id)
+    response = messages.data
+    result["response"] = response
     if run.status == 'failed' or run.status == 'expired':
         result["status"] = FAILURE
     elif run.status == 'completed':
@@ -188,10 +187,10 @@ def query():
     presence_penalty = content["presence_penalty"]
     stop_sequence = content["stop_sequence"]
     
-            
+    
     # Add chat completion api here 
     response = client.chat.completions.create(
-        model=my_assistant.model,
+        model="gpt-3.5-turbo-1106",
         messages=messages,
         response_format=response_format,
         temperature=temperature,
@@ -200,15 +199,44 @@ def query():
         top_p=top_p,
         frequency_penalty=frequency_penalty,
         presence_penalty=presence_penalty,
-        stop=stop_sequence
+        stop=None
     )
-    
-    result["response"] = response
+    print(response)
+    result["response"] = response.model_dump_json()
     if response.choices[0].finish_reason == "stop":
         result["status"] = SUCCESS
     else:
         result["status"] = FAILURE
     return jsonify(result)
+
+
+@app.route("/api/delete_threads",methods=["GET"])
+@cross_origin(origin="*")
+def delete_threads():
+    """Delete the existing openai threads and wipe the session clean
+    """
+    # for session_id,session_obj in SESSIONS.items():
+    #     thread_id = session_obj["thread_id"]
+    #     client.beta.threads.delete(thread_id=thread_id)
+    #     print(f"{session_id}: Thread deleted: {thread_id}")
+    
+    response = ""
+    # Delete threads in metadata.txt file
+    with open(metadata_path, 'r') as f:
+        for line in f.readlines():
+            print(line)
+            line_obj = json.loads(line)
+            session_id = line_obj["session_id"]
+            thread_id = line_obj["thread_id"]
+            try:
+                client.beta.threads.delete(thread_id=thread_id)
+            except NotFoundError:
+                print('thread must already be deleted')
+            print(f"{session_id}: Thread deleted: {thread_id}")
+            response += f"{session_id}: Thread deleted: {thread_id}\n"
+
+        
+    return "Threads deleted\n"+response
 
 if __name__ == "__main__":
     app.logger.debug("Server is started")
@@ -253,7 +281,7 @@ if __name__ == "__main__":
     verbose = args.verbose
 
     app.run(
-        host="0.0.0.0",
+        host="localhost",
         port=args.port,
         debug=args.debug,
     )
