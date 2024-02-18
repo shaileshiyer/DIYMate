@@ -5,15 +5,15 @@
 /**
  * HTMLElementEvent type for html event typing and to prevent null erros
  */
-export type HTMLElementEvent<T extends HTMLElement> = Event & { target:T};
+export type HTMLElementEvent<T extends HTMLElement> = Event & { target: T };
 
 
 /**
  * Generic wrapper type for constructors, used in the DI system.
  */
 export type Constructor<T> = {
-    new (...args: any[]): T;
-  };
+  new(...args: any[]): T;
+};
 
 /**
  * An enum describing all operations in the DIYmate App.
@@ -75,13 +75,37 @@ export const enum TextType {
 }
 
 export interface ModelResult {
-  content:string;
-  uuid:string;
-  data?:any;
+  content: string;
+  uuid: string;
+  data?: any;
 };
 
 export type ModelResults = ModelResult[];
 
-export type ModelMessage = {role:'system',content:string,name?:string}|
-{role:'user',content:string,name?:string}|
-{role:'assistant',content:string|null,name?:string};
+export type ModelMessage = { role: 'system', content: string, name?: string } |
+{ role: 'user', content: string, name?: string } |
+{ role: 'assistant', content: string | null, name?: string };
+
+
+export interface DIYStep {
+  index: number,
+  title: string,
+  image_alt_text: string,
+  materials_in_step: string[],
+  tools_in_step: string[],
+  instructions: string[]
+}
+export interface DIYStructureJSON {
+  title: string,
+  heroshot_alt_text: string,
+  introduction: string,
+  materials: string[],
+  tools: string[],
+  competences: string[],
+  safety_instruction: string[],
+  steps: DIYStep[],
+  conclusion: {
+    final_image_alt_text: string,
+    text: string,
+  }
+}

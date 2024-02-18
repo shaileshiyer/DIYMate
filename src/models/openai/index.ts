@@ -93,7 +93,6 @@ export class OpenAIModel extends Model {
         params: Partial<ModelParams> = {},
         shouldParse = false,
     ): Promise<ModelResults> {
-
         const userPrompt:UserPrompt = {
             session_id:this.sessionService.sessionInfo.session_id,
             thread_id:this.sessionService.sessionInfo.thread_id,

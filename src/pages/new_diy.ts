@@ -1,52 +1,19 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { ifDefined } from "lit/directives/if-defined.js";
-import { HTMLElementEvent } from "../types";
+import { DIYStructureJSON, HTMLElementEvent } from "../types";
 
 import '@material/web/textfield/filled-text-field'
 import '@material/web/button/text-button'
+import '@material/web/progress/circular-progress'
 import { diymateCore } from "@core/diymate_core";
 import { SessionService } from "@core/services/session_service";
 import { LocalStorageService } from "@core/services/local_storage_service";
 import { Task } from "@lit/task";
 import { ModelService } from "@core/services/model_service";
+import { defaultOutlinePrompt } from "@models/openai/prompts/outline";
 
 
-const defaultOutlinePrompt: string = `Generate a DIY tutorial outline with image suggestions in the following JSON format:
-\`\`\`JSON
-{
-"title": "Title of the DIY Project",
-"heroshot_alt_text": "Alternate text for the hero shot",
-"introduction": "Introduction to the DIY Project",
-"materials":["material 1","material 2"],
-"tools":["tool 1","tool 2"],
-"competences":["competence 1","competences 2"],
-"safety instruction":["safety 1","safety 2","safety 3"],
-"steps":[
-    {
-    "index": 0,
-    "title": "step title",
-    "image_alt_text":"Alternate text for image for this step.",
-    "materials_in_step":["material 1","material 2"],
-    "tools_in_step":["tool 1","tool 2"],
-    "instructions":["instruction 1","instruction 2"]
-    },
-    {
-    "index": 1,
-    "title": "step title",
-    "image_alt_text":"Alternate text for image for this step.",
-    "materials_in_step":["material 1","material 2"],
-    "tools_in_step":["tool 1","tool 2"],
-    "instructions":["instruction 1","instruction 2"]
-    }],
-    "conclusion":{
-    "final_image_alt_text":"Alternate text for final image",
-    "text":"Summarize the DIY tutorial"
-    }
-}
-\`\`\`
-`;
 
 
 @customElement('diymate-new-diy')
@@ -65,6 +32,17 @@ export class NewDIYPage extends MobxLitElement {
             place-items: center;
             min-height: 100vh;
         }
+
+        .outline {
+            display:flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 600px;
+            margin:0 auto;
+            padding: 2em auto;
+            place-items: center;
+        }
+
 
         h1 {
             font-size: 3rem;
@@ -99,6 +77,10 @@ export class NewDIYPage extends MobxLitElement {
     @property({ type: Boolean })
     private isLoading = false;
 
+    @property({type:Object,attribute:false })
+    private generatedOutline:DIYStructureJSON|null = null;
+
+
     private sessionService = diymateCore.getService(SessionService);
     private localStorageService = diymateCore.getService(LocalStorageService);
     private modelService = diymateCore.getService(ModelService);
@@ -123,7 +105,8 @@ export class NewDIYPage extends MobxLitElement {
 
     private _generateOutlineTask = new Task(this, {
         task: async ([], { signal }) => {
-            if (this.sessionService.sessionInfo.session_id === ''){
+            this.isLoading = true;
+            if (!this.sessionService.isSessionActive){
                 const sessionInfo = await this.sessionService.startSession(signal);
             }
             // return sessionInfo
@@ -131,8 +114,17 @@ export class NewDIYPage extends MobxLitElement {
             console.debug(response);
             return response;
         },
+        onError:(err)=>{
+            this.isLoading = false;
+        },
+        onComplete:(val)=>{
+            this.isLoading = false;
+            this.generatedOutline = JSON.parse(val[0].content);
+        },
         args: ()=>[],
     },)
+
+    
 
     protected generateOutline(): void {
         this.isLoading = true;
@@ -141,9 +133,7 @@ export class NewDIYPage extends MobxLitElement {
             outlinePrompt: this.outlinePrompt,
         }
         this.localStorageService.setCurrentDIY(currentDIY);
-        // const sessionInfo = this.sessionService.startSession();
         this._generateOutlineTask.run();
-        this.isLoading = false;
 
     }
 
@@ -177,22 +167,57 @@ export class NewDIYPage extends MobxLitElement {
                 <div class="bottom-bar">
                     <md-text-button href="/">Back</md-text-button>
                     <div>
-                        <md-text-button @click=${this.resetValues} ?disabled=${this.isLoading}>Reset</md-text-button>
+                        ${this.renderResetOrLoader()}
                         <md-filled-button @click=${this.generateOutline} ?disabled=${this.isLoading}>Generate Outline</md-filled-button>
                     </div>
                 </div>
-                <div>
+                <div class="outline">
                     ${this.outlineTask()}
                 </div>
                 </div>
             </div>
         `
     } 
+
+    protected renderResetOrLoader():TemplateResult {
+        if (this.isLoading){
+            return html`<md-circular-progress fourColor indeterminate></md-circular-progress>`;
+        }
+        return html`<md-text-button @click=${this.resetValues} ?disabled=${this.isLoading}>Reset</md-text-button>`;
+    }
     protected outlineTask(): TemplateResult {
         return this._generateOutlineTask.render({
             initial: ()=>html``,
             pending:() => html`<p>Generating Outline</p>`,
-            complete: (value)=> html`<p> Generated Outline:</p><p>${JSON.stringify(value)}</p>`,
+            complete: (value)=> {
+                return html`
+                <div>
+                    <h1>${this.generatedOutline?.title}</h1>
+                    <p>${this.generatedOutline?.introduction}</p>
+                    <p>Materials:</p>
+                    <ul>${this.generatedOutline?.materials.map((val)=> html`<li>${val}</li>`)}</ul>
+                    <p>Tools:</p>
+                    <ul>${this.generatedOutline?.tools.map((val)=> html`<li>${val}</li>`)}</ul>
+                    <p>Competences:</p>
+                    <ul>${this.generatedOutline?.competences.map((val)=> html`<li>${val}</li>`)}</ul>
+                    <p>Safety Instructions </p>
+                    <ol>
+                        ${this.generatedOutline?.safety_instruction.map((val)=>html`<li>${val}</li>`)}
+                    </ol>
+                    ${this.generatedOutline?.steps.map((step)=>{
+                        return html`
+                            <h2>${step.title}</h2>
+                            <p>Materials used in this step:</p>
+                            <ul>${step.materials_in_step.map((val)=> html`<li>${val}</li>`)}</ul>
+                            <p>Tools used in this step:</p>
+                            <ul>${step.tools_in_step.map((val)=> html`<li>${val}</li>`)}</ul>
+                            <ul>${step.instructions.map((val)=> html`<li>${val}</li>`)}</ul>
+                        `
+                    })}
+                    <h2>Conclusion</h2>
+                    <p>${this.generatedOutline?.conclusion.text}</p>
+                </div>
+                `},
             error:(error)=> html `<p>Something went wrong:${error}</p>`
         })
         

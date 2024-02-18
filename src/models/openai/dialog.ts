@@ -21,8 +21,6 @@ export class OpenAIDialogModel extends DialogModel {
     override async query(
         params: DialogParams,
         ): Promise<ModelResults> {
-            const sessionInfo = this.sessionService.sessionInfo;
-
             const [assitantInstruction] = params.messages.filter((val)=> val.role === "assistant"|| val.role === "system");
             const [userMessage] = params.messages.filter((val)=>val.role === 'user');
             const assitantParams: AssistantParams = {

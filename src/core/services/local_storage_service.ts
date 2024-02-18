@@ -2,9 +2,11 @@ import { Service } from "./service";
 import { SerializedEditorState } from "lexical";
 import { SessionInformation } from "./session_service";
 
+
 export interface CurrentDIY {
     description: string;
     outlinePrompt: string;
+    generatedOutline?:string;
 };
 
 export interface SavedDocument {

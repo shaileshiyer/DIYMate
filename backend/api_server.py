@@ -187,6 +187,8 @@ def query():
     presence_penalty = content["presence_penalty"]
     stop_sequence = content["stop_sequence"]
     
+    if (len(stop_sequence) == 0):
+        stop_sequence = None
     
     # Add chat completion api here 
     response = client.chat.completions.create(
@@ -199,7 +201,7 @@ def query():
         top_p=top_p,
         frequency_penalty=frequency_penalty,
         presence_penalty=presence_penalty,
-        stop=None
+        stop=stop_sequence,
     )
     print(response)
     result["response"] = response.model_dump_json()

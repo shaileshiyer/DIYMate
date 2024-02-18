@@ -24,7 +24,7 @@ const API_URL = "http://localhost:5555/api"
 const defaultSession:SessionInformation = {
     session_id:'',
     thread_id:'',
-    created_at:0,
+    created_at:-1,
 }
 
 /**
@@ -35,14 +35,23 @@ export class SessionService extends Service {
 
     sessionInfo: SessionInformation = defaultSession;
 
+    isSessionActive:boolean = false;
+
     constructor(private readonly serviceProvider:ServiceProvider) {
         super();
         makeObservable(this,{
             sessionInfo:observable,
+            isSessionActive:observable,
             startSession:flow,
             endSession:flow,
         })
+        const sessionInfo = this.localStorageService.getCurrentSession();
+        if (sessionInfo!== null){
+            this.sessionInfo = sessionInfo;
+            this.isSessionActive = true;
+        }
     }
+
 
     private get localStorageService():LocalStorageService{
         return this.serviceProvider.localStorageService;
@@ -50,7 +59,7 @@ export class SessionService extends Service {
 
     *startSession(signal?:AbortSignal) {
         try {
-            const response: Response = yield fetch(`http://${import.meta.env.VITE_BACKEND_API_URL}/start_session`, { 
+            const response: Response = yield fetch(`${import.meta.env.VITE_BACKEND_API_URL}/start_session`, { 
                 method: 'POST',
                 headers:{
                     "Content-Type":"application/json",
@@ -64,6 +73,7 @@ export class SessionService extends Service {
             const json: SessionResponse = yield response.json();
             this.sessionInfo = json as SessionInformation;
             this.localStorageService.setCurrentSession(this.sessionInfo);
+            this.isSessionActive = true;
             return this.sessionInfo;
         } catch (error) {
             console.error('Something went wrong with the api call', error);
@@ -94,6 +104,7 @@ export class SessionService extends Service {
                 console.debug(json);
                 throw Error('End session failed');
             }
+            this.isSessionActive = false;
             return true;
         } catch (error) {
             console.error('Something went wrong with the api call', error);
