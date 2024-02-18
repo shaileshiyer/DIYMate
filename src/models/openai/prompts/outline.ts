@@ -1,6 +1,6 @@
 import { DIYMateContext } from "context";
 import { OpenAIModel } from "..";
-import { OutlinePromptParams } from "models/model";
+import { OutlinePromptParams } from "@core/shared/interfaces";
 import { ModelMessage } from "types";
 import { ModelParams } from "../api";
 
