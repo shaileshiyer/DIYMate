@@ -1,6 +1,6 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 import { DIYStructureJSON, HTMLElementEvent } from "../types";
 
 import '@material/web/textfield/filled-text-field';
@@ -14,31 +14,18 @@ import { LocalStorageService } from "@core/services/local_storage_service";
 import { Task } from "@lit/task";
 import { ModelService } from "@core/services/model_service";
 import { defaultOutlinePrompt } from "@models/openai/prompts/outline";
-import { $getRoot, $insertNodes, $isTextNode, LexicalEditor, LexicalNode, createEditor } from "lexical";
+import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $insertNodes, $isRootNode, $isTextNode, CreateEditorArgs, LexicalEditor, LexicalNode, createEditor } from "lexical";
 import { registerRichText, HeadingNode, $createHeadingNode, } from "@lexical/rich-text";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 import { $isListNode, ListItemNode, ListNode } from "@lexical/list";
 import { LinkNode } from "@lexical/link";
-import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown";
 import { createEmptyHistoryState, registerHistory } from "@lexical/history";
+import '../components/base-editor.ts';
 
-const config = {
-    namespace: 'OutineEditor',
-    themes:{
-
-    },
-    nodes: [
-        HeadingNode,
-        ListItemNode,
-        ListNode,
-        LinkNode,
-    ],
-    onError: (error: any) => console.error(error),
-};
 
 
 @customElement('diymate-new-diy')
-export class NewDIYPage extends MobxLitElement {
+export class NewDIYPage extends LitElement {
 
     static override get styles() {
         const elementStyle = css`
@@ -66,23 +53,15 @@ export class NewDIYPage extends MobxLitElement {
 
         .outline-container {
             display:flex;
-            flex-direction: column;
-            justify-content: center;
+            flex-direction: row;
+            justify-content: start;
             max-width: 600px;
+            width:100%;
             margin:0 auto;
             padding: 2em auto;
-            place-items: center;
         }
 
-        #outline-editable {
-            padding:5px;
-            border:var(--md-sys-color-primary);
-            border-radius:20px;
-        }
 
-        #outline-editable:focus {
-            outline:var(--md-sys-color-surface-tint);
-        }
         h1 {
             font-size: 3rem;
         }
@@ -127,28 +106,75 @@ export class NewDIYPage extends MobxLitElement {
     private localStorageService = diymateCore.getService(LocalStorageService);
     private modelService = diymateCore.getService(ModelService);
 
-    private editor: LexicalEditor = createEditor(config);
+    private config: CreateEditorArgs = {
+        namespace: "OutlineEditor",
+        onError: console.error,
+        nodes: [LinkNode, HeadingNode, ListNode, ListItemNode]
+    };
+    private editor: LexicalEditor = createEditor(this.config);
+    private historyState = createEmptyHistoryState();
+
+    private updateListener:()=>void = ()=>{};
+    private mutationListener:()=>void = ()=>{};
+    private richtextCallback:()=>void = ()=>{};
+    private historyCallback:()=>void = ()=>{};
+
+
     constructor() {
         super();
         this._generateOutlineTask.autoRun = false;
-
     }
-    protected override firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+
+    get _editorRoot(){
+        return this.renderRoot.querySelector('#outline-editor')?? null;
+    } 
+
+    protected override firstUpdated(): void {
+        // const editorRoot: HTMLElement = this.shadowRoot?.getElementById('outline-editor')!;
+        const editorRoot: HTMLElement|null = this.renderRoot.querySelector('#outline-editor');
+        editorRoot?.focus();
+        if (editorRoot !== null) {
+            console.debug('Register root', editorRoot);
+            this.editor.setRootElement(editorRoot);
+
+        }
+        
+    }
+
+    override connectedCallback(): void {
+        super.connectedCallback();
         const currentDIY = this.localStorageService.getCurrentDIY();
         if (currentDIY !== null) {
             this.description = currentDIY.description;
             this.outlinePrompt = currentDIY.outlinePrompt;
         }
-        const editorRoot = this.shadowRoot?.querySelector('#outline-editable') as HTMLElement;
-        if (!!editorRoot) {
-            this.editor.setRootElement(editorRoot);
-            const historystate = createEmptyHistoryState();
-            registerRichText(this.editor);
-            registerHistory(this.editor,historystate,1000);
-            this.editor.registerUpdateListener((listener)=>{
-                console.debug('DATA',listener.editorState.toJSON());
-            })
-        }
+        console.debug('test',this._editorRoot);
+
+        this.richtextCallback = registerRichText(this.editor);
+        this.historyCallback = registerHistory(this.editor, this.historyState, 1000);
+        this.updateListener = this.editor.registerUpdateListener(({ editorState }) => {
+            editorState.read(() => {
+                console.log($getSelection());
+
+                console.log(JSON.stringify(this.editor.getEditorState()));
+                // const html = $generateHtmlFromNodes(this.editor);
+                // output.innerHTML = html;
+            });
+        });
+        this.mutationListener = this.editor.registerMutationListener(HeadingNode,(mutatedNodes)=>{
+              // mutatedNodes is a Map where each key is the NodeKey, and the value is the state of mutation.
+            for (let [nodeKey, mutation] of mutatedNodes) {
+                console.debug(nodeKey, mutation)
+            }
+        });
+    }
+
+    override disconnectedCallback(): void {
+        super.disconnectedCallback();
+        this.richtextCallback();
+        this.historyCallback();
+        this.updateListener();
+        this.mutationListener();
     }
 
 
@@ -173,10 +199,20 @@ export class NewDIYPage extends MobxLitElement {
         },
         onComplete: (val) => {
             this.isLoading = false;
-            this.showOutline=true;
-            this.generatedOutline = JSON.parse(val[0].content);
-            console.debug(this.generatedOutline);
-            const htmlstring = `
+            this.showOutline = true;
+
+
+        },
+        args: () => [],
+    },);
+
+
+    private _updateEditorTask = new Task(this, {
+        task: async ([val], { signal }) => {
+            if (val !== undefined) {
+                this.generatedOutline = JSON.parse(val[0].content);
+                // console.debug(this.generatedOutline);
+                const htmlstring = `
                 <h1>${this.generatedOutline?.title}</h1>
                 <p>${this.generatedOutline?.introduction}</p>
                 <p>Materials:</p>
@@ -196,7 +232,7 @@ export class NewDIYPage extends MobxLitElement {
                     ${this.generatedOutline?.safety_instruction.map((val) => { return `<li>${val}</li>` })}
                 </ol>
                 ${this.generatedOutline?.steps.map((step) => {
-                return `
+                    return `
                         <h2>${step.title}</h2>
                         <p>Materials used in this step:</p>
                         <ul>
@@ -211,40 +247,56 @@ export class NewDIYPage extends MobxLitElement {
                             ${step.instructions.map((val) => { return `<li>${val}</li>` })}
                         </ul>
                     `
-            })}
+                })}
                 <h2>Conclusion</h2>
                 <p>${this.generatedOutline?.conclusion.text}</p>`;
 
-            const dom = new DOMParser().parseFromString(htmlstring, 'text/html');
-            this.editor.update(() => {
-                const nodes:LexicalNode[] = $generateNodesFromDOM(this.editor, dom);
-                const root = $getRoot();
-                root.clear();
-                const filteredNodes = nodes.filter((node)=> {
-                    if (!$isTextNode(node)){
-                        if ($isListNode(node)){
-                            const list = node as ListNode;
-                            list.getChildren().filter((child)=>{
-                                if (child.getTextContent() === ','){
-                                    child.remove();
-                                }
-                            })
+                const dom = new DOMParser().parseFromString(htmlstring, 'text/html');
+                this.editor.update(() => {
+                    const nodes: LexicalNode[] = $generateNodesFromDOM(this.editor, dom);
+                    const root = $getRoot();
+                    root.clear();
+                    const filteredNodes = nodes.filter((node) => {
+                        if (!$isTextNode(node)) {
+                            if ($isListNode(node)) {
+                                const list = node as ListNode;
+                                list.getChildren().filter((child) => {
+                                    if (child.getTextContent() === ',') {
+                                        child.remove();
+                                    }
+                                })
+                            }
+                            return true;
                         }
-                        return true;
-                    }
+                    });
+
+                    // root.select();
+                    root.append(...filteredNodes);
+                    console.debug('Finished outline');
+
+                    // const root = $getRoot();
+                    // root.clear();
+                    // let title = $createHeadingNode('h1');
+                    // let textNode = $createTextNode(this.generatedOutline?.title);
+                    // title.append(textNode);
+                    // root.append(title);
+                    // let introduction = $createParagraphNode();
+                    // introduction.append($createTextNode(this.generatedOutline?.introduction));
+                    // root.append(introduction);
+                    // let para = $createParagraphNode();
+                    // para.append($createTextNode("Materials:"));
+                    // root.append(para);
+
+
                 });
-               
-                root.select();
-                $insertNodes(filteredNodes);
-
-            });
-
-
-
+            }
         },
-        args: () => [],
-    },)
-
+        onError: (err) => {
+        },
+        onComplete: (val) => {
+        },
+        args: () => [this._generateOutlineTask.value],
+    });
 
 
     protected generateOutline(): void {
@@ -255,7 +307,6 @@ export class NewDIYPage extends MobxLitElement {
         }
         this.localStorageService.setCurrentDIY(currentDIY);
         this._generateOutlineTask.run();
-
     }
 
 
@@ -289,33 +340,34 @@ export class NewDIYPage extends MobxLitElement {
         `
     }
 
-    protected renderOutlineContent() {
-        return html`
-    <h1>${this.generatedOutline?.title}</h1>
-                    <p>${this.generatedOutline?.introduction}</p>
-                    <p>Materials:</p>
-                    <ul>${this.generatedOutline?.materials.map((val) => html`<li>${val}</li>`)}</ul>
-                    <p>Tools:</p>
-                    <ul>${this.generatedOutline?.tools.map((val) => html`<li>${val}</li>`)}</ul>
-                    <p>Competences:</p>
-                    <ul>${this.generatedOutline?.competences.map((val) => html`<li>${val}</li>`)}</ul>
-                    <p>Safety Instructions </p>
-                    <ol>
-                        ${this.generatedOutline?.safety_instruction.map((val) => html`<li>${val}</li>`)}
-                    </ol>
-                    ${this.generatedOutline?.steps.map((step) => {
-            return html`
-                            <h2>${step.title}</h2>
-                            <p>Materials used in this step:</p>
-                            <ul>${step.materials_in_step.map((val) => html`<li>${val}</li>`)}</ul>
-                            <p>Tools used in this step:</p>
-                            <ul>${step.tools_in_step.map((val) => html`<li>${val}</li>`)}</ul>
-                            <ul>${step.instructions.map((val) => html`<li>${val}</li>`)}</ul>
-                        `
-        })}
-                    <h2>Conclusion</h2>
-                    <p>${this.generatedOutline?.conclusion.text}</p>`
-    }
+    // protected renderOutlineContent() {
+    //     return html`
+    // <h1>${this.generatedOutline?.title}</h1>
+    //                 <p>${this.generatedOutline?.introduction}</p>
+    //                 <p>Materials:</p>
+    //                 <ul>${this.generatedOutline?.materials.map((val) => html`<li>${val}</li>`)}</ul>
+    //                 <p>Tools:</p>
+    //                 <ul>${this.generatedOutline?.tools.map((val) => html`<li>${val}</li>`)}</ul>
+    //                 <p>Competences:</p>
+    //                 <ul>${this.generatedOutline?.competences.map((val) => html`<li>${val}</li>`)}</ul>
+    //                 <p>Safety Instructions </p>
+    //                 <ol>
+    //                     ${this.generatedOutline?.safety_instruction.map((val) => html`<li>${val}</li>`)}
+    //                 </ol>
+    //                 ${this.generatedOutline?.steps.map((step) => {
+    //         return html`
+    //                         <h2>${step.title}</h2>
+    //                         <p>Materials used in this step:</p>
+    //                         <ul>${step.materials_in_step.map((val) => html`<li>${val}</li>`)}</ul>
+    //                         <p>Tools used in this step:</p>
+    //                         <ul>${step.tools_in_step.map((val) => html`<li>${val}</li>`)}</ul>
+    //                         <ul>${step.instructions.map((val) => html`<li>${val}</li>`)}</ul>
+    //                     `
+    //     })
+    //         }
+    //                 <h2>Conclusion</h2>
+    //                 <p>${this.generatedOutline?.conclusion.text}</p>`
+    // }
 
     protected renderResetOrLoader(): TemplateResult {
         if (this.isLoading) {
@@ -335,10 +387,10 @@ export class NewDIYPage extends MobxLitElement {
 
     }
 
-    protected renderButtons():TemplateResult {
-        return !this.showOutline?
-        html`<md-filled-button @click=${this.generateOutline} ?disabled=${this.isLoading}>Generate Outline</md-filled-button>`:
-        html`
+    protected renderButtons(): TemplateResult {
+        return !this.showOutline ?
+            html`<md-filled-button @click=${this.generateOutline} ?disabled=${this.isLoading}>Generate Outline</md-filled-button>` :
+            html`
         <md-filled-tonal-button @click=${this.generateOutline} ?disabled=${this.isLoading}>Regenerate Outline</md-filled-tonal-button>
         <md-filled-button ?disabled=${this.isLoading}>Confirm Outline</md-filled-button>`
     }
@@ -348,9 +400,13 @@ export class NewDIYPage extends MobxLitElement {
             <div id="new-diy-wrapper" >
                 <div class="new-diy">
                     ${this.renderDescriptionAndPrompt()}
+                    
                     <div class="outline-container">
-                        <div id="outline-editable" contenteditable></div>
+                        <div id="outline-editor" contenteditable>
+                            Outline...
+                        </div>
                     </div>
+
                     ${this.outlineTask()}
                 <div class="bottom-bar">
                     <md-text-button href="/">Back</md-text-button>
@@ -359,6 +415,7 @@ export class NewDIYPage extends MobxLitElement {
                         ${this.renderButtons()}
                     </div>
                 </div>
+
                 </div>
             </div>
         `

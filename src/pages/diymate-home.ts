@@ -4,6 +4,7 @@ import '@material/web/button/filled-button'
 import { customElement, property } from "lit/decorators.js";
 import { diymateCore } from "@core/diymate_core";
 import { LocalStorageService } from "@core/services/local_storage_service";
+import '../components/base-editor';
 
 
 @customElement('diymate-home')
@@ -34,10 +35,14 @@ class DIYMateHome extends LitElement {
     } 
 
 
-    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    // protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    //     this.count = this.localStorageService.getCount();
+    // }
+
+    connectedCallback(): void {
+        super.connectedCallback();
         this.count = this.localStorageService.getCount();
     }
-
     protected storeCount(){
         this.localStorageService.setCount(this.count);
     }
@@ -51,6 +56,7 @@ class DIYMateHome extends LitElement {
                 <md-filled-button @click=${this.increment}>Increase count</md-filled-button>
                 <div> Count is ${this.count}</div>
                 <hr />
+                <base-editor></base-editor>
             </div>
         `
     }
