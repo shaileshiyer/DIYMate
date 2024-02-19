@@ -19,7 +19,7 @@ import { registerRichText, HeadingNode, $createHeadingNode, QuoteNode, } from "@
 import { $isListNode, ListItemNode, ListNode } from "@lexical/list";
 import { LinkNode } from "@lexical/link";
 import '../components/base-editor.ts';
-import { LexicalConfig, TextEditorService } from "@core/services/text_editor_service.ts";
+import { LexicalConfig, MobileDocConfig, TextEditorService } from "@core/services/text_editor_service.ts";
 
 
 
@@ -40,23 +40,15 @@ export class NewDIYPage extends MobxLitElement {
             min-height: 100vh;
         }
 
-        .outline {
-            display:flex;
-            flex-direction: column;
-            justify-content: center;
-            max-width: 600px;
-            margin:0 auto;
-            padding: 2em auto;
-            place-items: center;
-        }
 
         .outline-container {
+
             display:flex;
             flex-direction: row;
             justify-content: start;
             max-width: 600px;
             width:100%;
-            margin:0 auto;
+            margin:2em auto;
             padding: 2em auto;
         }
 
@@ -114,36 +106,43 @@ export class NewDIYPage extends MobxLitElement {
         this._generateOutlineTask.autoRun = false;
     }
 
-    get _editorRoot(){
-        return this.renderRoot.querySelector('#outline-editor')?? null;
-    } 
+    get _editorRoot() {
+        return this.renderRoot.querySelector('#outline-editor') ?? null;
+    }
 
     protected override firstUpdated(): void {
         // const editorRoot: HTMLElement = this.shadowRoot?.getElementById('outline-editor')!;
-        const editorRoot: HTMLElement|null = this.renderRoot.querySelector('#outline-editor');
-        if (editorRoot !== null) {
-            console.debug('Register root', editorRoot);
-            // const config: LexicalConfig = {
-            //     root:editorRoot,
-            //     editorConfig:{
-            //         namespace: "OutlineEditor",
-            //         onError: console.error,
-            //         nodes: [LinkNode, HeadingNode, ListNode, ListItemNode,QuoteNode],
-            //         editable:true,
-            //     }
-            // }
-            const config: LexicalConfig = {
-                root:editorRoot,
-                editorConfig:{
-                    namespace: "OutlineEditor",
-                    onError: console.error,
-                    nodes: [LinkNode, ListNode, ListItemNode],
-                    editable:true,
-                }
+        const editorRoot: HTMLElement = this.renderRoot!.querySelector('#outline-editor')!;
+
+        console.debug('Register root', editorRoot);
+        // const config: LexicalConfig = {
+        //     root:editorRoot,
+        //     editorConfig:{
+        //         namespace: "OutlineEditor",
+        //         onError: console.error,
+        //         nodes: [LinkNode, HeadingNode, ListNode, ListItemNode,QuoteNode],
+        //         editable:true,
+        //     }
+        // }
+        const config: LexicalConfig = {
+            root: editorRoot,
+            editorConfig: {
+                namespace: "OutlineEditor",
+                onError: console.error,
+                nodes: [HeadingNode,LinkNode, ListNode, ListItemNode],
+                editable: true,
             }
-            this.textEditorService.initiliaze(config);
         }
-        
+        this.textEditorService.initiliaze(config);
+
+        // const config:MobileDocConfig = {
+        //     element:editorRoot,
+        //     placeholder:'Start typing here',
+        //     defaultText:'Here is the text',
+        // }
+        // this.textEditorService.initializeMobile(config);
+
+
     }
 
     override connectedCallback(): void {
@@ -153,12 +152,13 @@ export class NewDIYPage extends MobxLitElement {
             this.description = currentDIY.description;
             this.outlinePrompt = currentDIY.outlinePrompt;
         }
-      
+
     }
 
     override disconnectedCallback(): void {
         super.disconnectedCallback();
         this.textEditorService.onDisconnect();
+
     }
 
 
@@ -246,35 +246,6 @@ export class NewDIYPage extends MobxLitElement {
         </div>
         `
     }
-
-    // protected renderOutlineContent() {
-    //     return html`
-    // <h1>${this.generatedOutline?.title}</h1>
-    //                 <p>${this.generatedOutline?.introduction}</p>
-    //                 <p>Materials:</p>
-    //                 <ul>${this.generatedOutline?.materials.map((val) => html`<li>${val}</li>`)}</ul>
-    //                 <p>Tools:</p>
-    //                 <ul>${this.generatedOutline?.tools.map((val) => html`<li>${val}</li>`)}</ul>
-    //                 <p>Competences:</p>
-    //                 <ul>${this.generatedOutline?.competences.map((val) => html`<li>${val}</li>`)}</ul>
-    //                 <p>Safety Instructions </p>
-    //                 <ol>
-    //                     ${this.generatedOutline?.safety_instruction.map((val) => html`<li>${val}</li>`)}
-    //                 </ol>
-    //                 ${this.generatedOutline?.steps.map((step) => {
-    //         return html`
-    //                         <h2>${step.title}</h2>
-    //                         <p>Materials used in this step:</p>
-    //                         <ul>${step.materials_in_step.map((val) => html`<li>${val}</li>`)}</ul>
-    //                         <p>Tools used in this step:</p>
-    //                         <ul>${step.tools_in_step.map((val) => html`<li>${val}</li>`)}</ul>
-    //                         <ul>${step.instructions.map((val) => html`<li>${val}</li>`)}</ul>
-    //                     `
-    //     })
-    //         }
-    //                 <h2>Conclusion</h2>
-    //                 <p>${this.generatedOutline?.conclusion.text}</p>`
-    // }
 
     protected renderResetOrLoader(): TemplateResult {
         if (this.isLoading) {

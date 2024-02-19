@@ -26,6 +26,7 @@ export default defineConfig({
       '@core':resolveDir('./src/core'),
       '@services': resolveDir('./src/core/services'),
       '@models':resolveDir('./src/models'),
+      '@lib':resolveDir('./src/lib'),
     }
   }
 })

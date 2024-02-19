@@ -27,6 +27,7 @@
       "@core/*":["core/*"],
       "@services/*": ["core/services/*"],
       "@models/*":["models/*"],
+      "@lib/*":["lib/*"],
     }
     
   },
