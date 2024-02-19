@@ -17,6 +17,7 @@
     "@lexical/list": "^0.13.1",
     "@lexical/markdown": "^0.13.1",
     "@lexical/offset": "^0.13.1",
+    "@lexical/plain-text": "^0.13.1",
     "@lexical/rich-text": "^0.13.1",
     "@lexical/selection": "^0.13.1",
     "@lexical/text": "^0.13.1",

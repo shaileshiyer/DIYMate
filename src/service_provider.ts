@@ -5,6 +5,7 @@ import { SessionService } from "@services/session_service";
 import { InitializationService } from "@core/services/initialization_service";
 import { ModelService } from "@core/services/model_service";
 import { ContextService } from "@core/services/context_service";
+import { TextEditorService } from "@core/services/text_editor_service";
 
 export function makeServiceProvider(self:DIYMateCore) {
     const serviceProvider = {
@@ -25,6 +26,9 @@ export function makeServiceProvider(self:DIYMateCore) {
         },
         get contextService(){
             return self.getService(ContextService);
+        },
+        get textEditorService(){
+            return self.getService(TextEditorService);
         }
     }
 
