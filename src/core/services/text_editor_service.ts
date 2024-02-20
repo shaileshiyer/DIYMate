@@ -1,4 +1,4 @@
-import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isTextNode, CreateEditorArgs, LexicalEditor, LexicalNode, ParagraphNode, createEditor } from "lexical";
+import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isTextNode, CreateEditorArgs, LexicalEditor, LexicalNode, ParagraphNode, SerializedEditorState, createEditor } from "lexical";
 import { Service } from "./service";
 import * as MobileDoc from 'mobiledoc-kit'
 import { HistoryState, createEmptyHistoryState, registerHistory } from "@lexical/history";
@@ -10,6 +10,7 @@ import { $generateNodesFromDOM } from "@lexical/html";
 import { $isListNode, ListNode } from "@lexical/list";
 import { registerPlainText } from "@lexical/plain-text";
 import { getMobiledocOptions } from "@lib/mobiledoc";
+import { LocalStorageService } from "./local_storage_service";
 
 export interface LexicalConfig {
     root: HTMLElement | null;
@@ -23,6 +24,7 @@ export interface MobileDocConfig {
 }
 
 interface ServiceProvider {
+    localStorageService:LocalStorageService;
 
 }
 
@@ -37,13 +39,15 @@ export class TextEditorService extends Service {
     private updateListenerCallback!: () => void;
     private mutationListenerCallback!: () => void;
 
-    private newEditor!: MobileDoc.Editor;
 
-
-    constructor(serviceProvider: ServiceProvider) {
+    constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
         });
+    }
+
+    private get localStorageService():LocalStorageService{
+        return this.serviceProvider.localStorageService;
     }
 
 
@@ -62,12 +66,18 @@ export class TextEditorService extends Service {
 
         // this.richtextCallback = registerPlainText(this.editor);
         this.historyCallback = registerHistory(this.editor, this.historyState, 1000);
-        this.editor.update(() => {
-            const root = $getRoot();
-            let para = $createParagraphNode();
-            para.append($createTextNode('Lexical Editor test...'));
-            root.append(para);
-        });
+        // this.editor.update(() => {
+        //     const root = $getRoot();
+        //     let para = $createParagraphNode();
+        //     para.append($createTextNode('Lexical Editor test...'));
+        //     root.append(para);
+        // });
+
+        if (this.editorStateForInitialization!== null){
+            const parsedEditorState = this.editor.parseEditorState(this.editorStateForInitialization);
+            this.editor.setEditorState(parsedEditorState);
+        }
+
 
 
         this.updateListenerCallback = this.editor.registerUpdateListener(({ editorState }) => {
@@ -85,7 +95,6 @@ export class TextEditorService extends Service {
                 console.debug(nodeKey, mutation)
             }
         });
-        console.debug('texteditorservice');
     }
 
     onDisconnect() {
@@ -93,9 +102,35 @@ export class TextEditorService extends Service {
         this.historyCallback();
         this.updateListenerCallback();
         this.mutationListenerCallback();
+        this.editor.setRootElement(null);
+        this.editor.blur();
     }
 
-    updateOutline(generatedOutline: DIYStructureJSON) {
+    lastSnapshot!: SerializedEditorState;
+    private readonly snapshotDebounce = 750;
+    private lastSetSnapshotTime = 0;
+    nextChangeTriggersUndoSnapshot = false;
+  
+    private shouldIgnoreUpdate = false;
+    saveEditorSnapshot(now = Date.now()){
+        const snapshot = this.getStateSnapshot();
+        if (this.lastSnapshot == null || snapshot !== this.lastSnapshot){
+            this.lastSnapshot = snapshot;
+            this.lastSetSnapshotTime = now;
+            this.localStorageService.setEditorState(snapshot);
+        }
+    }
+
+    private editorStateForInitialization:SerializedEditorState|null = null;
+    initializeFromLocalStorage(editorState:SerializedEditorState|null){
+        this.editorStateForInitialization = editorState;
+    }
+
+    getStateSnapshot():SerializedEditorState {
+        return this.editor.getEditorState().toJSON();
+    }
+
+    insertOutline(generatedOutline: DIYStructureJSON) {
         // console.debug(generatedOutline);
         const htmlstring = `
         <h1>${generatedOutline?.title}</h1>
@@ -175,6 +210,8 @@ export class TextEditorService extends Service {
 
         });
     }
+
+
 }
 
 

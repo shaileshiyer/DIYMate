@@ -93,6 +93,14 @@ export class LocalStorageService extends Service {
         return this.getData<CurrentDIY | null>(CURRENT_DIY_KEY, null);
     }
 
+    setEditorState(editorState:SerializedEditorState){
+        this.setState(EDITOR_STATE_KEY,editorState);
+    }
+
+    getEditorState():SerializedEditorState|null {
+        return this.getData<SerializedEditorState|null>(EDITOR_STATE_KEY,null);
+    }
+
     // TODO: saveDocument
     saveDocument() {
         return new Error('has not been implemented yet.')

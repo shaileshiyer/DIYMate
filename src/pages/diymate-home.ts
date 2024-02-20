@@ -56,8 +56,6 @@ class DIYMateHome extends LitElement {
                 <md-filled-button @click=${this.increment}>Increase count</md-filled-button>
                 <div> Count is ${this.count}</div>
                 <hr />
-                <base-editor>
-                </base-editor>
             </div>
         `
     }
