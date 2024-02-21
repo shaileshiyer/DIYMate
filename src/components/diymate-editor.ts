@@ -9,51 +9,43 @@ import { CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { Task } from "@lit/task";
 import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { DIYStructureJSON } from "types";
 
-@customElement("outline-editor")
-export class OutlineEditor extends MobxLitElement {
+@customElement("diymate-editor")
+export class DIYMateEditor extends MobxLitElement {
     private localStorageService = diymateCore.getService(LocalStorageService);
     private textEditorService = diymateCore.getService(TextEditorService);
 
-    @property({ type: Object })
-    public outline: DIYStructureJSON | null = null;
-
-    @property({type:Boolean})
-    public disabled:boolean = false;
+    @property({ type: Boolean })
+    public disabled: boolean = false;
 
     get _editorRoot(): HTMLElement {
-        return this.renderRoot!.querySelector("#outline-editor")!;
+        return this.renderRoot!.querySelector("#diymate-editor")!;
     }
 
     static override get styles() {
         return css`
-            .outline-container {
+            #diymate-editor-container {
                 display: flex;
+                flex: 1;
                 flex-direction: column;
                 justify-content: start;
-                max-width: 700px;
                 width: 100%;
-                margin: 2em auto;
-                padding: 2em auto;
+                /* margin: 2em; */
+                /* padding: 2em auto; */
             }
-            #outline-editor {                
+            #diymate-editor {
                 background-color: var(--md-sys-color-surface-container-highest);
-                width: 100%;
-                padding: 0 1em;
-                min-height: 500px;
-                max-height: 600px;
-                border-bottom:1px solid var(--md-sys-color-scrim);
+                padding: 0 2em;
+                border-bottom: 1px solid var(--md-sys-color-scrim);
+                height: 100vh;
                 overflow-y: scroll;
             }
 
-
-            #outline-editor:focus{
-                outline:none;
+            #diymate-editor:focus {
+                outline: none;
                 border-bottom: 3px solid var(--md-sys-color-primary);
             }
 
@@ -71,7 +63,7 @@ export class OutlineEditor extends MobxLitElement {
         const config: LexicalConfig = {
             root: editorRoot,
             editorConfig: {
-                namespace: "OutlineEditor",
+                namespace: "DIYMateEditor",
                 onError: console.error,
                 nodes: [HeadingNode,QuoteNode, LinkNode, ListNode, ListItemNode,CodeNode],
                 editable: true,
@@ -79,28 +71,12 @@ export class OutlineEditor extends MobxLitElement {
         };
 
         this.textEditorService.initiliaze(config);
-        if (this.outline !== null) {
-            this.textEditorService.insertOutline(this.outline);
-        }
     }
-
-    // private _outlineTask = new Task(this,{
-    //     task:async ([outline],{signal})=>{
-    //         if (outline !== null) {
-    //             this.textEditorService.insertOutline(outline);
-    //         }
-    //     },
-    //     args:()=>[ this.outline],
-    // });
 
     protected updated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        if (this.outline !== null) {
-            this.textEditorService.insertOutline(this.outline);
-        }
-
-        if (this.disabled){
+        if (this.disabled) {
             this.textEditorService.disableEditor();
         } else {
             this.textEditorService.enableEditor();
@@ -120,11 +96,10 @@ export class OutlineEditor extends MobxLitElement {
 
     protected render(): TemplateResult {
         return html`
-            <div class="outline-container">
-                <p>Edit your DIY Outline:</p>
+            <div id="diymate-editor-container">
                 <div
-                    id="outline-editor"
-                    class=${classMap({disabled:this.disabled})}
+                    id="diymate-editor"
+                    class=${classMap({ disabled: this.disabled })}
                     ?contenteditable=${!this.disabled}
                     spellcheck="false"></div>
             </div>
@@ -134,6 +109,6 @@ export class OutlineEditor extends MobxLitElement {
 
 declare global {
     interface HTMLElementTagNameMap {
-        "outline-editor": OutlineEditor;
+        "diymate-editor": DIYMateEditor;
     }
 }

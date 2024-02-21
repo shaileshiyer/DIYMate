@@ -8,6 +8,9 @@ dependencies:
   '@adobe/lit-mobx':
     specifier: ^2.2.2
     version: 2.2.2(lit@3.1.2)(mobx@6.12.0)
+  '@lexical/code':
+    specifier: ^0.13.1
+    version: 0.13.1(lexical@0.13.1)
   '@lexical/history':
     specifier: ^0.13.1
     version: 0.13.1(lexical@0.13.1)

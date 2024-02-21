@@ -1,15 +1,13 @@
 import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isTextNode, CreateEditorArgs, LexicalEditor, LexicalNode, ParagraphNode, SerializedEditorState, createEditor } from "lexical";
 import { Service } from "./service";
-import * as MobileDoc from 'mobiledoc-kit'
 import { HistoryState, createEmptyHistoryState, registerHistory } from "@lexical/history";
 import { makeObservable } from "mobx";
 import { HeadingNode, registerRichText } from "@lexical/rich-text";
+import { registerMarkdownShortcuts,TRANSFORMERS } from "@lexical/markdown";
 import { DIYStructureJSON } from "types";
 
 import { $generateNodesFromDOM } from "@lexical/html";
-import { $isListNode, ListNode } from "@lexical/list";
-import { registerPlainText } from "@lexical/plain-text";
-import { getMobiledocOptions } from "@lib/mobiledoc";
+import { $isListItemNode, $isListNode, ListNode } from "@lexical/list";
 import { LocalStorageService } from "./local_storage_service";
 
 export interface LexicalConfig {
@@ -36,6 +34,7 @@ export class TextEditorService extends Service {
 
     private richtextCallback!: () => void;
     private historyCallback!: () => void;
+    private markdownCallback!:() => void;
     private updateListenerCallback!: () => void;
     private mutationListenerCallback!: () => void;
 
@@ -61,11 +60,18 @@ export class TextEditorService extends Service {
         // Patch the selection to make sure that we can still use this beyond the shadow DOM.
         patchGetSelection();
 
+        this.editor.update(()=>{
+            const root = $getRoot();
+            root.clear();
+        })
 
+        /**Register all plugins */
         this.richtextCallback = registerRichText(this.editor);
-
-        // this.richtextCallback = registerPlainText(this.editor);
         this.historyCallback = registerHistory(this.editor, this.historyState, 1000);
+        this.markdownCallback = registerMarkdownShortcuts(this.editor,TRANSFORMERS);
+
+
+        /** Can set content to an empty editor here */
         // this.editor.update(() => {
         //     const root = $getRoot();
         //     let para = $createParagraphNode();
@@ -76,13 +82,16 @@ export class TextEditorService extends Service {
         if (this.editorStateForInitialization!== null){
             const parsedEditorState = this.editor.parseEditorState(this.editorStateForInitialization);
             this.editor.setEditorState(parsedEditorState);
+            this.editorStateForInitialization = null;
         }
 
 
 
         this.updateListenerCallback = this.editor.registerUpdateListener(({ editorState }) => {
             editorState.read(() => {
-                // console.log($getSelection());
+                const selection = $getSelection();
+                console.debug($isListItemNode(selection?.getNodes()[0].getParent()))
+                console.debug(selection?.getNodes()[0].getParent());
 
                 // console.log(JSON.stringify(this.editor.getEditorState()));
                 // const html = $generateHtmlFromNodes(this.editor);
@@ -92,7 +101,7 @@ export class TextEditorService extends Service {
         this.mutationListenerCallback = this.editor.registerMutationListener(ParagraphNode, (mutatedNodes) => {
             // mutatedNodes is a Map where each key is the NodeKey, and the value is the state of mutation.
             for (let [nodeKey, mutation] of mutatedNodes) {
-                console.debug(nodeKey, mutation)
+                // console.debug(nodeKey, mutation)
             }
         });
     }
@@ -100,6 +109,7 @@ export class TextEditorService extends Service {
     onDisconnect() {
         this.richtextCallback();
         this.historyCallback();
+        this.markdownCallback();
         this.updateListenerCallback();
         this.mutationListenerCallback();
         this.editor.setRootElement(null);
@@ -128,6 +138,14 @@ export class TextEditorService extends Service {
 
     getStateSnapshot():SerializedEditorState {
         return this.editor.getEditorState().toJSON();
+    }
+
+    disableEditor(){
+        this.editor.setEditable(false);
+    }
+
+    enableEditor(){
+        this.editor.setEditable(true);
     }
 
     insertOutline(generatedOutline: DIYStructureJSON) {
@@ -163,9 +181,9 @@ export class TextEditorService extends Service {
                     ${step.tools_in_step.map((val) => { return `<li>${val}</li>` })}
                 </ul>
                 <p>Instructions:</p>
-                <ul>
+                <ol>
                     ${step.instructions.map((val) => { return `<li>${val}</li>` })}
-                </ul>
+                </ol>
             `
         })}
         <h2>Conclusion</h2>

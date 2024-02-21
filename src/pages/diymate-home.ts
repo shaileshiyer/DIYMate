@@ -5,6 +5,8 @@ import { customElement, property } from "lit/decorators.js";
 import { diymateCore } from "@core/diymate_core";
 import { LocalStorageService } from "@core/services/local_storage_service";
 import '../components/base-editor';
+import '../components/outline-editor';
+import '../components/test-component';
 
 
 @customElement('diymate-home')
