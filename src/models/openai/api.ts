@@ -1,4 +1,4 @@
-import { ModelMessage } from "types";
+import { ModelMessage } from "@core/shared/types";
 
 export interface ModelParams {
   response_format:{type:'json_object'|'text'};

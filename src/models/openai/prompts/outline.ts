@@ -1,7 +1,7 @@
 import { DIYMateContext } from "context";
 import { OpenAIModel } from "..";
 import { OutlinePromptParams } from "@core/shared/interfaces";
-import { ModelMessage } from "types";
+import { ModelMessage } from "@core/shared/types";
 import { ModelParams } from "../api";
 
 export const defaultOutlinePrompt: string = `Generate a DIY tutorial outline with image suggestions in the following JSON format:

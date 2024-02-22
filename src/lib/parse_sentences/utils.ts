@@ -16,4 +16,4 @@
  * limitations under the License.
  * ==============================================================================
  */
-export * from '../../../third_party/sbd/utils';
+export * from '../../third_party/sbd/utils';

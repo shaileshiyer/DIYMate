@@ -6,6 +6,7 @@ import { InitializationService } from "@core/services/initialization_service";
 import { ModelService } from "@core/services/model_service";
 import { ContextService } from "@core/services/context_service";
 import { TextEditorService } from "@core/services/text_editor_service";
+import { CursorService } from "@core/services/cursor_service";
 
 export function makeServiceProvider(self:DIYMateCore) {
     const serviceProvider = {
@@ -29,6 +30,9 @@ export function makeServiceProvider(self:DIYMateCore) {
         },
         get textEditorService(){
             return self.getService(TextEditorService);
+        },
+        get cursorService(){
+            return self.getService(CursorService);
         }
     }
 

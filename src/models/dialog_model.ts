@@ -1,6 +1,6 @@
 import { ContextService } from "@core/services/context_service";
 import { SessionService } from "@core/services/session_service";
-import { ModelResults } from "types";
+import { ModelResults } from "@core/shared/types";
 
 export interface DialogMessage {
     content:string;

@@ -1,7 +1,7 @@
 import { Model } from "models/model";
 import { Service } from "./service";
 import { DialogModel } from "models/dialog_model";
-import { Constructor } from "types";
+import { Constructor } from "@core/shared/types";
 
 interface ServiceProvider {
 

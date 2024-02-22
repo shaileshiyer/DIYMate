@@ -19,7 +19,6 @@ interface ServiceProvider {
     localStorageService:LocalStorageService;
 }
 
-const API_URL = "http://localhost:5555/api"
 
 const defaultSession:SessionInformation = {
     session_id:'',

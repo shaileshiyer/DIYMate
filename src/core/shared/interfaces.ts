@@ -1,4 +1,4 @@
-import { TextType } from "types";
+import { TextType } from "@core/shared/types";
 
 export interface OutlinePromptParams {
     description:string;

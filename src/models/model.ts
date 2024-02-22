@@ -1,7 +1,7 @@
 import { ContextService } from "@core/services/context_service";
 import { SessionService } from "@core/services/session_service";
 import { DIYMateContext } from "context";
-import { ModelMessage, ModelResults } from "types";
+import { ModelMessage, ModelResults } from "@core/shared/types";
 import { dedupeResults } from "./utils";
 import { ContinuePromptParams, ElaboratePromptParams, FirstSentencePromptParams, FreeformPromptParams, GenerateWithinSentencePromptParams, MetaPromptPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteEndOfSentencePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams, SuggestRewritePromptParams } from "@core/shared/interfaces";
 

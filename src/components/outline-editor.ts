@@ -13,7 +13,7 @@ import { Task } from "@lit/task";
 import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { DIYStructureJSON } from "types";
+import { DIYStructureJSON } from "@core/shared/types";
 
 @customElement("outline-editor")
 export class OutlineEditor extends MobxLitElement {
@@ -83,15 +83,6 @@ export class OutlineEditor extends MobxLitElement {
             this.textEditorService.insertOutline(this.outline);
         }
     }
-
-    // private _outlineTask = new Task(this,{
-    //     task:async ([outline],{signal})=>{
-    //         if (outline !== null) {
-    //             this.textEditorService.insertOutline(outline);
-    //         }
-    //     },
-    //     args:()=>[ this.outline],
-    // });
 
     protected updated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>

@@ -17,19 +17,8 @@
  * ==============================================================================
  */
 
-import { ModelResult,ModelResults } from "types";
-
-function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-}
-
-/** Generates a version 4 (random) universally unique ID. */
-export function uuid(): string {
-    return [s4() + s4(), s4(), s4(), s4(), s4() + s4() + s4()].join('-');
-}
-
+import { ModelResult,ModelResults } from "@core/shared/types";
+import { uuid } from "@lib/uuid";
 
 /** Dedupes results with identical text field */
 export function dedupeResults(results: ModelResults) {

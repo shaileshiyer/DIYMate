@@ -1,14 +1,15 @@
-import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isTextNode, CreateEditorArgs, LexicalEditor, LexicalNode, ParagraphNode, SerializedEditorState, createEditor } from "lexical";
+import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isRangeSelection, $isTextNode, CreateEditorArgs, LexicalEditor, LexicalNode, ParagraphNode, SerializedEditorState, TextNode, createEditor } from "lexical";
 import { Service } from "./service";
 import { HistoryState, createEmptyHistoryState, registerHistory } from "@lexical/history";
-import { makeObservable } from "mobx";
+import { makeObservable, observable } from "mobx";
 import { HeadingNode, registerRichText } from "@lexical/rich-text";
-import { registerMarkdownShortcuts,TRANSFORMERS } from "@lexical/markdown";
-import { DIYStructureJSON } from "types";
+import { $convertToMarkdownString, registerMarkdownShortcuts,TRANSFORMERS } from "@lexical/markdown";
+import { DIYStructureJSON } from "@core/shared/types";
 
 import { $generateNodesFromDOM } from "@lexical/html";
-import { $isListItemNode, $isListNode, ListNode } from "@lexical/list";
+import { $isListItemNode, $isListNode, ListItemNode, ListNode } from "@lexical/list";
 import { LocalStorageService } from "./local_storage_service";
+import { CursorService } from "./cursor_service";
 
 export interface LexicalConfig {
     root: HTMLElement | null;
@@ -23,7 +24,7 @@ export interface MobileDocConfig {
 
 interface ServiceProvider {
     localStorageService:LocalStorageService;
-
+    cursorService:CursorService;
 }
 
 
@@ -31,17 +32,13 @@ interface ServiceProvider {
 export class TextEditorService extends Service {
     private editor!: LexicalEditor;
     private historyState!: HistoryState;
-
-    private richtextCallback!: () => void;
-    private historyCallback!: () => void;
-    private markdownCallback!:() => void;
-    private updateListenerCallback!: () => void;
-    private mutationListenerCallback!: () => void;
-
+    
 
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
+            isEnabled: observable,
+            plainText:observable,
         });
     }
 
@@ -49,9 +46,18 @@ export class TextEditorService extends Service {
         return this.serviceProvider.localStorageService;
     }
 
+    private get cursorService(){
+        return this.serviceProvider.cursorService;
+    }
+
+    private richtextCallback!: () => void;
+    private historyCallback!: () => void;
+    private markdownCallback!:() => void;
+
+    private editorListeners: (()=>void)[] = [];
+
 
     initiliaze(config: LexicalConfig) {
-        console.debug('Register root', config.root);
         this.editor = createEditor(config.editorConfig);
         this.historyState = createEmptyHistoryState();
 
@@ -72,12 +78,6 @@ export class TextEditorService extends Service {
 
 
         /** Can set content to an empty editor here */
-        // this.editor.update(() => {
-        //     const root = $getRoot();
-        //     let para = $createParagraphNode();
-        //     para.append($createTextNode('Lexical Editor test...'));
-        //     root.append(para);
-        // });
 
         if (this.editorStateForInitialization!== null){
             const parsedEditorState = this.editor.parseEditorState(this.editorStateForInitialization);
@@ -85,33 +85,48 @@ export class TextEditorService extends Service {
             this.editorStateForInitialization = null;
         }
 
+        
+        this.editorListeners = [
+            this.editor.registerMutationListener(ParagraphNode, (mutatedNodes) => {
+                // mutatedNodes is a Map where each key is the NodeKey, and the value is the state of mutation.
+                // for (let [nodeKey, mutation] of mutatedNodes) {
+                //     console.debug(nodeKey, mutation)
+                // }
+            }),
+            this.editor.registerUpdateListener(({ editorState }) => {
+                editorState.read(() => {
+
+                    this.plainText = $convertToMarkdownString(TRANSFORMERS);
+
+                    this.cursorService.cursorUpdate();
+                    // console.log(JSON.stringify(this.editor.getEditorState()));
+                    // const html = $generateHtmlFromNodes(this.editor);
+                    // output.innerHTML = html;
+                });
+            }),
+            this.editor.registerNodeTransform(TextNode,(node)=>{
+                // console.debug('textnode is transformed',node);
+            }),
+            this.editor.registerMutationListener(ListNode,(mutatedNodes)=>{
+                // console.debug('listNode');
+                // for (let [nodeKey, mutation] of mutatedNodes) {
+                //     console.debug(nodeKey, mutation)
+                // }
+            }),
+        ];
 
 
-        this.updateListenerCallback = this.editor.registerUpdateListener(({ editorState }) => {
-            editorState.read(() => {
-                const selection = $getSelection();
-                console.debug($isListItemNode(selection?.getNodes()[0].getParent()))
-                console.debug(selection?.getNodes()[0].getParent());
-
-                // console.log(JSON.stringify(this.editor.getEditorState()));
-                // const html = $generateHtmlFromNodes(this.editor);
-                // output.innerHTML = html;
-            });
-        });
-        this.mutationListenerCallback = this.editor.registerMutationListener(ParagraphNode, (mutatedNodes) => {
-            // mutatedNodes is a Map where each key is the NodeKey, and the value is the state of mutation.
-            for (let [nodeKey, mutation] of mutatedNodes) {
-                // console.debug(nodeKey, mutation)
-            }
-        });
     }
 
     onDisconnect() {
         this.richtextCallback();
         this.historyCallback();
         this.markdownCallback();
-        this.updateListenerCallback();
-        this.mutationListenerCallback();
+        // disconnect listeners.
+        for (let listener of this.editorListeners){
+            listener();
+        }
+
         this.editor.setRootElement(null);
         this.editor.blur();
     }
@@ -140,14 +155,37 @@ export class TextEditorService extends Service {
         return this.editor.getEditorState().toJSON();
     }
 
+
+    plainText:string = '';
+
+    getPlainText():string {
+        return this.plainText;
+    }
+
+
+    isEnabled = true;
     disableEditor(){
         this.editor.setEditable(false);
+        this.isEnabled = false;
     }
 
     enableEditor(){
         this.editor.setEditable(true);
+        this.isEnabled = true;
     }
 
+    get isEmpty():boolean {
+        const text = this.plainText;
+        return text.trim().length === 0;
+    }
+
+    get wordCount():number {
+        return this.plainText.split(' ').filter((word)=> word.length > 0).length;
+    }
+
+
+
+    // Actions
     insertOutline(generatedOutline: DIYStructureJSON) {
         // console.debug(generatedOutline);
         const htmlstring = `
@@ -208,23 +246,8 @@ export class TextEditorService extends Service {
                 }
             });
 
-            // root.select();
             root.append(...filteredNodes);
             console.debug('Finished outline');
-
-            // const root = $getRoot();
-            // root.clear();
-            // let title = $createHeadingNode('h1');
-            // let textNode = $createTextNode(generatedOutline?.title);
-            // title.append(textNode);
-            // root.append(title);
-            // let introduction = $createParagraphNode();
-            // introduction.append($createTextNode(generatedOutline?.introduction));
-            // root.append(introduction);
-            // let para = $createParagraphNode();
-            // para.append($createTextNode("Materials:"));
-            // root.append(para);
-
 
         });
     }

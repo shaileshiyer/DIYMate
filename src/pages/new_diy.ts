@@ -1,7 +1,7 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import { DIYStructureJSON, HTMLElementEvent } from "../types";
+import { DIYStructureJSON, HTMLElementEvent } from "../core/shared/types.ts";
 
 import "@material/web/textfield/filled-text-field";
 import "@material/web/button/text-button";

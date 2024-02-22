@@ -1,4 +1,4 @@
-import { Constructor } from '../types';
+import { Constructor } from './shared/types';
 import {Service} from './services/service';
 
 interface ServiceProvider {
