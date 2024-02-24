@@ -1,13 +1,43 @@
-import { $createParagraphNode, $createTextNode, $getRoot, $getSelection, $isRangeSelection, $isTextNode, CreateEditorArgs, LexicalEditor, LexicalNode, ParagraphNode, SerializedEditorState, TextNode, createEditor } from "lexical";
+import {
+    $createParagraphNode,
+    $createTextNode,
+    $getRoot,
+    $getSelection,
+    $isRangeSelection,
+    $isTextNode,
+    $setSelection,
+    CreateEditorArgs,
+    ElementNode,
+    LexicalEditor,
+    LexicalNode,
+    ParagraphNode,
+    PointType,
+    SerializedEditorState,
+    TextNode,
+    createEditor,
+} from "lexical";
 import { Service } from "./service";
-import { HistoryState, createEmptyHistoryState, registerHistory } from "@lexical/history";
+import {
+    HistoryState,
+    createEmptyHistoryState,
+    registerHistory,
+} from "@lexical/history";
 import { makeObservable, observable } from "mobx";
 import { HeadingNode, registerRichText } from "@lexical/rich-text";
-import { $convertToMarkdownString, registerMarkdownShortcuts,TRANSFORMERS } from "@lexical/markdown";
+import {
+    $convertToMarkdownString,
+    registerMarkdownShortcuts,
+    TRANSFORMERS,
+} from "@lexical/markdown";
 import { DIYStructureJSON } from "@core/shared/types";
 
 import { $generateNodesFromDOM } from "@lexical/html";
-import { $isListItemNode, $isListNode, ListItemNode, ListNode } from "@lexical/list";
+import {
+    $isListItemNode,
+    $isListNode,
+    ListItemNode,
+    ListNode,
+} from "@lexical/list";
 import { LocalStorageService } from "./local_storage_service";
 import { CursorService } from "./cursor_service";
 
@@ -23,79 +53,81 @@ export interface MobileDocConfig {
 }
 
 interface ServiceProvider {
-    localStorageService:LocalStorageService;
-    cursorService:CursorService;
+    localStorageService: LocalStorageService;
+    cursorService: CursorService;
 }
-
-
 
 export class TextEditorService extends Service {
     private editor!: LexicalEditor;
     private historyState!: HistoryState;
-    
 
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
             isEnabled: observable,
-            plainText:observable,
+            plainText: observable,
         });
     }
 
-    private get localStorageService():LocalStorageService{
+    private get localStorageService(): LocalStorageService {
         return this.serviceProvider.localStorageService;
     }
 
-    private get cursorService(){
+    private get cursorService() {
         return this.serviceProvider.cursorService;
+    }
+
+    get getEditor(){
+        return this.editor;
     }
 
     private richtextCallback!: () => void;
     private historyCallback!: () => void;
-    private markdownCallback!:() => void;
+    private markdownCallback!: () => void;
 
-    private editorListeners: (()=>void)[] = [];
-
+    private editorListeners: (() => void)[] = [];
 
     initiliaze(config: LexicalConfig) {
         this.editor = createEditor(config.editorConfig);
         this.historyState = createEmptyHistoryState();
 
         this.editor.setRootElement(config.root);
-        
+
         // Patch the selection to make sure that we can still use this beyond the shadow DOM.
         patchGetSelection();
 
-        this.editor.update(()=>{
+        this.editor.update(() => {
             const root = $getRoot();
             root.clear();
-        })
+        });
 
         /**Register all plugins */
         this.richtextCallback = registerRichText(this.editor);
-        this.historyCallback = registerHistory(this.editor, this.historyState, 1000);
-        this.markdownCallback = registerMarkdownShortcuts(this.editor,TRANSFORMERS);
-
+        this.historyCallback = registerHistory(
+            this.editor,
+            this.historyState,
+            1000
+        );
+        this.markdownCallback = registerMarkdownShortcuts(
+            this.editor,
+            TRANSFORMERS
+        );
 
         /** Can set content to an empty editor here */
 
-        if (this.editorStateForInitialization!== null){
-            const parsedEditorState = this.editor.parseEditorState(this.editorStateForInitialization);
+        if (this.editorStateForInitialization !== null) {
+            const parsedEditorState = this.editor.parseEditorState(
+                this.editorStateForInitialization
+            );
             this.editor.setEditorState(parsedEditorState);
             this.editorStateForInitialization = null;
         }
 
         
+
         this.editorListeners = [
-            this.editor.registerMutationListener(ParagraphNode, (mutatedNodes) => {
-                // mutatedNodes is a Map where each key is the NodeKey, and the value is the state of mutation.
-                // for (let [nodeKey, mutation] of mutatedNodes) {
-                //     console.debug(nodeKey, mutation)
-                // }
-            }),
             this.editor.registerUpdateListener(({ editorState }) => {
                 editorState.read(() => {
-
                     this.plainText = $convertToMarkdownString(TRANSFORMERS);
 
                     this.cursorService.cursorUpdate();
@@ -104,18 +136,19 @@ export class TextEditorService extends Service {
                     // output.innerHTML = html;
                 });
             }),
-            this.editor.registerNodeTransform(TextNode,(node)=>{
-                // console.debug('textnode is transformed',node);
-            }),
-            this.editor.registerMutationListener(ListNode,(mutatedNodes)=>{
-                // console.debug('listNode');
-                // for (let [nodeKey, mutation] of mutatedNodes) {
-                //     console.debug(nodeKey, mutation)
-                // }
-            }),
+            // this.editor.registerNodeTransform(TextNode, (node) => {
+            //     // console.debug('textnode is transformed',node);
+            // }),
+            // this.editor.registerMutationListener(ListNode, (mutatedNodes) => {
+            //     // console.debug('listNode');
+            //     // for (let [nodeKey, mutation] of mutatedNodes) {
+            //     //     console.debug(nodeKey, mutation)
+            //     // }
+            // }),
+            ...this.cursorService.registerCursorListeners(),
         ];
 
-
+        
     }
 
     onDisconnect() {
@@ -123,7 +156,7 @@ export class TextEditorService extends Service {
         this.historyCallback();
         this.markdownCallback();
         // disconnect listeners.
-        for (let listener of this.editorListeners){
+        for (let listener of this.editorListeners) {
             listener();
         }
 
@@ -135,55 +168,79 @@ export class TextEditorService extends Service {
     private readonly snapshotDebounce = 750;
     private lastSetSnapshotTime = 0;
     nextChangeTriggersUndoSnapshot = false;
-  
+
     private shouldIgnoreUpdate = false;
-    saveEditorSnapshot(now = Date.now()){
+    saveEditorSnapshot(now = Date.now()) {
         const snapshot = this.getStateSnapshot();
-        if (this.lastSnapshot == null || snapshot !== this.lastSnapshot){
+        if (this.lastSnapshot == null || snapshot !== this.lastSnapshot) {
             this.lastSnapshot = snapshot;
             this.lastSetSnapshotTime = now;
             this.localStorageService.setEditorState(snapshot);
         }
     }
 
-    private editorStateForInitialization:SerializedEditorState|null = null;
-    initializeFromLocalStorage(editorState:SerializedEditorState|null){
+    private editorStateForInitialization: SerializedEditorState | null = null;
+    initializeFromLocalStorage(editorState: SerializedEditorState | null) {
         this.editorStateForInitialization = editorState;
     }
 
-    getStateSnapshot():SerializedEditorState {
+    getStateSnapshot(): SerializedEditorState {
         return this.editor.getEditorState().toJSON();
     }
 
+    plainText: string = "";
 
-    plainText:string = '';
-
-    getPlainText():string {
+    getPlainText(): string {
         return this.plainText;
     }
 
-
     isEnabled = true;
-    disableEditor(){
+    disableEditor() {
         this.editor.setEditable(false);
         this.isEnabled = false;
     }
 
-    enableEditor(){
+    enableEditor() {
         this.editor.setEditable(true);
         this.isEnabled = true;
     }
 
-    get isEmpty():boolean {
+    get isEmpty(): boolean {
         const text = this.plainText;
         return text.trim().length === 0;
     }
 
-    get wordCount():number {
-        return this.plainText.split(' ').filter((word)=> word.length > 0).length;
+    get wordCount(): number {
+        return this.plainText.split(" ").filter((word) => word.length > 0)
+            .length;
     }
 
+    getStartOfDocument():ElementNode|null{
+        let startOfDocument:ElementNode|null = null;
+        this.editor.getEditorState().read(()=>{
+            const root = $getRoot();
+            const element:ElementNode|null= root.getFirstChild();
+            if (element){
+                startOfDocument = element.getFirstChild();
+            }
+        })
 
+        return startOfDocument;
+
+    }
+
+    getEndOfDocument():ElementNode|null{
+        let endOfDocument:ElementNode|null = null
+        this.editor.getEditorState().read(()=>{
+            const root = $getRoot();
+            const element:ElementNode|null= root.getLastChild();
+            if (element){
+                endOfDocument = element.getLastChild();
+            }
+        })
+        return endOfDocument;
+
+    }
 
     // Actions
     insertOutline(generatedOutline: DIYStructureJSON) {
@@ -193,43 +250,60 @@ export class TextEditorService extends Service {
         <p>${generatedOutline?.introduction}</p>
         <p>Materials:</p>
         <ul>
-            ${generatedOutline?.materials.map((val) => { return `<li>${val}</li>` })}
+            ${generatedOutline?.materials.map((val) => {
+                return `<li>${val}</li>`;
+            })}
         </ul>
         <p>Tools:</p>
         <ul>
-            ${generatedOutline?.tools.map((val) => { return `<li>${val}</li>` })}
+            ${generatedOutline?.tools.map((val) => {
+                return `<li>${val}</li>`;
+            })}
         </ul>
         <p>Competences:</p>
         <ul>
-        ${generatedOutline?.competences.map((val) => { return `<li>${val}</li>` })}
+        ${generatedOutline?.competences.map((val) => {
+            return `<li>${val}</li>`;
+        })}
         </ul>
         <p>Safety Instructions </p>
         <ol>
-            ${generatedOutline?.safety_instruction.map((val) => { return `<li>${val}</li>` })}
+            ${generatedOutline?.safety_instruction.map((val) => {
+                return `<li>${val}</li>`;
+            })}
         </ol>
         ${generatedOutline?.steps.map((step) => {
             return `
                 <h2>${step.title}</h2>
                 <p>Materials used in this step:</p>
                 <ul>
-                    ${step.materials_in_step.map((val) => { return `<li>${val}</li>` })}
+                    ${step.materials_in_step.map((val) => {
+                        return `<li>${val}</li>`;
+                    })}
                 </ul>
                 <p>Tools used in this step:</p>
                 <ul>
-                    ${step.tools_in_step.map((val) => { return `<li>${val}</li>` })}
+                    ${step.tools_in_step.map((val) => {
+                        return `<li>${val}</li>`;
+                    })}
                 </ul>
                 <p>Instructions:</p>
                 <ol>
-                    ${step.instructions.map((val) => { return `<li>${val}</li>` })}
+                    ${step.instructions.map((val) => {
+                        return `<li>${val}</li>`;
+                    })}
                 </ol>
-            `
+            `;
         })}
         <h2>Conclusion</h2>
         <p>${generatedOutline?.conclusion.text}</p>`;
 
-        const dom = new DOMParser().parseFromString(htmlstring, 'text/html');
+        const dom = new DOMParser().parseFromString(htmlstring, "text/html");
         this.editor.update(() => {
-            const nodes: LexicalNode[] = $generateNodesFromDOM(this.editor, dom);
+            const nodes: LexicalNode[] = $generateNodesFromDOM(
+                this.editor,
+                dom
+            );
             const root = $getRoot();
             root.clear();
             const filteredNodes = nodes.filter((node) => {
@@ -237,24 +311,20 @@ export class TextEditorService extends Service {
                     if ($isListNode(node)) {
                         const list = node as ListNode;
                         list.getChildren().filter((child) => {
-                            if (child.getTextContent() === ',') {
+                            if (child.getTextContent() === ",") {
                                 child.remove();
                             }
-                        })
+                        });
                     }
                     return true;
                 }
             });
 
             root.append(...filteredNodes);
-            console.debug('Finished outline');
-
+            console.debug("Finished outline");
         });
     }
-
-
 }
-
 
 /**
  * We need to hack the window.getSelection method to use the shadow DOM,
@@ -267,27 +337,26 @@ export class TextEditorService extends Service {
 export function patchGetSelection() {
     const oldGetSelection = window.getSelection.bind(window);
     window.getSelection = (useOld: boolean = false) => {
-      const activeElement = findActiveElementWithinShadow();
-      const shadowRootOrDocument: ShadowRoot | Document = activeElement
-        ? (activeElement.getRootNode() as ShadowRoot | Document)
-        : document;
-      const selection = (shadowRootOrDocument as any).getSelection();
-  
-      if (!selection || useOld) return oldGetSelection();
-      return selection;
+        const activeElement = findActiveElementWithinShadow();
+        const shadowRootOrDocument: ShadowRoot | Document = activeElement
+            ? (activeElement.getRootNode() as ShadowRoot | Document)
+            : document;
+        const selection = (shadowRootOrDocument as any).getSelection();
+
+        if (!selection || useOld) return oldGetSelection();
+        return selection;
     };
-  }
-  
-  /**
-   * Recursively walks down the DOM tree to find the active element within any
-   * shadow DOM that it might be contained in.
-   */
+}
+
+/**
+ * Recursively walks down the DOM tree to find the active element within any
+ * shadow DOM that it might be contained in.
+ */
 function findActiveElementWithinShadow(
     element: Element | null = document.activeElement
-  ): Element | null {
+): Element | null {
     if (element?.shadowRoot) {
-      return findActiveElementWithinShadow(element.shadowRoot.activeElement);
+        return findActiveElementWithinShadow(element.shadowRoot.activeElement);
     }
     return element;
-  }
-  
+}

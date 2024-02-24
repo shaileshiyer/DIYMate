@@ -23,6 +23,9 @@ dependencies:
   '@lexical/list':
     specifier: ^0.13.1
     version: 0.13.1(lexical@0.13.1)
+  '@lexical/mark':
+    specifier: ^0.13.1
+    version: 0.13.1(lexical@0.13.1)
   '@lexical/markdown':
     specifier: ^0.13.1
     version: 0.13.1(@lexical/clipboard@0.13.1)(@lexical/selection@0.13.1)(lexical@0.13.1)
@@ -624,6 +627,15 @@ packages:
 
   /@lexical/list@0.13.1(lexical@0.13.1):
     resolution: {integrity: sha512-6U1pmNZcKLuOWiWRML8Raf9zSEuUCMlsOye82niyF6I0rpPgYo5UFghAAbGISDsyqzM1B2L4BgJ6XrCk/dJptg==}
+    peerDependencies:
+      lexical: 0.13.1
+    dependencies:
+      '@lexical/utils': 0.13.1(lexical@0.13.1)
+      lexical: 0.13.1
+    dev: false
+
+  /@lexical/mark@0.13.1(lexical@0.13.1):
+    resolution: {integrity: sha512-dW27PW8wWDOKFqXTBUuUfV+umU0KfwvXGkPUAxRJrvwUWk5RKaS48LhgbNlQ5BfT84Q8dSiQzvbaa6T40t9a3A==}
     peerDependencies:
       lexical: 0.13.1
     dependencies:

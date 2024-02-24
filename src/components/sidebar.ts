@@ -36,7 +36,17 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             <p>Selected Text: ${this.cursorService.selectedText}</p>
             <p>Pre Text: ${this.cursorService.preText}</p>
             <p>Post Text: ${this.cursorService.postText}</p>
-            <p>Current Node: ${this.cursorService.currentNode}</p>
+            <p>Current Node: ${JSON.stringify(this.cursorService.currentNode)}</p>
+            <p>serializedRange: ${JSON.stringify(this.cursorService.serializedRange)}</p>
+            <p>isCursorCollapsed: ${this.cursorService.isCursorCollapsed}</p>
+            <p>isCursorSelection: ${this.cursorService.isCursorSelection}</p>
+            <p>isCursorinSameNode: ${this.cursorService.isCursorInSingleNode}</p>
+            <p>isCursorAtStartOfNode: ${this.cursorService.isCursorAtStartOfNode}</p>
+            <p>isCursorAtEndOfNode: ${this.cursorService.isCursorAtEndOfNode}</p>
+            <p>isCursorAtStartOfDocument: ${this.cursorService.isCursorAtStartOfText}</p>
+            <p>isCursorAtEndOfDocument: ${this.cursorService.isCursorAtEndOfText}</p>
+            
+            
             </div>`;
     }
 }
