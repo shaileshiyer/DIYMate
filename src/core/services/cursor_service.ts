@@ -3,6 +3,7 @@ import { Service } from "./service";
 import { TextEditorService } from "./text_editor_service";
 import {
     $applyNodeReplacement,
+    $createPoint,
     $createRangeSelection,
     $createTextNode,
     $getCharacterOffsets,
@@ -14,6 +15,7 @@ import {
     $isTextNode,
     $setSelection,
     COMMAND_PRIORITY_NORMAL,
+    DELETE_CHARACTER_COMMAND,
     ElementNode,
     KEY_ENTER_COMMAND,
     LexicalNode,
@@ -47,8 +49,8 @@ interface ServiceProvider {
 }
 
 interface SerializedLexicalRange {
-    anchor: { key: string; offset: number; type: string };
-    focus: { key: string; offset: number; type: string };
+    anchor: { key: string; offset: number; type: 'text'| 'element' };
+    focus: { key: string; offset: number; type: 'text'|'element' };
     isBackward: boolean;
 }
 
@@ -141,12 +143,16 @@ export class CursorService extends Service {
         this.postText = postTextSelection;
         // Get the parent node type
         const parent: ElementNode | null = node.getParent();
-
+        
+        if (!parent){
+            return;
+        }
         let elementType = parent?.getType() ?? "";
 
         if ($isHeadingNode(parent)) {
             elementType = `${parent.getType()}-${parent.getTag()}`;
         }
+        console.debug(parseSentences(parent.getTextContent()))
         // const elementType = parent?.getType() === 'heading'? `${parent.getType()}-${parent.getTag()?? ''}`:parent?.getType();
         this.currentNode = {
             key: node.getKey() ?? "",
@@ -154,6 +160,7 @@ export class CursorService extends Service {
             textContent: node.getTextContent() ?? "",
             textContentSize: node.getTextContentSize() ?? 0,
         };
+
 
         // console.debug(node.getParent());
     }
@@ -167,35 +174,34 @@ export class CursorService extends Service {
                     for (let [nodeKey, mutation] of mutatedNodes) {
                         console.log(nodeKey, mutation);
                         this.textEditorService.getEditor.update(()=>{
-                            const textnode: TextNode = $getNodeByKey(nodeKey)!;
-                            if (!textnode){
+                            const textNode: TextNode = $getNodeByKey(nodeKey)!;
+                            if (!textNode){
                                 return;
                             }
-                            const textString = textnode.getTextContent();
+                            
+                            const textString = textNode.getTextContent();
                             const sentences = parseSentences(textString);
                             console.debug(sentences);
-    
                             if (
                                 (mutation === "created" ||
                                     mutation === "updated") &&
                                 sentences.length > 1
 
                             ) {
-                                textnode.toggleUnmergeable();
+                                textNode.toggleUnmergeable();
                                 let val = 0;
                                 const charOffsets = sentences.map((sentence) => {
                                     val += sentence.length;
                                     return val;
                                 });
-                                textnode.setStyle('');
-                                textnode.splitText(...charOffsets);
+                                textNode.setStyle('');
+                                textNode.splitText(...charOffsets);
                             }
                         })
 
                     }
                 }
             ),
-
             this.textEditorService.getEditor.registerCommand(
                 SELECTION_CHANGE_COMMAND,
                 ()=>{
@@ -237,6 +243,28 @@ export class CursorService extends Service {
                 }
                 return false;
             },COMMAND_PRIORITY_NORMAL),
+            this.textEditorService.getEditor.registerCommand(DELETE_CHARACTER_COMMAND,(isBackward)=>{
+                const selection = $getSelection();
+                if (selection === null || !$isRangeSelection(selection) || !selection.isCollapsed() ){
+                    return false;
+                }
+                const originalSelection = selection.clone();
+                selection.modify('extend',isBackward,'character');
+                let character = selection.getTextContent()
+                character = character.trimStart().trimEnd();
+                console.debug(character);
+                if (character==='.'|| character==='?' || character === '!'){
+                    const anchorNode:LexicalNode = selection.anchor.getNode();
+
+                    const focusNode = anchorNode.getNextSibling();
+                    if ($isTextNode(anchorNode) && $isTextNode(focusNode) && !anchorNode.is(focusNode)){
+                        anchorNode.mergeWithSibling(focusNode);
+                        anchorNode.setStyle('');
+                    }
+
+                }
+                return false;
+            },COMMAND_PRIORITY_NORMAL),
         ];
     }
 
@@ -261,6 +289,17 @@ export class CursorService extends Service {
             focus: { key: focus.key, offset: focus.offset, type: focus.type },
             isBackward: selection.isBackward(),
         };
+    }
+
+    makeSelectionFromSerializedLexicalRange(serializedRange:SerializedLexicalRange){
+        const { anchor,focus} = serializedRange;
+        const selection = $createRangeSelection();
+        const anchorNode = $getNodeByKey(anchor.key);
+        const focusNode = $getNodeByKey(focus.key);
+        if ($isTextNode(anchorNode) && $isTextNode(focusNode)){
+            selection.setTextNodeRange(anchorNode,anchor.offset,focusNode,focus.offset);
+        }
+        return selection;
     }
 
     get isCursorCollapsed() {

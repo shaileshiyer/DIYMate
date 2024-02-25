@@ -1,6 +1,7 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { diymateCore } from "@core/diymate_core";
 import { CursorService } from "@core/services/cursor_service";
+import { TextEditorService } from "@core/services/text_editor_service";
 import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
@@ -19,6 +20,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
     }
 
     private cursorService = diymateCore.getService(CursorService);
+    private textEditorService = diymateCore.getService(TextEditorService);
 
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -45,7 +47,15 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             <p>isCursorAtEndOfNode: ${this.cursorService.isCursorAtEndOfNode}</p>
             <p>isCursorAtStartOfDocument: ${this.cursorService.isCursorAtStartOfText}</p>
             <p>isCursorAtEndOfDocument: ${this.cursorService.isCursorAtEndOfText}</p>
-            
+            <p>Plain Text:</p> 
+            <md-filled-text-field
+                    style="width:100%;"
+                    type="textarea"
+                    name="plain-text"
+                    placeholder="PlainText"
+                    .value=${this.textEditorService.plainText}
+                    rows="20"
+                    spellcheck="false"></md-filled-text-field>
             
             </div>`;
     }

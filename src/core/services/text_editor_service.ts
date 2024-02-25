@@ -3,10 +3,12 @@ import {
     $createTextNode,
     $getRoot,
     $getSelection,
+    $isElementNode,
     $isRangeSelection,
     $isTextNode,
     $setSelection,
     CreateEditorArgs,
+    EditorState,
     ElementNode,
     LexicalEditor,
     LexicalNode,
@@ -22,8 +24,8 @@ import {
     createEmptyHistoryState,
     registerHistory,
 } from "@lexical/history";
-import { makeObservable, observable } from "mobx";
-import { HeadingNode, registerRichText } from "@lexical/rich-text";
+import { action, computed, makeObservable, observable } from "mobx";
+import { $isHeadingNode, HeadingNode, registerRichText } from "@lexical/rich-text";
 import {
     $convertToMarkdownString,
     registerMarkdownShortcuts,
@@ -66,6 +68,7 @@ export class TextEditorService extends Service {
         makeObservable(this, {
             isEnabled: observable,
             plainText: observable,
+            onRead:action,
         });
     }
 
@@ -128,27 +131,29 @@ export class TextEditorService extends Service {
         this.editorListeners = [
             this.editor.registerUpdateListener(({ editorState }) => {
                 editorState.read(() => {
-                    this.plainText = $convertToMarkdownString(TRANSFORMERS);
-
+                    this.onRead(editorState);
                     this.cursorService.cursorUpdate();
-                    // console.log(JSON.stringify(this.editor.getEditorState()));
-                    // const html = $generateHtmlFromNodes(this.editor);
-                    // output.innerHTML = html;
+
                 });
             }),
-            // this.editor.registerNodeTransform(TextNode, (node) => {
-            //     // console.debug('textnode is transformed',node);
-            // }),
-            // this.editor.registerMutationListener(ListNode, (mutatedNodes) => {
-            //     // console.debug('listNode');
-            //     // for (let [nodeKey, mutation] of mutatedNodes) {
-            //     //     console.debug(nodeKey, mutation)
-            //     // }
-            // }),
             ...this.cursorService.registerCursorListeners(),
         ];
 
         
+    }
+
+
+    onRead(editorState:EditorState){
+        const root = $getRoot();
+        // let markdownText = '';
+        // for (let child of root.getChildren()){
+        //     if ($isElementNode(child)||$isHeadingNode(child)){
+        //         const nodeText = $convertToMarkdownString(TRANSFORMERS,child);
+        //         markdownText+=`${nodeText}\n`;
+        //     }
+        // }
+        // this.plainText = markdownText;
+        this.plainText = $convertToMarkdownString(TRANSFORMERS);
     }
 
     onDisconnect() {
@@ -190,7 +195,7 @@ export class TextEditorService extends Service {
 
     plainText: string = "";
 
-    getPlainText(): string {
+    get PlainText(): string {
         return this.plainText;
     }
 
@@ -319,7 +324,6 @@ export class TextEditorService extends Service {
                     return true;
                 }
             });
-
             root.append(...filteredNodes);
             console.debug("Finished outline");
         });
