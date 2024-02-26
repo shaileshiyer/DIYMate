@@ -307,11 +307,10 @@ export class TextEditorService extends Service {
                     })}
                 </ul>
                 <p>Instructions:</p>
-                <ol>
-                    ${step.instructions.map((val) => {
-                        return `<li>${val}</li>`;
-                    })}
-                </ol>
+                
+                ${step.instructions.map((val) => {
+                    return `<p>${val}</p>`;
+                })}
             `;
         })}
         <h2>Conclusion</h2>

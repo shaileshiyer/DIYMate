@@ -43,9 +43,11 @@ import {
     MarkNode,
 } from "@lexical/mark";
 import { $convertToMarkdownString } from "@lexical/markdown";
+import { SentencesService } from "./sentences_service";
 
 interface ServiceProvider {
     textEditorService: TextEditorService;
+    sentencesService:SentencesService;
 }
 
 export interface SerializedLexicalRange {
@@ -90,6 +92,10 @@ export class CursorService extends Service {
 
     get textEditorService() {
         return this.serviceProvider.textEditorService;
+    }
+    
+    get sentenceService(){
+        return this.serviceProvider.sentencesService;
     }
 
     selectedText: string = "";
@@ -351,7 +357,7 @@ export class CursorService extends Service {
         const { anchor, focus } = serializedRange;
         const selection = $createRangeSelection();
         const anchorNode = $getNodeByKey(anchor.key);
-        
+
         const focusNode = $getNodeByKey(focus.key);
         if ($isTextNode(anchorNode) && $isTextNode(focusNode)) {
             selection.setTextNodeRange(
@@ -408,24 +414,11 @@ export class CursorService extends Service {
     }
 
     get isCursorAtEndOfNode() {
-        if (this.isCursorCollapsed) {
-            return (
-                this.serializedRange.anchor.key === this.currentNode.key &&
-                this.serializedRange.anchor.offset ===
-                    this.currentNode.textContentSize
-            );
-        }
-        return false;
+        return this.isCursorCollapsed && this.sentenceService.isLastCursorSpan;
     }
 
     get isCursorAtStartOfNode() {
-        if (this.isCursorCollapsed) {
-            return (
-                this.serializedRange.anchor.key === this.currentNode.key &&
-                this.serializedRange.anchor.offset === 0
-            );
-        }
-        return false;
+        return this.isCursorCollapsed && this.sentenceService.isFirstCursorSpan;
     }
 
     get isCursorinMiddle(){

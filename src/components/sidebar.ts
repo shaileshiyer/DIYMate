@@ -69,7 +69,9 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             <p>nextSentenceOffset: ${this.sentencesService.nextSentenceOffset} </p>
             <p>isCursorBetweenSentences: ${this.sentencesService.isCursorBetweenSentences} </p>
             <p>isCursorinMiddleOfSentence: ${this.sentencesService.isCursorWithinSentence} </p>
-            <p>isCursorAtSentenceEnd: ${this.sentencesService.nextSentenceOffset} </p>
+            <p>isCursorAtParagraphStart: ${this.cursorService.isCursorAtStartOfNode} </p>
+            <p>isCursorAtParagraphEnd: ${this.cursorService.isCursorAtEndOfNode} </p>
+            
             `;
     }
 }
