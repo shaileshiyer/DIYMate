@@ -66,6 +66,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             <p>cursorSpan: ${JSON.stringify(this.sentencesService.cursorSpan)} </p>
             <p>currentSentenceIndex: ${this.sentencesService.currentSentenceIndex} </p>
             <p>currentSentenceSerializedRange: ${JSON.stringify(this.sentencesService.currentSentenceSerializedRange)} </p>
+            <p>currentSentenceRange: ${this.sentencesService.getCurrentSentenceRange()} </p>
             <p>nextSentenceOffset: ${this.sentencesService.nextSentenceOffset} </p>
             <p>isCursorBetweenSentences: ${this.sentencesService.isCursorBetweenSentences} </p>
             <p>isCursorinMiddleOfSentence: ${this.sentencesService.isCursorWithinSentence} </p>

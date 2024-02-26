@@ -11,8 +11,10 @@ import {
     $getPreviousSelection,
     $getRoot,
     $getSelection,
+    $isElementNode,
     $isRangeSelection,
     $isTextNode,
+    $normalizeSelection__EXPERIMENTAL,
     $setSelection,
     COMMAND_PRIORITY_NORMAL,
     DELETE_CHARACTER_COMMAND,
@@ -21,6 +23,7 @@ import {
     LexicalNode,
     ParagraphNode,
     Point,
+    PointType,
     RangeSelection,
     RootNode,
     SELECTION_CHANGE_COMMAND,
@@ -34,7 +37,6 @@ import {
     $setBlocksType,
     $wrapNodesImpl,
 } from "@lexical/selection/range-selection";
-import { $applyTransforms } from "lexical/LexicalUpdates";
 import {
     $createMarkNode,
     $getMarkIDs,
@@ -47,7 +49,7 @@ import { SentencesService } from "./sentences_service";
 
 interface ServiceProvider {
     textEditorService: TextEditorService;
-    sentencesService:SentencesService;
+    sentencesService: SentencesService;
 }
 
 export interface SerializedLexicalRange {
@@ -63,9 +65,9 @@ export interface CurrentLexicalNode {
     textContentSize: number;
 }
 
-export interface CursorOffset{
-    key:string;
-    offset:number;
+export interface CursorOffset {
+    key: string;
+    offset: number;
 }
 
 export class CursorService extends Service {
@@ -93,8 +95,8 @@ export class CursorService extends Service {
     get textEditorService() {
         return this.serviceProvider.textEditorService;
     }
-    
-    get sentenceService(){
+
+    get sentenceService() {
         return this.serviceProvider.sentencesService;
     }
 
@@ -178,154 +180,160 @@ export class CursorService extends Service {
     previousSelection: RangeSelection = $createRangeSelection();
     registerCursorListeners(): (() => void)[] {
         return [
-            this.textEditorService.getEditor.registerMutationListener(
-                ParagraphNode,
-                (mutatedNodes) => {
-                    for (let [nodeKey, mutation] of mutatedNodes) {
-                        console.log('paragraph',nodeKey, mutation);
-                    }
-                }
-            ),
-            this.textEditorService.getEditor.registerMutationListener(
+            this.textEditorService.getEditor.registerNodeTransform(
                 TextNode,
-                (mutatedNodes) => {
-                    for (let [nodeKey, mutation] of mutatedNodes) {
-                        console.log(nodeKey, mutation);
-                        this.textEditorService.getEditor.update(() => {
-                            const textNode: TextNode = $getNodeByKey(nodeKey)!;
-                            if (!textNode) {
-                                return;
-                            }
-
-                            const textString = textNode.getTextContent();
-                            const sentences = parseSentences(textString);
-                            console.debug(sentences);
-                            if (
-                                (mutation === "created" ||
-                                    mutation === "updated") &&
-                                sentences.length > 1
-                            ) {
-                                textNode.toggleUnmergeable();
-                                let val = 0;
-                                const charOffsets = sentences.map(
-                                    (sentence) => {
-                                        val += sentence.length;
-                                        return val;
-                                    }
-                                );
-                                textNode.setStyle("");
-                                textNode.splitText(...charOffsets);
-                            }
-                        });
+                (node) => {
+                    if (node.isUnmergeable()) {
+                        node.toggleUnmergeable();
                     }
                 }
             ),
-            this.textEditorService.getEditor.registerCommand(
+            // this.textEditorService.getEditor.registerMutationListener(
+            //     TextNode,
+            //     (mutatedNodes) => {
+            //         for (let [nodeKey, mutation] of mutatedNodes) {
+            //             console.log(nodeKey, mutation);
+            //             this.textEditorService.getEditor.update(() => {
+            //                 const textNode: TextNode = $getNodeByKey(nodeKey)!;
+            //                 if (!textNode) {
+            //                     return;
+            //                 }
+
+            //                 const textString = textNode.getTextContent();
+            //                 const sentences = parseSentences(textString);
+            //                 console.debug(sentences);
+            //                 if (
+            //                     (mutation === "created" ||
+            //                         mutation === "updated") &&
+            //                     sentences.length > 1
+            //                 ) {
+            //                     textNode.toggleUnmergeable();
+            //                     let val = 0;
+            //                     const charOffsets = sentences.map(
+            //                         (sentence) => {
+            //                             val += sentence.length;
+            //                             return val;
+            //                         }
+            //                     );
+            //                     textNode.setStyle("");
+            //                     textNode.splitText(...charOffsets);
+            //                 }
+            //             });
+            //         }
+            //     }
+            // ),
+            // this.textEditorService.getEditor.registerCommand(
+            //     SELECTION_CHANGE_COMMAND,
+            //     () => {
+            //         const prevSelection = $getPreviousSelection();
+            //         const selection = $getSelection();
+            //         if (
+            //             !$isRangeSelection(selection) ||
+            //             !$isRangeSelection(prevSelection)
+            //         ) {
+            //             return false;
+            //         }
+            //         const currentNode: LexicalNode = selection.anchor.getNode();
+            //         if (!selection.isCollapsed()) {
+            //             if ($isTextNode(currentNode)) {
+            //                 currentNode.setStyle("");
+            //             }
+            //         }
+            //         if (selection.isCollapsed()) {
+            //             const style =
+            //                 "color:var(--md-sys-color-primary);font-weight:600;";
+            //             if (
+            //                 $isTextNode(currentNode) &&
+            //                 currentNode.getStyle() === ""
+            //             ) {
+            //                 currentNode.setStyle(style);
+            //             }
+            //         }
+            //         if (prevSelection !== null) {
+            //             const prevNode: LexicalNode =
+            //                 prevSelection.anchor.getNode();
+            //             if (
+            //                 $isTextNode(prevNode) &&
+            //                 !prevNode.is(currentNode) &&
+            //                 prevNode.getStyle() !== ""
+            //             ) {
+            //                 prevNode.setStyle("");
+            //             }
+            //         }
+            //         return false;
+            //     },
+            //     COMMAND_PRIORITY_NORMAL
+            // ),
+            // this.textEditorService.getEditor.registerCommand(
+            //     KEY_ENTER_COMMAND,
+            //     () => {
+            //         const selection = $getPreviousSelection();
+            //         if (
+            //             selection === null ||
+            //             !$isRangeSelection(selection) ||
+            //             !selection.isCollapsed()
+            //         ) {
+            //             return false;
+            //         }
+            //         const currentNode: LexicalNode = selection.anchor.getNode();
+            //         if (
+            //             $isTextNode(currentNode) &&
+            //             currentNode.getStyle() !== ""
+            //         ) {
+            //             currentNode.setStyle("");
+            //         }
+            //         return false;
+            //     },
+            //     COMMAND_PRIORITY_NORMAL
+            // ),
+            // this.textEditorService.getEditor.registerCommand(
+            //     DELETE_CHARACTER_COMMAND,
+            //     (isBackward) => {
+            //         const selection = $getSelection();
+            //         if (
+            //             selection === null ||
+            //             !$isRangeSelection(selection) ||
+            //             !selection.isCollapsed()
+            //         ) {
+            //             return false;
+            //         }
+            //         const originalSelection = selection.clone();
+            //         selection.modify("extend", isBackward, "character");
+            //         let character = selection.getTextContent();
+            //         character = character.trimStart().trimEnd();
+            //         console.debug(character);
+            //         if (
+            //             character === "." ||
+            //             character === "?" ||
+            //             character === "!"
+            //         ) {
+            //             const anchorNode: LexicalNode =
+            //                 selection.anchor.getNode();
+
+            //             const focusNode = anchorNode.getNextSibling();
+            //             if (
+            //                 $isTextNode(anchorNode) &&
+            //                 $isTextNode(focusNode) &&
+            //                 !anchorNode.is(focusNode)
+            //             ) {
+            //                 anchorNode.mergeWithSibling(focusNode);
+            //                 anchorNode.setStyle("");
+            //             }
+            //         }
+            //         return false;
+            //     },
+            //     COMMAND_PRIORITY_NORMAL
+            // ),
+             this.textEditorService.getEditor.registerCommand(
                 SELECTION_CHANGE_COMMAND,
                 () => {
-                    const prevSelection = $getPreviousSelection();
-                    const selection = $getSelection();
-                    if (
-                        !$isRangeSelection(selection) ||
-                        !$isRangeSelection(prevSelection)
-                    ) {
-                        return false;
-                    }
-                    const currentNode: LexicalNode = selection.anchor.getNode();
-                    if (!selection.isCollapsed()) {
-                        if ($isTextNode(currentNode)) {
-                            currentNode.setStyle("");
-                        }
-                    }
-                    if (selection.isCollapsed()) {
-                        const style =
-                            "color:var(--md-sys-color-primary);font-weight:600;";
-                        if (
-                            $isTextNode(currentNode) &&
-                            currentNode.getStyle() === ""
-                        ) {
-                            currentNode.setStyle(style);
-                        }
-                    }
-                    if (prevSelection !== null) {
-                        const prevNode: LexicalNode =
-                            prevSelection.anchor.getNode();
-                        if (
-                            $isTextNode(prevNode) &&
-                            !prevNode.is(currentNode) &&
-                            prevNode.getStyle() !== ""
-                        ) {
-                            prevNode.setStyle("");
-                        }
-                    }
-                    return false;
-                },
-                COMMAND_PRIORITY_NORMAL
-            ),
-            this.textEditorService.getEditor.registerCommand(
-                KEY_ENTER_COMMAND,
-                () => {
-                    const selection = $getPreviousSelection();
-                    if (
-                        selection === null ||
-                        !$isRangeSelection(selection) ||
-                        !selection.isCollapsed()
-                    ) {
-                        return false;
-                    }
-                    const currentNode: LexicalNode = selection.anchor.getNode();
-                    if (
-                        $isTextNode(currentNode) &&
-                        currentNode.getStyle() !== ""
-                    ) {
-                        currentNode.setStyle("");
-                    }
-                    return false;
-                },
-                COMMAND_PRIORITY_NORMAL
-            ),
-            this.textEditorService.getEditor.registerCommand(
-                DELETE_CHARACTER_COMMAND,
-                (isBackward) => {
-                    const selection = $getSelection();
-                    if (
-                        selection === null ||
-                        !$isRangeSelection(selection) ||
-                        !selection.isCollapsed()
-                    ) {
-                        return false;
-                    }
-                    const originalSelection = selection.clone();
-                    selection.modify("extend", isBackward, "character");
-                    let character = selection.getTextContent();
-                    character = character.trimStart().trimEnd();
-                    console.debug(character);
-                    if (
-                        character === "." ||
-                        character === "?" ||
-                        character === "!"
-                    ) {
-                        const anchorNode: LexicalNode =
-                            selection.anchor.getNode();
-
-                        const focusNode = anchorNode.getNextSibling();
-                        if (
-                            $isTextNode(anchorNode) &&
-                            $isTextNode(focusNode) &&
-                            !anchorNode.is(focusNode)
-                        ) {
-                            anchorNode.mergeWithSibling(focusNode);
-                            anchorNode.setStyle("");
-                        }
-                    }
+                    this.sentenceService.highlightCurrentSentence();
                     return false;
                 },
                 COMMAND_PRIORITY_NORMAL
             ),
         ];
     }
-
-
 
     serializedRange: SerializedLexicalRange = makeEmptyLexicalSerializedRange();
 
@@ -350,50 +358,82 @@ export class CursorService extends Service {
         };
     }
 
+
+    convertPointtoTextPoint(point:PointType):void{
+        const node:ElementNode = point.getNode();
+        const textChildren = node.getChildren();
+        let prevOffset = 0;
+        for (let textChild of textChildren){
+            const childsize = textChild.getTextContentSize();
+            if (prevOffset <= point.offset && point.offset<= (prevOffset+childsize)){
+                const calcoffset = point.offset - prevOffset;
+                point.set(textChild.getKey(),calcoffset,'text');
+                break;
+            }
+            prevOffset+= childsize;
+        }
+    }
+
     makeSelectionFromSerializedLexicalRange(
-        serializedRange: SerializedLexicalRange|null
+        serializedRange: SerializedLexicalRange | null
     ) {
         if (serializedRange === null) return $createRangeSelection();
         const { anchor, focus } = serializedRange;
-        const selection = $createRangeSelection();
-        const anchorNode = $getNodeByKey(anchor.key);
 
-        const focusNode = $getNodeByKey(focus.key);
-        if ($isTextNode(anchorNode) && $isTextNode(focusNode)) {
-            selection.setTextNodeRange(
-                anchorNode,
+        let selection = $createRangeSelection();
+
+        this.textEditorService.getEditor.getEditorState().read(() => {
+            selection.anchor = $createPoint(
+                anchor.key,
                 anchor.offset,
-                focusNode,
-                focus.offset
+                anchor.type
             );
-        }
+            selection.focus = $createPoint(focus.key, focus.offset, focus.type);
+
+            this.convertPointtoTextPoint(selection.anchor);
+            this.convertPointtoTextPoint(selection.focus);
+            selection = $normalizeSelection__EXPERIMENTAL(selection);
+        });
         return selection;
+        // const focusNode = $getNodeByKey(focus.key);
+        // if ($isTextNode(anchorNode) && $isTextNode(focusNode)) {
+        //     selection.setTextNodeRange(
+        //         anchorNode,
+        //         anchor.offset,
+        //         focusNode,
+        //         focus.offset
+        //     );
+        // }
+        // return selection;
     }
 
     // Get cursor offset in parent node
-    get cursorOffset():CursorOffset{
-        if (this.isCursorCollapsed){
-            let cursorOffset:CursorOffset = {key:this.serializedRange.anchor.key,offset:this.serializedRange.anchor.offset};
-            this.textEditorService.getEditor.getEditorState().read(()=>{
+    get cursorOffset(): CursorOffset {
+        if (this.isCursorCollapsed) {
+            let cursorOffset: CursorOffset = {
+                key: this.serializedRange.anchor.key,
+                offset: this.serializedRange.anchor.offset,
+            };
+            this.textEditorService.getEditor.getEditorState().read(() => {
                 const selection = $getSelection();
-                if (!$isRangeSelection(selection)){
+                if (!$isRangeSelection(selection)) {
                     return;
                 }
-                const node:LexicalNode|null = selection.anchor.getNode();
-                if (!node){
+                const node: LexicalNode | null = selection.anchor.getNode();
+                if (!node) {
                     return;
                 }
-                const parent:LexicalNode|null = node.getParent();
+                const parent: LexicalNode | null = node.getParent();
                 const previousSiblings = node.getPreviousSiblings();
-                for (let sibling of previousSiblings){
-                    cursorOffset.offset +=sibling.getTextContentSize();
+                for (let sibling of previousSiblings) {
+                    cursorOffset.offset += sibling.getTextContentSize();
                 }
-                cursorOffset.key = parent?.getKey()?? this.serializedRange.anchor.key;
-                
-            })
-            return cursorOffset;    
+                cursorOffset.key =
+                    parent?.getKey() ?? this.serializedRange.anchor.key;
+            });
+            return cursorOffset;
         }
-        return {key:this.serializedRange.anchor.key,offset:0};
+        return { key: this.serializedRange.anchor.key, offset: 0 };
     }
 
     get isCursorCollapsed() {
@@ -421,20 +461,20 @@ export class CursorService extends Service {
         return this.isCursorCollapsed && this.sentenceService.isFirstCursorSpan;
     }
 
-    get isCursorinMiddle(){
+    get isCursorinMiddle() {
         const {
             isCursorCollapsed,
             isCurrentNodeEmpty,
             isCursorAtEndOfNode,
             isCursorAtStartOfNode,
         } = this;
-        if (!isCursorCollapsed || isCurrentNodeEmpty){
+        if (!isCursorCollapsed || isCurrentNodeEmpty) {
             return false;
         }
         return !isCursorAtStartOfNode && !isCursorAtEndOfNode;
     }
 
-    get isCurrentNodeEmpty(){
+    get isCurrentNodeEmpty() {
         return this.currentNode.textContentSize === 0;
     }
 

@@ -209,8 +209,13 @@ export class TextEditorService extends Service {
 
     plainText: string = "";
 
-    get PlainText(): string {
+    getPlainText(): string {
         return this.plainText;
+    }
+
+    
+    getParagraphs():NodeText[] {
+        return this.paragraphs;
     }
 
     isEnabled = true;
@@ -343,9 +348,6 @@ export class TextEditorService extends Service {
     }
 
 
-    getParagraphs():NodeText[] {
-        return this.paragraphs;
-    }
 }
 
 /**

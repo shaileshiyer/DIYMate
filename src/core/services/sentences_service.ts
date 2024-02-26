@@ -8,8 +8,15 @@ import {
     getSpanForOffset,
     SentenceSpan,
 } from "@lib/sentence_boundaries";
-import { $getSelection, RangeSelection } from "lexical";
+import { $getCharacterOffsets, $getNodeByKey, $getSelection, $isRangeSelection, $setSelection, RangeSelection, TextNode } from "lexical";
 import { parseSentences } from "@lib/parse_sentences";
+import { $addNodeStyle, $patchStyleText, $sliceSelectedTextNodeContent } from "@lexical/selection";
+import {
+    $createMarkNode,
+    $unwrapMarkNode,
+    $wrapSelectionInMarkNode,
+    MarkNode,
+} from "@lexical/mark";
 
 interface ServiceProvider {
     cursorService: CursorService;
@@ -48,12 +55,12 @@ export class SentencesService extends Service {
 
     get currentSentenceSerializedRange(): SerializedLexicalRange | null {
         if (!this.isCursorWithinSentence) return null;
-        const key = this.cursorService.currentNode.key;
+        const key = this.cursorService.cursorOffset.key;
         if (!this.cursorSpan) return null;
         const { start, end } = this.cursorSpan.span;
         return {
-            anchor: { key, offset: start, type: "text" },
-            focus: { key, offset: end, type: "text" },
+            anchor: { key, offset: start, type: "element" },
+            focus: { key, offset: end, type: "element" },
             isBackward: false,
         };
     }
@@ -140,7 +147,6 @@ export class SentencesService extends Service {
         );
     }
 
-
     /**
      * If the cursor is within a sentence, the next position to generate at is at
      * the end of that sentence. Otherwise, it's where the cursor is (either in
@@ -156,22 +162,27 @@ export class SentencesService extends Service {
         }
     }
 
-    getNextSentenceRange(): RangeSelection{
+    getNextSentenceRange(): RangeSelection {
         const offset = this.nextSentenceOffset;
         const key = this.cursorService.cursorOffset.key;
-        const serialized:SerializedLexicalRange = {
-            anchor:{key,offset,type:'text'},
-            focus:{key,offset,type:'text'},
-            isBackward:false,
-        }
-        return this.cursorService.makeSelectionFromSerializedLexicalRange(serialized);
+        const serialized: SerializedLexicalRange = {
+            anchor: { key, offset, type: "element" },
+            focus: { key, offset, type: "element" },
+            isBackward: false,
+        };
+        return this.cursorService.makeSelectionFromSerializedLexicalRange(
+            serialized
+        );
     }
 
     getCurrentSentenceRange(): RangeSelection {
-        const {currentSentenceSerializedRange} = this;
-        return this.cursorService.makeSelectionFromSerializedLexicalRange(currentSentenceSerializedRange)
+        const { currentSentenceSerializedRange } = this;
+        const selection =
+            this.cursorService.makeSelectionFromSerializedLexicalRange(
+                currentSentenceSerializedRange
+            );
+        return selection;
     }
-
 
     private getParagraphDataAtKey(key: string) {
         return this.paragraphData.find((pdata) => pdata.key === key);
@@ -215,9 +226,60 @@ export class SentencesService extends Service {
         });
     }
 
-    highlightCurrentSentence(){
-        const {isCursorCollapsed,serializedRange} = this.cursorService;
-        const {isCursorWithinSentence}= this;
-        
+    previousSelection: string | null = null;
+
+    highlightCurrentSentence() {
+        // const { isCursorCollapsed, serializedRange } = this.cursorService;
+        // const { isCursorWithinSentence } = this;
+
+        // const cursorSelection = $getSelection();
+        // if (this.previousSelection){
+        //     const node:TextNode|null = $getNodeByKey(this.previousSelection);
+        //     if(!node) return;
+        //     node.setStyle('');
+        // }
+
+        // if (isCursorCollapsed && isCursorWithinSentence) {
+        //     if (!this.currentSentenceSerializedRange) return;
+        //     const currentSentenceRange = this.currentSentenceSerializedRange;
+
+        //     const markupRange = this.cursorService.makeSelectionFromSerializedLexicalRange(currentSentenceRange)
+        //     // currentSentenceRange.setStyle('color:blue');
+        //     // $patchStyleText(currentSentenceRange,{'color':'blue'});
+        //     // $wrapSelectionInMarkNode(
+        //     //     currentSentenceRange,
+        //     //     currentSentenceRange.isBackward(),
+        //     //     "current",
+        //     //     (ids) => {
+        //     //         const marknode = $createMarkNode(ids);
+        //     //         this.previousSelection = marknode.getKey();
+        //     //         return marknode;
+        //     //     }
+        //     // );
+        //     // this.previousSelection = currentSentenceRange;
+        //     const currentNode:TextNode = markupRange.anchor.getNode();
+        //     const textNodes = currentNode.splitText(...$getCharacterOffsets(markupRange));
+
+        //     for (let textNode of textNodes){
+        //         textNode.toggleUnmergeable()
+        //     }
+        //     const selection = $getSelection();
+        //     if (!$isRangeSelection(selection)) return;
+
+        //     console.debug(selection.anchor.key)
+        //     const textNode:TextNode|null = selection.anchor.getNode();
+        //     if (!textNode) return;
+        //     textNode.setStyle('color:blue;');
+        //     this.previousSelection = textNode.getKey();
+        //     // const textNode = textNodes[this.currentSentenceIndex];
+        //     // if (textNode !== null){
+        //     //     textNode.setStyle('color:blue');
+        //     //     this.previousSelection = textNode.getKey();
+                
+        //     // }
+
+
+        // }
+        // $setSelection(cursorSelection);
     }
 }
