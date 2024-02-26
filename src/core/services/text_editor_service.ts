@@ -48,15 +48,15 @@ export interface LexicalConfig {
     editorConfig: CreateEditorArgs;
 }
 
-export interface MobileDocConfig {
-    element: HTMLElement;
-    defaultText: string;
-    placeholder: string;
-}
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
     cursorService: CursorService;
+}
+
+interface NodeText {
+    key:string;
+    text:string;
 }
 
 export class TextEditorService extends Service {
@@ -142,6 +142,7 @@ export class TextEditorService extends Service {
         
     }
 
+    paragraphs:NodeText[] = [];
 
     onRead(editorState:EditorState){
         const root = $getRoot();
@@ -154,6 +155,12 @@ export class TextEditorService extends Service {
         // }
         // this.plainText = markdownText;
         this.plainText = $convertToMarkdownString(TRANSFORMERS);
+
+        this.paragraphs = []
+        for (let child of root.getChildren()){
+            this.paragraphs.push({key:child.getKey(),text:child.getTextContent()})
+        }
+
     }
 
     onDisconnect() {
@@ -327,6 +334,11 @@ export class TextEditorService extends Service {
             root.append(...filteredNodes);
             console.debug("Finished outline");
         });
+    }
+
+
+    getParagraphs():NodeText[] {
+        return this.paragraphs;
     }
 }
 

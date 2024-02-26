@@ -48,6 +48,7 @@ export class BoundarySpan extends TextSpan {
 
 /** ParagraphData representes a collection of processed paragraphs */
 export interface ParagraphData {
+  key:string;
   text: string;
   sentenceSpans: TextSpan[];
 }

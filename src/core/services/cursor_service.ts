@@ -48,17 +48,22 @@ interface ServiceProvider {
     textEditorService: TextEditorService;
 }
 
-interface SerializedLexicalRange {
-    anchor: { key: string; offset: number; type: 'text'| 'element' };
-    focus: { key: string; offset: number; type: 'text'|'element' };
+export interface SerializedLexicalRange {
+    anchor: { key: string; offset: number; type: "text" | "element" };
+    focus: { key: string; offset: number; type: "text" | "element" };
     isBackward: boolean;
 }
 
-interface CurrentLexicalNode {
+export interface CurrentLexicalNode {
     type: string;
     textContent: string;
     key: string;
     textContentSize: number;
+}
+
+export interface CursorOffset{
+    key:string;
+    offset:number;
 }
 
 export class CursorService extends Service {
@@ -143,8 +148,8 @@ export class CursorService extends Service {
         this.postText = postTextSelection;
         // Get the parent node type
         const parent: ElementNode | null = node.getParent();
-        
-        if (!parent){
+
+        if (!parent) {
             return;
         }
         let elementType = parent?.getType() ?? "";
@@ -152,7 +157,7 @@ export class CursorService extends Service {
         if ($isHeadingNode(parent)) {
             elementType = `${parent.getType()}-${parent.getTag()}`;
         }
-        console.debug(parseSentences(parent.getTextContent()))
+        console.debug(parseSentences(parent.getTextContent()));
         // const elementType = parent?.getType() === 'heading'? `${parent.getType()}-${parent.getTag()?? ''}`:parent?.getType();
         this.currentNode = {
             key: node.getKey() ?? "",
@@ -161,7 +166,6 @@ export class CursorService extends Service {
             textContentSize: node.getTextContentSize() ?? 0,
         };
 
-
         // console.debug(node.getParent());
     }
 
@@ -169,16 +173,24 @@ export class CursorService extends Service {
     registerCursorListeners(): (() => void)[] {
         return [
             this.textEditorService.getEditor.registerMutationListener(
+                ParagraphNode,
+                (mutatedNodes) => {
+                    for (let [nodeKey, mutation] of mutatedNodes) {
+                        console.log('paragraph',nodeKey, mutation);
+                    }
+                }
+            ),
+            this.textEditorService.getEditor.registerMutationListener(
                 TextNode,
                 (mutatedNodes) => {
                     for (let [nodeKey, mutation] of mutatedNodes) {
                         console.log(nodeKey, mutation);
-                        this.textEditorService.getEditor.update(()=>{
+                        this.textEditorService.getEditor.update(() => {
                             const textNode: TextNode = $getNodeByKey(nodeKey)!;
-                            if (!textNode){
+                            if (!textNode) {
                                 return;
                             }
-                            
+
                             const textString = textNode.getTextContent();
                             const sentences = parseSentences(textString);
                             console.debug(sentences);
@@ -186,87 +198,128 @@ export class CursorService extends Service {
                                 (mutation === "created" ||
                                     mutation === "updated") &&
                                 sentences.length > 1
-
                             ) {
                                 textNode.toggleUnmergeable();
                                 let val = 0;
-                                const charOffsets = sentences.map((sentence) => {
-                                    val += sentence.length;
-                                    return val;
-                                });
-                                textNode.setStyle('');
+                                const charOffsets = sentences.map(
+                                    (sentence) => {
+                                        val += sentence.length;
+                                        return val;
+                                    }
+                                );
+                                textNode.setStyle("");
                                 textNode.splitText(...charOffsets);
                             }
-                        })
-
+                        });
                     }
                 }
             ),
             this.textEditorService.getEditor.registerCommand(
                 SELECTION_CHANGE_COMMAND,
-                ()=>{
+                () => {
                     const prevSelection = $getPreviousSelection();
                     const selection = $getSelection();
-                    if (!$isRangeSelection(selection)|| !$isRangeSelection(prevSelection)){
+                    if (
+                        !$isRangeSelection(selection) ||
+                        !$isRangeSelection(prevSelection)
+                    ) {
                         return false;
                     }
-                    const currentNode:LexicalNode = selection.anchor.getNode();
-                    if (!selection.isCollapsed()){
-                        if ($isTextNode(currentNode)){
-                            currentNode.setStyle('');
+                    const currentNode: LexicalNode = selection.anchor.getNode();
+                    if (!selection.isCollapsed()) {
+                        if ($isTextNode(currentNode)) {
+                            currentNode.setStyle("");
                         }
                     }
-                    if (selection.isCollapsed()){
-                        const style = 'color:var(--md-sys-color-primary);font-weight:600;';
-                        if ($isTextNode(currentNode) && currentNode.getStyle() === ''){
+                    if (selection.isCollapsed()) {
+                        const style =
+                            "color:var(--md-sys-color-primary);font-weight:600;";
+                        if (
+                            $isTextNode(currentNode) &&
+                            currentNode.getStyle() === ""
+                        ) {
                             currentNode.setStyle(style);
                         }
                     }
-                    if (prevSelection!== null){
-                        const prevNode:LexicalNode = prevSelection.anchor.getNode();
-                        if ($isTextNode(prevNode) && !prevNode.is(currentNode) && prevNode.getStyle() !== ''){
-                            prevNode.setStyle('');
+                    if (prevSelection !== null) {
+                        const prevNode: LexicalNode =
+                            prevSelection.anchor.getNode();
+                        if (
+                            $isTextNode(prevNode) &&
+                            !prevNode.is(currentNode) &&
+                            prevNode.getStyle() !== ""
+                        ) {
+                            prevNode.setStyle("");
                         }
                     }
                     return false;
                 },
-                COMMAND_PRIORITY_NORMAL,
+                COMMAND_PRIORITY_NORMAL
             ),
-            this.textEditorService.getEditor.registerCommand(KEY_ENTER_COMMAND,()=>{
-                const selection = $getPreviousSelection();
-                if (selection === null || !$isRangeSelection(selection) || !selection.isCollapsed() ){
-                    return false;
-                }
-                const currentNode:LexicalNode = selection.anchor.getNode();
-                if ($isTextNode(currentNode) && currentNode.getStyle() !== ''){
-                    currentNode.setStyle('');
-                }
-                return false;
-            },COMMAND_PRIORITY_NORMAL),
-            this.textEditorService.getEditor.registerCommand(DELETE_CHARACTER_COMMAND,(isBackward)=>{
-                const selection = $getSelection();
-                if (selection === null || !$isRangeSelection(selection) || !selection.isCollapsed() ){
-                    return false;
-                }
-                const originalSelection = selection.clone();
-                selection.modify('extend',isBackward,'character');
-                let character = selection.getTextContent()
-                character = character.trimStart().trimEnd();
-                console.debug(character);
-                if (character==='.'|| character==='?' || character === '!'){
-                    const anchorNode:LexicalNode = selection.anchor.getNode();
-
-                    const focusNode = anchorNode.getNextSibling();
-                    if ($isTextNode(anchorNode) && $isTextNode(focusNode) && !anchorNode.is(focusNode)){
-                        anchorNode.mergeWithSibling(focusNode);
-                        anchorNode.setStyle('');
+            this.textEditorService.getEditor.registerCommand(
+                KEY_ENTER_COMMAND,
+                () => {
+                    const selection = $getPreviousSelection();
+                    if (
+                        selection === null ||
+                        !$isRangeSelection(selection) ||
+                        !selection.isCollapsed()
+                    ) {
+                        return false;
                     }
+                    const currentNode: LexicalNode = selection.anchor.getNode();
+                    if (
+                        $isTextNode(currentNode) &&
+                        currentNode.getStyle() !== ""
+                    ) {
+                        currentNode.setStyle("");
+                    }
+                    return false;
+                },
+                COMMAND_PRIORITY_NORMAL
+            ),
+            this.textEditorService.getEditor.registerCommand(
+                DELETE_CHARACTER_COMMAND,
+                (isBackward) => {
+                    const selection = $getSelection();
+                    if (
+                        selection === null ||
+                        !$isRangeSelection(selection) ||
+                        !selection.isCollapsed()
+                    ) {
+                        return false;
+                    }
+                    const originalSelection = selection.clone();
+                    selection.modify("extend", isBackward, "character");
+                    let character = selection.getTextContent();
+                    character = character.trimStart().trimEnd();
+                    console.debug(character);
+                    if (
+                        character === "." ||
+                        character === "?" ||
+                        character === "!"
+                    ) {
+                        const anchorNode: LexicalNode =
+                            selection.anchor.getNode();
 
-                }
-                return false;
-            },COMMAND_PRIORITY_NORMAL),
+                        const focusNode = anchorNode.getNextSibling();
+                        if (
+                            $isTextNode(anchorNode) &&
+                            $isTextNode(focusNode) &&
+                            !anchorNode.is(focusNode)
+                        ) {
+                            anchorNode.mergeWithSibling(focusNode);
+                            anchorNode.setStyle("");
+                        }
+                    }
+                    return false;
+                },
+                COMMAND_PRIORITY_NORMAL
+            ),
         ];
     }
+
+
 
     serializedRange: SerializedLexicalRange = makeEmptyLexicalSerializedRange();
 
@@ -291,15 +344,46 @@ export class CursorService extends Service {
         };
     }
 
-    makeSelectionFromSerializedLexicalRange(serializedRange:SerializedLexicalRange){
-        const { anchor,focus} = serializedRange;
+    makeSelectionFromSerializedLexicalRange(
+        serializedRange: SerializedLexicalRange
+    ) {
+        const { anchor, focus } = serializedRange;
         const selection = $createRangeSelection();
         const anchorNode = $getNodeByKey(anchor.key);
         const focusNode = $getNodeByKey(focus.key);
-        if ($isTextNode(anchorNode) && $isTextNode(focusNode)){
-            selection.setTextNodeRange(anchorNode,anchor.offset,focusNode,focus.offset);
+        if ($isTextNode(anchorNode) && $isTextNode(focusNode)) {
+            selection.setTextNodeRange(
+                anchorNode,
+                anchor.offset,
+                focusNode,
+                focus.offset
+            );
         }
         return selection;
+    }
+
+    // Get cursor offset in parent node
+    get cursorOffset():CursorOffset{
+        if (this.isCursorCollapsed){
+            let cursorOffset:CursorOffset = {key:this.serializedRange.anchor.key,offset:this.serializedRange.anchor.offset};
+            this.textEditorService.getEditor.getEditorState().read(()=>{
+                const selection = $getSelection();
+                if (!$isRangeSelection(selection)){
+                    return;
+                }
+                const node:LexicalNode|null = selection.anchor.getNode();
+                if (!node){
+                    return;
+                }
+                const previousSiblings = node.getPreviousSiblings();
+                for (let sibling of previousSiblings){
+                    cursorOffset.offset +=sibling.getTextContentSize();
+                }
+                
+            })
+            return cursorOffset;    
+        }
+        return {key:this.serializedRange.anchor.key,offset:0};
     }
 
     get isCursorCollapsed() {
@@ -338,6 +422,23 @@ export class CursorService extends Service {
             );
         }
         return false;
+    }
+
+    get isCursorinMiddle(){
+        const {
+            isCursorCollapsed,
+            isCurrentNodeEmpty,
+            isCursorAtEndOfNode,
+            isCursorAtStartOfNode,
+        } = this;
+        if (!isCursorCollapsed || isCurrentNodeEmpty){
+            return false;
+        }
+        return !isCursorAtStartOfNode && !isCursorAtEndOfNode;
+    }
+
+    get isCurrentNodeEmpty(){
+        return this.currentNode.textContentSize === 0;
     }
 
     get isCursorAtStartOfText() {

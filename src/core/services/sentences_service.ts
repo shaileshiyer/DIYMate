@@ -1,0 +1,184 @@
+import { action, computed, makeObservable } from "mobx";
+import { CursorService, SerializedLexicalRange } from "./cursor_service";
+import { Service } from "./service";
+import { TextEditorService } from "./text_editor_service";
+import {
+    ParagraphData,
+    getSentenceBoundaries,
+    getSpanForOffset,
+    SentenceSpan,
+} from "@lib/sentence_boundaries";
+import { $getSelection } from "lexical";
+import { parseSentences } from "@lib/parse_sentences";
+
+interface ServiceProvider {
+    cursorService: CursorService;
+    textEditorService: TextEditorService;
+}
+
+export class SentencesService extends Service {
+    constructor(private readonly serviceProvider: ServiceProvider) {
+        super();
+        makeObservable(this, {
+            // cursorSpan: computed,
+            // currentSentence: computed,
+            // currentSentenceIndex: computed,
+            // currentSentenceSerializedRange: computed,
+            // nextSentenceOffset: computed,
+            // paragraphData: observable.shallow,
+            updateSentence: action,
+        });
+    }
+
+    private get cursorService() {
+        return this.serviceProvider.cursorService;
+    }
+
+    private get textEditorService() {
+        return this.serviceProvider.textEditorService;
+    }
+
+    paragraphData: ParagraphData[] = [];
+    initialized = false;
+
+    get currentSentence(): string {
+        if (!this.cursorSpan) return "";
+        return this.isCursorWithinSentence ? this.cursorSpan.span.text : "";
+    }
+
+    get currentSentenceSerializedRange(): SerializedLexicalRange | null {
+        if (!this.isCursorWithinSentence) return null;
+        const key = this.cursorService.currentNode.key;
+        if (!this.cursorSpan) return null;
+        const { start, end } = this.cursorSpan.span;
+        return {
+            anchor: { key, offset: start, type: "text" },
+            focus: { key, offset: end, type: "text" },
+            isBackward: false,
+        };
+    }
+
+    get currentSentenceIndex(): number {
+        if (!this.isCursorWithinSentence) return -1;
+        const paragraphData = this.getParagraphDataAtCursor();
+        if (paragraphData === null) return -1;
+
+        let index = 0;
+        for (const span of paragraphData.sentenceSpans) {
+            if (this.cursorSpan && this.cursorSpan.span === span) {
+                return index;
+            }
+            if (span instanceof SentenceSpan) {
+                index += 1;
+            }
+        }
+        return -1;
+    }
+
+    getSentenceBeforeCursor(): string {
+        const paragraphData = this.getParagraphDataAtCursor();
+        if (paragraphData == null) return "";
+
+        let previousSentence = "";
+        for (const span of paragraphData.sentenceSpans) {
+            if (this.cursorSpan && this.cursorSpan.span === span) {
+                return previousSentence;
+            }
+            if (span instanceof SentenceSpan) {
+                previousSentence = span.text;
+            }
+        }
+
+        return "";
+    }
+
+    get cursorSpan() {
+        const paragraph = this.getParagraphDataAtCursor();
+        if (!paragraph) return null;
+        const cursor = this.cursorService.cursorOffset;
+        const { sentenceSpans } = paragraph;
+
+        return getSpanForOffset(sentenceSpans, cursor.offset);
+    }
+
+    get isLastCursorSpan() {
+        const { cursorSpan } = this;
+        if (cursorSpan === null) return false;
+        const paragraph = this.getParagraphDataAtCursor();
+        if (paragraph === null) return false;
+        return cursorSpan.index === paragraph.sentenceSpans.length - 1;
+    }
+
+    get isFirstCursorSpan() {
+        const { cursorSpan } = this;
+        if (cursorSpan === null) return false;
+        const paragraph = this.getParagraphDataAtCursor();
+        if (paragraph === null) return false;
+        return cursorSpan.index === 0;
+    }
+
+    /**
+     * Computes whether or not the cursor is in a position fully inside of a
+     * sentence, or whether it's on the boundary.
+     */
+    get isCursorWithinSentence() {
+        const { cursorSpan } = this;
+        if (cursorSpan == null) return false;
+
+        return cursorSpan.span instanceof SentenceSpan;
+    }
+
+    /**
+     * Computes whether the cursor is actually between sentences and not at the
+     * beginning or the end of the paragraph.
+     */
+    get isCursorBetweenSentences() {
+        return (
+            !this.isCursorWithinSentence &&
+            !this.isLastCursorSpan &&
+            !this.isFirstCursorSpan
+        );
+    }
+
+    private getParagraphDataAtKey(key: string) {
+        return this.paragraphData.find((pdata) => pdata.key === key);
+    }
+
+    private stringEquals(a: string, b: string) {
+        return a.length === b.length && a === b;
+    }
+
+    private getParagraphDataAtCursor() {
+        const { isCursorCollapsed, cursorOffset } = this.cursorService;
+        if (!cursorOffset) return null;
+        if (!isCursorCollapsed) return null;
+        const paragraphKey = cursorOffset.key;
+        const paragraph = this.getParagraphDataAtKey(paragraphKey);
+        return paragraph || null;
+    }
+
+    getSentencesForElement(key: string): string[] {
+        const paragraphs = this.textEditorService.getParagraphs();
+        const paragraphText = paragraphs.find((value) => value.key === key);
+        if (!paragraphText) {
+            return [];
+        }
+        return parseSentences(paragraphText.text);
+    }
+
+    processText() {
+        const textParagraphs = this.textEditorService.getParagraphs();
+        this.paragraphData = textParagraphs.map((nodeText) => {
+            const existing = this.getParagraphDataAtKey(nodeText.key);
+            if (!existing || !this.stringEquals(nodeText.text, existing.text)) {
+                const sentenceSpans = getSentenceBoundaries(nodeText.text);
+                return {
+                    key: nodeText.key,
+                    text: nodeText.text,
+                    sentenceSpans,
+                };
+            }
+            return existing;
+        });
+    }
+}
