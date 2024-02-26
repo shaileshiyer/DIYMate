@@ -35,7 +35,7 @@ export function makeServiceProvider(self:DIYMateCore) {
         get cursorService(){
             return self.getService(CursorService);
         },
-        get sentenceService(){
+        get sentencesService(){
             return self.getService(SentencesService);
         }
     }

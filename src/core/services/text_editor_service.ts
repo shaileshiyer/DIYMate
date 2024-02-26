@@ -42,6 +42,7 @@ import {
 } from "@lexical/list";
 import { LocalStorageService } from "./local_storage_service";
 import { CursorService } from "./cursor_service";
+import { SentencesService } from "./sentences_service";
 
 export interface LexicalConfig {
     root: HTMLElement | null;
@@ -52,6 +53,7 @@ export interface LexicalConfig {
 interface ServiceProvider {
     localStorageService: LocalStorageService;
     cursorService: CursorService;
+    sentencesService:SentencesService;
 }
 
 interface NodeText {
@@ -78,6 +80,9 @@ export class TextEditorService extends Service {
 
     private get cursorService() {
         return this.serviceProvider.cursorService;
+    }
+    private get sentencesService() {
+        return this.serviceProvider.sentencesService;
     }
 
     get getEditor(){
@@ -132,7 +137,8 @@ export class TextEditorService extends Service {
             this.editor.registerUpdateListener(({ editorState }) => {
                 editorState.read(() => {
                     this.onRead(editorState);
-                    this.cursorService.cursorUpdate();
+                    this.cursorService.cursorUpdate();                    
+                    this.sentencesService.processText();
 
                 });
             }),
@@ -160,6 +166,7 @@ export class TextEditorService extends Service {
         for (let child of root.getChildren()){
             this.paragraphs.push({key:child.getKey(),text:child.getTextContent()})
         }
+
 
     }
 

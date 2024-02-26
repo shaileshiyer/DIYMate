@@ -157,7 +157,7 @@ export class CursorService extends Service {
         if ($isHeadingNode(parent)) {
             elementType = `${parent.getType()}-${parent.getTag()}`;
         }
-        console.debug(parseSentences(parent.getTextContent()));
+        // console.debug(parseSentences(parent.getTextContent()));
         // const elementType = parent?.getType() === 'heading'? `${parent.getType()}-${parent.getTag()?? ''}`:parent?.getType();
         this.currentNode = {
             key: node.getKey() ?? "",
@@ -345,11 +345,13 @@ export class CursorService extends Service {
     }
 
     makeSelectionFromSerializedLexicalRange(
-        serializedRange: SerializedLexicalRange
+        serializedRange: SerializedLexicalRange|null
     ) {
+        if (serializedRange === null) return $createRangeSelection();
         const { anchor, focus } = serializedRange;
         const selection = $createRangeSelection();
         const anchorNode = $getNodeByKey(anchor.key);
+        
         const focusNode = $getNodeByKey(focus.key);
         if ($isTextNode(anchorNode) && $isTextNode(focusNode)) {
             selection.setTextNodeRange(
@@ -375,10 +377,12 @@ export class CursorService extends Service {
                 if (!node){
                     return;
                 }
+                const parent:LexicalNode|null = node.getParent();
                 const previousSiblings = node.getPreviousSiblings();
                 for (let sibling of previousSiblings){
                     cursorOffset.offset +=sibling.getTextContentSize();
                 }
+                cursorOffset.key = parent?.getKey()?? this.serializedRange.anchor.key;
                 
             })
             return cursorOffset;    

@@ -1,4 +1,4 @@
-import { action, computed, makeObservable } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import { CursorService, SerializedLexicalRange } from "./cursor_service";
 import { Service } from "./service";
 import { TextEditorService } from "./text_editor_service";
@@ -8,7 +8,7 @@ import {
     getSpanForOffset,
     SentenceSpan,
 } from "@lib/sentence_boundaries";
-import { $getSelection } from "lexical";
+import { $getSelection, RangeSelection } from "lexical";
 import { parseSentences } from "@lib/parse_sentences";
 
 interface ServiceProvider {
@@ -20,13 +20,13 @@ export class SentencesService extends Service {
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
-            // cursorSpan: computed,
-            // currentSentence: computed,
-            // currentSentenceIndex: computed,
-            // currentSentenceSerializedRange: computed,
-            // nextSentenceOffset: computed,
-            // paragraphData: observable.shallow,
-            updateSentence: action,
+            cursorSpan: computed,
+            currentSentence: computed,
+            currentSentenceIndex: computed,
+            currentSentenceSerializedRange: computed,
+            nextSentenceOffset: computed,
+            paragraphData: observable.shallow,
+            processText: action,
         });
     }
 
@@ -140,6 +140,39 @@ export class SentencesService extends Service {
         );
     }
 
+
+    /**
+     * If the cursor is within a sentence, the next position to generate at is at
+     * the end of that sentence. Otherwise, it's where the cursor is (either in
+     * between or at the start/end) of a sentence.
+     */
+    get nextSentenceOffset() {
+        const { serializedRange } = this.cursorService;
+        if (this.isCursorWithinSentence && this.cursorSpan != null) {
+            const { span } = this.cursorSpan;
+            return span.end;
+        } else {
+            return serializedRange.anchor.offset;
+        }
+    }
+
+    getNextSentenceRange(): RangeSelection{
+        const offset = this.nextSentenceOffset;
+        const key = this.cursorService.cursorOffset.key;
+        const serialized:SerializedLexicalRange = {
+            anchor:{key,offset,type:'text'},
+            focus:{key,offset,type:'text'},
+            isBackward:false,
+        }
+        return this.cursorService.makeSelectionFromSerializedLexicalRange(serialized);
+    }
+
+    getCurrentSentenceRange(): RangeSelection {
+        const {currentSentenceSerializedRange} = this;
+        return this.cursorService.makeSelectionFromSerializedLexicalRange(currentSentenceSerializedRange)
+    }
+
+
     private getParagraphDataAtKey(key: string) {
         return this.paragraphData.find((pdata) => pdata.key === key);
     }
@@ -180,5 +213,11 @@ export class SentencesService extends Service {
             }
             return existing;
         });
+    }
+
+    highlightCurrentSentence(){
+        const {isCursorCollapsed,serializedRange} = this.cursorService;
+        const {isCursorWithinSentence}= this;
+        
     }
 }
