@@ -4,7 +4,7 @@ Starts the backend api server that communicates with openAI
 import json
 import os
 import gc
-from time import time
+from time import sleep
 from argparse import ArgumentParser
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
@@ -37,11 +37,12 @@ FAILURE = False
 
 def wait_on_run(run,thread):
     while run.status == "queued" or run.status == "in_progress":
-        run = client.beta.threads.retrieve(
+        run = client.beta.threads.runs.retrieve(
             thread_id=thread.id,
             run_id=run.id
         )
-        time.sleep(0.5)
+        
+        sleep(0.5)
     return run
 
 @app.route("/api/start_session", methods=["POST"])
@@ -146,24 +147,26 @@ def chat():
         role="user",
         content=message_content
     )
-
     
-    # Run it with the assistant
-    run = client.beta.threads.runs.create(
-        thread_id=thread_id,
-        assistant_id=assistant_id,
-        instructions=instruction,
-    )
-    
-    run = wait_on_run(run,thread)
-    
-    messages = client.beta.threads.messages.list(thread_id=thread_id,order='asc',after=message.id)
-    response = messages.data
-    result["response"] = response
-    if run.status == 'failed' or run.status == 'expired':
-        result["status"] = FAILURE
-    elif run.status == 'completed':
-        result["status"] = SUCCESS
+    result["response"] = message.model_dump_json()
+    result["status"] = SUCCESS
+    if (instruction != ''):
+        # Run the instruction with the assistant
+        run = client.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id,
+            instructions=instruction,
+        )
+        
+        run = wait_on_run(run,thread)
+        
+        messages = client.beta.threads.messages.list(thread_id=thread_id,order='asc',after=message.id)
+        response = messages.model_dump_json()
+        result["response"] = response
+        if run.status == 'failed' or run.status == 'expired':
+            result["status"] = FAILURE
+        elif run.status == 'completed':
+            result["status"] = SUCCESS
     
     return jsonify(result)
 

@@ -8,6 +8,7 @@ import { ContextService } from "@core/services/context_service";
 import { TextEditorService } from "@core/services/text_editor_service";
 import { CursorService } from "@core/services/cursor_service";
 import { SentencesService } from "@core/services/sentences_service";
+import { ChatService } from "@core/services/chat_service";
 
 export function makeServiceProvider(self:DIYMateCore) {
     const serviceProvider = {
@@ -37,7 +38,11 @@ export function makeServiceProvider(self:DIYMateCore) {
         },
         get sentencesService(){
             return self.getService(SentencesService);
+        },
+        get chatService(){
+            return self.getService(ChatService);
         }
+
     }
 
     return serviceProvider;

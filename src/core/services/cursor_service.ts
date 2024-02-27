@@ -29,22 +29,9 @@ import {
     SELECTION_CHANGE_COMMAND,
     TextNode,
 } from "lexical";
-import { $normalizeSelection } from "lexical/LexicalNormalization";
-import { $isAtNodeEnd, $patchStyleText } from "@lexical/selection";
 import { $isHeadingNode } from "@lexical/rich-text";
-import { parseSentences, isWhitespaceOnly } from "@lib/parse_sentences";
-import {
-    $setBlocksType,
-    $wrapNodesImpl,
-} from "@lexical/selection/range-selection";
-import {
-    $createMarkNode,
-    $getMarkIDs,
-    $unwrapMarkNode,
-    $wrapSelectionInMarkNode,
-    MarkNode,
-} from "@lexical/mark";
-import { $convertToMarkdownString } from "@lexical/markdown";
+import { parseSentences } from "@lib/parse_sentences";
+
 import { SentencesService } from "./sentences_service";
 
 interface ServiceProvider {
@@ -180,158 +167,167 @@ export class CursorService extends Service {
     previousSelection: RangeSelection = $createRangeSelection();
     registerCursorListeners(): (() => void)[] {
         return [
-            this.textEditorService.getEditor.registerNodeTransform(
+            this.textEditorService.getEditor.registerMutationListener(
                 TextNode,
-                (node) => {
-                    if (node.isUnmergeable()) {
-                        node.toggleUnmergeable();
+                (mutatedNodes) => {
+                    for (let [nodeKey, mutation] of mutatedNodes) {
+                        console.log(nodeKey, mutation);
+                        this.textEditorService.getEditor.update(() => {
+                            const textNode: TextNode = $getNodeByKey(nodeKey)!;
+                            if (!textNode) {
+                                return;
+                            }
+
+                            const textString = textNode.getTextContent();
+                            const sentences = parseSentences(textString);
+                            console.debug(sentences);
+                            if (
+                                (mutation === "created" ||
+                                    mutation === "updated") &&
+                                sentences.length > 1
+                            ) {
+                                textNode.toggleUnmergeable();
+                                let val = 0;
+                                const charOffsets = sentences.map(
+                                    (sentence) => {
+                                        val += sentence.length;
+                                        return val;
+                                    }
+                                );
+                                textNode.setStyle("");
+                                textNode.splitText(...charOffsets);
+                            }
+                        });
                     }
                 }
             ),
-            // this.textEditorService.getEditor.registerMutationListener(
-            //     TextNode,
-            //     (mutatedNodes) => {
-            //         for (let [nodeKey, mutation] of mutatedNodes) {
-            //             console.log(nodeKey, mutation);
-            //             this.textEditorService.getEditor.update(() => {
-            //                 const textNode: TextNode = $getNodeByKey(nodeKey)!;
-            //                 if (!textNode) {
-            //                     return;
-            //                 }
-
-            //                 const textString = textNode.getTextContent();
-            //                 const sentences = parseSentences(textString);
-            //                 console.debug(sentences);
-            //                 if (
-            //                     (mutation === "created" ||
-            //                         mutation === "updated") &&
-            //                     sentences.length > 1
-            //                 ) {
-            //                     textNode.toggleUnmergeable();
-            //                     let val = 0;
-            //                     const charOffsets = sentences.map(
-            //                         (sentence) => {
-            //                             val += sentence.length;
-            //                             return val;
-            //                         }
-            //                     );
-            //                     textNode.setStyle("");
-            //                     textNode.splitText(...charOffsets);
-            //                 }
-            //             });
-            //         }
-            //     }
-            // ),
-            // this.textEditorService.getEditor.registerCommand(
-            //     SELECTION_CHANGE_COMMAND,
-            //     () => {
-            //         const prevSelection = $getPreviousSelection();
-            //         const selection = $getSelection();
-            //         if (
-            //             !$isRangeSelection(selection) ||
-            //             !$isRangeSelection(prevSelection)
-            //         ) {
-            //             return false;
-            //         }
-            //         const currentNode: LexicalNode = selection.anchor.getNode();
-            //         if (!selection.isCollapsed()) {
-            //             if ($isTextNode(currentNode)) {
-            //                 currentNode.setStyle("");
-            //             }
-            //         }
-            //         if (selection.isCollapsed()) {
-            //             const style =
-            //                 "color:var(--md-sys-color-primary);font-weight:600;";
-            //             if (
-            //                 $isTextNode(currentNode) &&
-            //                 currentNode.getStyle() === ""
-            //             ) {
-            //                 currentNode.setStyle(style);
-            //             }
-            //         }
-            //         if (prevSelection !== null) {
-            //             const prevNode: LexicalNode =
-            //                 prevSelection.anchor.getNode();
-            //             if (
-            //                 $isTextNode(prevNode) &&
-            //                 !prevNode.is(currentNode) &&
-            //                 prevNode.getStyle() !== ""
-            //             ) {
-            //                 prevNode.setStyle("");
-            //             }
-            //         }
-            //         return false;
-            //     },
-            //     COMMAND_PRIORITY_NORMAL
-            // ),
-            // this.textEditorService.getEditor.registerCommand(
-            //     KEY_ENTER_COMMAND,
-            //     () => {
-            //         const selection = $getPreviousSelection();
-            //         if (
-            //             selection === null ||
-            //             !$isRangeSelection(selection) ||
-            //             !selection.isCollapsed()
-            //         ) {
-            //             return false;
-            //         }
-            //         const currentNode: LexicalNode = selection.anchor.getNode();
-            //         if (
-            //             $isTextNode(currentNode) &&
-            //             currentNode.getStyle() !== ""
-            //         ) {
-            //             currentNode.setStyle("");
-            //         }
-            //         return false;
-            //     },
-            //     COMMAND_PRIORITY_NORMAL
-            // ),
-            // this.textEditorService.getEditor.registerCommand(
-            //     DELETE_CHARACTER_COMMAND,
-            //     (isBackward) => {
-            //         const selection = $getSelection();
-            //         if (
-            //             selection === null ||
-            //             !$isRangeSelection(selection) ||
-            //             !selection.isCollapsed()
-            //         ) {
-            //             return false;
-            //         }
-            //         const originalSelection = selection.clone();
-            //         selection.modify("extend", isBackward, "character");
-            //         let character = selection.getTextContent();
-            //         character = character.trimStart().trimEnd();
-            //         console.debug(character);
-            //         if (
-            //             character === "." ||
-            //             character === "?" ||
-            //             character === "!"
-            //         ) {
-            //             const anchorNode: LexicalNode =
-            //                 selection.anchor.getNode();
-
-            //             const focusNode = anchorNode.getNextSibling();
-            //             if (
-            //                 $isTextNode(anchorNode) &&
-            //                 $isTextNode(focusNode) &&
-            //                 !anchorNode.is(focusNode)
-            //             ) {
-            //                 anchorNode.mergeWithSibling(focusNode);
-            //                 anchorNode.setStyle("");
-            //             }
-            //         }
-            //         return false;
-            //     },
-            //     COMMAND_PRIORITY_NORMAL
-            // ),
-             this.textEditorService.getEditor.registerCommand(
+            this.textEditorService.getEditor.registerCommand(
                 SELECTION_CHANGE_COMMAND,
                 () => {
-                    this.sentenceService.highlightCurrentSentence();
+                    const prevSelection = $getPreviousSelection();
+                    const selection = $getSelection();
+                    if (
+                        !$isRangeSelection(selection) ||
+                        !$isRangeSelection(prevSelection)
+                    ) {
+                        return false;
+                    }
+                    const currentNode: LexicalNode = selection.anchor.getNode();
+                    if (!selection.isCollapsed()) {
+                        if ($isTextNode(currentNode)) {
+                            currentNode.setStyle("");
+                        }
+                    }
+                    if (selection.isCollapsed()) {
+                        const style =
+                            "color:var(--md-sys-color-primary);font-weight:600;";
+                        if (
+                            $isTextNode(currentNode) &&
+                            currentNode.getStyle() === ""
+                        ) {
+                            currentNode.setStyle(style);
+                        }
+                    }
+                    if (prevSelection !== null) {
+                        const prevNode: LexicalNode =
+                            prevSelection.anchor.getNode();
+                        if (
+                            $isTextNode(prevNode) &&
+                            !prevNode.is(currentNode) &&
+                            prevNode.getStyle() !== ""
+                        ) {
+                            prevNode.setStyle("");
+                        }
+                    }
                     return false;
                 },
                 COMMAND_PRIORITY_NORMAL
             ),
+            this.textEditorService.getEditor.registerCommand(
+                KEY_ENTER_COMMAND,
+                () => {
+                    const selection = $getPreviousSelection();
+                    if (
+                        selection === null ||
+                        !$isRangeSelection(selection) ||
+                        !selection.isCollapsed()
+                    ) {
+                        return false;
+                    }
+                    const currentNode: LexicalNode = selection.anchor.getNode();
+                    if (
+                        $isTextNode(currentNode) &&
+                        currentNode.getStyle() !== ""
+                    ) {
+                        currentNode.setStyle("");
+                    }
+                    return false;
+                },
+                COMMAND_PRIORITY_NORMAL
+            ),
+            this.textEditorService.getEditor.registerCommand(
+                DELETE_CHARACTER_COMMAND,
+                (isBackward) => {
+                    const selection = $getSelection();
+                    if (
+                        selection === null ||
+                        !$isRangeSelection(selection) ||
+                        !selection.isCollapsed()
+                    ) {
+                        return false;
+                    }
+                    const originalSelection = selection.clone();
+                    selection.modify("extend", isBackward, "character");
+                    let character = selection.getTextContent();
+                    character = character.trimStart().trimEnd();
+                    console.debug(character);
+                    if (
+                        character === "." ||
+                        character === "?" ||
+                        character === "!"
+                    ) {
+                        const anchorNode: LexicalNode =
+                            selection.anchor.getNode();
+
+                        const focusNode = anchorNode.getNextSibling();
+                        if (
+                            $isTextNode(anchorNode) &&
+                            $isTextNode(focusNode) &&
+                            !anchorNode.is(focusNode)
+                        ) {
+                            anchorNode.mergeWithSibling(focusNode);
+                            anchorNode.setStyle("");
+                        }
+                    }
+                    return false;
+                },
+                COMMAND_PRIORITY_NORMAL
+            ),
+            // this.textEditorService.getEditor.registerNodeTransform(
+            //     TextNode,
+            //     (node) => {
+            //         if (node.isUnmergeable()) {
+            //             node.toggleUnmergeable();
+            //         }
+            //     }
+            // ),
+            //  this.textEditorService.getEditor.registerCommand(
+            //     SELECTION_CHANGE_COMMAND,
+            //     () => {
+            //         this.cursorUpdate();
+            //         this.sentenceService.highlightCurrentSentence();
+            //         return false;
+            //     },
+            //     COMMAND_PRIORITY_NORMAL
+            // ),
+            // this.textEditorService.getEditor.registerTextContentListener(
+            //     (newTextContent) => {
+            //         // console.debug(newTextContent);
+            //         this.textEditorService.getEditor.update(() => {
+            //             this.sentenceService.highlightCurrentSentence();
+            //         });
+            //     }
+            // ),
         ];
     }
 

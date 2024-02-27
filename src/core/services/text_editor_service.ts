@@ -128,6 +128,9 @@ export class TextEditorService extends Service {
                 this.editorStateForInitialization
             );
             this.editor.setEditorState(parsedEditorState);
+            this.editor.getEditorState().read(()=>{
+                this.plainText = $convertToMarkdownString(TRANSFORMERS);
+            })
             this.editorStateForInitialization = null;
         }
 
@@ -136,8 +139,8 @@ export class TextEditorService extends Service {
         this.editorListeners = [
             this.editor.registerUpdateListener(({ editorState }) => {
                 editorState.read(() => {
-                    this.onRead(editorState);
                     this.cursorService.cursorUpdate();                    
+                    this.onRead(editorState);
                     this.sentencesService.processText();
 
                 });
@@ -164,7 +167,13 @@ export class TextEditorService extends Service {
 
         this.paragraphs = []
         for (let child of root.getChildren()){
-            this.paragraphs.push({key:child.getKey(),text:child.getTextContent()})
+            if ($isListNode(child)){
+                for ( let listchild of child.getChildren()){
+                    this.paragraphs.push({key:listchild.getKey(),text:listchild.getTextContent()})
+                }
+            } else {
+                this.paragraphs.push({key:child.getKey(),text:child.getTextContent()})
+            }
         }
 
 

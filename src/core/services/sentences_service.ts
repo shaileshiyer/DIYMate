@@ -8,7 +8,7 @@ import {
     getSpanForOffset,
     SentenceSpan,
 } from "@lib/sentence_boundaries";
-import { $getCharacterOffsets, $getNodeByKey, $getSelection, $isRangeSelection, $setSelection, RangeSelection, TextNode } from "lexical";
+import { $addUpdateTag, $getCharacterOffsets, $getNodeByKey, $getPreviousSelection, $getSelection, $isRangeSelection, $isTextNode, $setSelection, $splitNode, LexicalNode, RangeSelection, TextNode } from "lexical";
 import { parseSentences } from "@lib/parse_sentences";
 import { $addNodeStyle, $patchStyleText, $sliceSelectedTextNodeContent } from "@lexical/selection";
 import {
@@ -17,6 +17,7 @@ import {
     $wrapSelectionInMarkNode,
     MarkNode,
 } from "@lexical/mark";
+import { $normalizeSelection } from "lexical/LexicalNormalization";
 
 interface ServiceProvider {
     cursorService: CursorService;
@@ -227,59 +228,46 @@ export class SentencesService extends Service {
     }
 
     previousSelection: string | null = null;
+    cachedNodes: LexicalNode[] = [];
 
+    /**Forget about this for now The current solution works and is good enough for most cases */
+    // Turns out it is getting a stale value from the computed stuff. 
     highlightCurrentSentence() {
-        // const { isCursorCollapsed, serializedRange } = this.cursorService;
-        // const { isCursorWithinSentence } = this;
+        const { isCursorCollapsed, serializedRange } = this.cursorService;
+        const { isCursorWithinSentence } = this;
 
-        // const cursorSelection = $getSelection();
-        // if (this.previousSelection){
-        //     const node:TextNode|null = $getNodeByKey(this.previousSelection);
-        //     if(!node) return;
-        //     node.setStyle('');
-        // }
-
-        // if (isCursorCollapsed && isCursorWithinSentence) {
-        //     if (!this.currentSentenceSerializedRange) return;
-        //     const currentSentenceRange = this.currentSentenceSerializedRange;
-
-        //     const markupRange = this.cursorService.makeSelectionFromSerializedLexicalRange(currentSentenceRange)
-        //     // currentSentenceRange.setStyle('color:blue');
-        //     // $patchStyleText(currentSentenceRange,{'color':'blue'});
-        //     // $wrapSelectionInMarkNode(
-        //     //     currentSentenceRange,
-        //     //     currentSentenceRange.isBackward(),
-        //     //     "current",
-        //     //     (ids) => {
-        //     //         const marknode = $createMarkNode(ids);
-        //     //         this.previousSelection = marknode.getKey();
-        //     //         return marknode;
-        //     //     }
-        //     // );
-        //     // this.previousSelection = currentSentenceRange;
-        //     const currentNode:TextNode = markupRange.anchor.getNode();
-        //     const textNodes = currentNode.splitText(...$getCharacterOffsets(markupRange));
-
-        //     for (let textNode of textNodes){
-        //         textNode.toggleUnmergeable()
+        // const previousselection = $getPreviousSelection();
+        // if ($isRangeSelection(previousselection)){
+        //     const cachedNodes = previousselection.getCachedNodes()?? [];
+        //     console.debug('previous_cachedNodes',previousselection._cachedNodes,this.cachedNodes);
+        //     for (let cacheNode of this.cachedNodes){
+        //         if ($isTextNode(cacheNode) && this.currentSentence!== cacheNode.getTextContent() && cacheNode.hasFormat('bold')){
+        //             cacheNode.setFormat('');
+        //             previousselection.setCachedNodes(null);
+        //         }
         //     }
-        //     const selection = $getSelection();
-        //     if (!$isRangeSelection(selection)) return;
-
-        //     console.debug(selection.anchor.key)
-        //     const textNode:TextNode|null = selection.anchor.getNode();
-        //     if (!textNode) return;
-        //     textNode.setStyle('color:blue;');
-        //     this.previousSelection = textNode.getKey();
-        //     // const textNode = textNodes[this.currentSentenceIndex];
-        //     // if (textNode !== null){
-        //     //     textNode.setStyle('color:blue');
-        //     //     this.previousSelection = textNode.getKey();
-                
-        //     // }
-
-
         // }
-        // $setSelection(cursorSelection);
+        if (this.cachedNodes.length > 0){
+            console.debug('previous_cachedNodes',this.cachedNodes);
+            for (let cacheNode of this.cachedNodes){
+                if ($isTextNode(cacheNode) && this.currentSentence!== cacheNode.getTextContent() && cacheNode.hasFormat('bold')){
+                    cacheNode.setFormat('');
+                    this.cachedNodes = [];
+                }
+            }
+        }
+
+
+        if (isCursorCollapsed && isCursorWithinSentence) {
+            if (!this.currentSentenceSerializedRange) return;
+            const currentSentenceRange = this.currentSentenceSerializedRange;
+
+
+            const markupRange = this.cursorService.makeSelectionFromSerializedLexicalRange(currentSentenceRange);
+            console.debug(this.currentSentence);
+            
+
+        }
+
     }
 }

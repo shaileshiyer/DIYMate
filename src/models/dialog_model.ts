@@ -4,7 +4,7 @@ import { ModelResults } from "@core/shared/types";
 
 export interface DialogMessage {
     content:string;
-    role?:'system'|'user'|'assistant';
+    role?:'system'|'user'|'assistant'|'instruction';
 }
 
 export interface DialogParams {
@@ -30,7 +30,7 @@ export abstract class DialogModel {
     get context(){
         return this.contextService.getContext();
     }
-    async query(params:DialogParams):Promise<ModelResults>{
+    async query(params:DialogParams):Promise<DialogMessage[]>{
         throw new Error('Not yet Implemented');
     }
 }

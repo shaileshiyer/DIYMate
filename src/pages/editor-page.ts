@@ -11,7 +11,8 @@ export class EditorPage extends LitElement {
             #editor-page-wrapper {
                 display: flex;
                 flex-direction: row;
-                height: 100vh;
+                height:100%;
+                /* height: 80vh; */
                 /* margin: 2em auto; */
                 /* padding: 2em auto; */
             }

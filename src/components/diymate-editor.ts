@@ -30,7 +30,6 @@ export class DIYMateEditor extends MobxLitElement {
         return css`
             #diymate-editor-container {
                 display: flex;
-                flex: 1;
                 flex-direction: column;
                 justify-content: start;
                 width: 100%;
@@ -41,9 +40,18 @@ export class DIYMateEditor extends MobxLitElement {
                 background-color: var(--md-sys-color-surface-container-highest);
                 padding: 0 2em;
                 border-bottom: 1px solid var(--md-sys-color-scrim);
-                height: 100vh;
+                height: 98vh;
                 overflow-y: scroll;
             }
+
+            #diymate-editor-container::-webkit-scrollbar{
+                display:none;
+            }
+
+            #diymate-editor::-webkit-scrollbar{
+                display:none;
+            }
+
 
             #diymate-editor:focus {
                 outline: none;
@@ -66,7 +74,15 @@ export class DIYMateEditor extends MobxLitElement {
             editorConfig: {
                 namespace: "DIYMateEditor",
                 onError: console.error,
-                nodes: [HeadingNode,QuoteNode, LinkNode, ListNode, ListItemNode,CodeNode,MarkNode],
+                nodes: [
+                    HeadingNode,
+                    QuoteNode,
+                    LinkNode,
+                    ListNode,
+                    ListItemNode,
+                    CodeNode,
+                    MarkNode,
+                ],
                 editable: true,
             },
         };
