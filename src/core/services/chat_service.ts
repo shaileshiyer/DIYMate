@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, computed, flow, makeObservable, observable } from "mobx";
 import { Service } from "./service";
 import { ModelService } from "./model_service";
 import { TextEditorService } from "./text_editor_service";
@@ -29,8 +29,9 @@ export class ChatService extends Service {
             messages: observable,
             messagesToDisplay: computed,
             shouldIncludeDIY: observable,
-            sendCurrentDIYTutorial:action,
-            sendMessage:action,
+            sendCurrentDIYTutorial:flow,
+            sendMessage:flow,
+            setCurrentMessage:action,
         });
     }
 
@@ -55,7 +56,11 @@ export class ChatService extends Service {
         return [this.getInitialMessage(),...this.messages];
     }
 
-    async sendCurrentDIYTutorial(){
+    setCurrentMessage(currentMessage:string){
+        this.currentMessage = currentMessage;
+    }
+
+    *sendCurrentDIYTutorial(){
         const currentDIY = this.localStorageService.getCurrentDIY();
         const diyPlainText = this.textEditorService.getPlainText();
         const message = `Here is the description of the DIY Tutorial:\n ${currentDIY?.description}\n Here is the DIY Tutorial so far:\n ${diyPlainText}`
@@ -63,7 +68,7 @@ export class ChatService extends Service {
         this.messages.push(dialogMessage);
         try {
             this.isLoading = true;
-            const response = await this.modelService.getDialogModel().query({messages:[dialogMessage]});
+            const response = yield this.modelService.getDialogModel().query({messages:[dialogMessage]});
             this.isLoading = false;
         } catch (error) {
             console.error(error);
@@ -72,7 +77,7 @@ export class ChatService extends Service {
         }
     }
 
-    async sendMessage(){
+    *sendMessage(){
         if (this.currentMessage.length === 0){
             return;
         }
@@ -86,7 +91,7 @@ export class ChatService extends Service {
                     {role:"user",content:this.currentMessage},
                 ]
             }
-            const response = await this.modelService.getDialogModel().query(dialogParams);
+            const response = yield this.modelService.getDialogModel().query(dialogParams);
             this.messages.push(...response);
             this.currentMessage = '';
             this.isLoading = false;

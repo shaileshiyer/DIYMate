@@ -272,12 +272,14 @@ export class Chat extends MobxLitElement {
                 <div class="row">
                     <md-outlined-text-field
                         ?disabled=${isLoading}
+                        spellcheck="false"
                         class="text-input"
                         label="Message"
                         type="textarea"
+                        .value=${this.chatService.currentMessage}
                         @keydown=${this.onKeyDown}
                         @input=${(e: HTMLElementEvent<HTMLTextAreaElement>) => {
-                            this.chatService.currentMessage = e.target.value;
+                            this.chatService.setCurrentMessage(e.target.value);
                         }}
                         placeholder="Say something to DIYMate..."></md-outlined-text-field>
                     <div class="buttons-container">
