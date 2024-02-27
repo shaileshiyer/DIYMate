@@ -68,7 +68,7 @@ export class ChatService extends Service {
         this.messages.push(dialogMessage);
         try {
             this.isLoading = true;
-            const response = yield this.modelService.getDialogModel().query({messages:[dialogMessage]});
+            const response:DialogMessage[] = yield this.modelService.getDialogModel().query({messages:[dialogMessage]});
             this.isLoading = false;
         } catch (error) {
             console.error(error);
@@ -91,7 +91,7 @@ export class ChatService extends Service {
                     {role:"user",content:this.currentMessage},
                 ]
             }
-            const response = yield this.modelService.getDialogModel().query(dialogParams);
+            const response:DialogMessage[] = yield this.modelService.getDialogModel().query(dialogParams);
             this.messages.push(...response);
             this.currentMessage = '';
             this.isLoading = false;
