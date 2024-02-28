@@ -52,6 +52,7 @@ export interface CurrentLexicalNode {
     textContent: string;
     key: string;
     parentKey:string;
+    parentOffset:number;
     textContentSize: number;
 }
 
@@ -105,6 +106,7 @@ export class CursorService extends Service {
         key: "",
         type: "",
         textContent: "",
+        parentOffset: 0,
         textContentSize: 0,
     };
     selection: RangeSelection = $createRangeSelection();
@@ -126,7 +128,7 @@ export class CursorService extends Service {
         this.selectedText = selection.getTextContent();
         const [head, tail] = $getCharacterOffsets(selection);
 
-        const node: LexicalNode = selection.anchor.getNode();
+        const node: LexicalNode = selection.focus.getNode();
         const textContent = node.getTextContent();
         const maxLength = node.getTextContentSize();
 
@@ -159,14 +161,22 @@ export class CursorService extends Service {
         if ($isHeadingNode(parent)) {
             elementType = `${parent.getType()}-${parent.getTag()}`;
         }
-        // console.debug(parseSentences(parent.getTextContent()));
-        // const elementType = parent?.getType() === 'heading'? `${parent.getType()}-${parent.getTag()?? ''}`:parent?.getType();
+
+        // Calculate the current offset from parent
+        let parentOffset = this.serializedRange.anchor.offset;
+        const previousSiblings = node.getPreviousSiblings();
+        for (let sibling of previousSiblings) {
+            parentOffset += sibling.getTextContentSize();
+        }
+
+
         this.currentNode = {
             parentKey: parent.getKey()??"",
             key: node.getKey() ?? "",
             type: elementType,
             textContent: node.getTextContent() ?? "",
             textContentSize: node.getTextContentSize() ?? 0,
+            parentOffset,
         };
 
         this.textEditorService.getEditor.dispatchCommand(HIGHLIGHT_CURRENT_SENTENCE,this.currentNode.key);
@@ -323,9 +333,9 @@ export class CursorService extends Service {
              this.textEditorService.getEditor.registerCommand(
                 HIGHLIGHT_CURRENT_SENTENCE,
                 (currentNodeKey) => {
-                    console.log(currentNodeKey);
-                    // this.sentenceService.highlightCurrentSentence();
-                    return false;
+                    // console.log(currentNodeKey);
+                    this.sentenceService.highlightCurrentSentence();
+                    return true;
                 },
                 COMMAND_PRIORITY_NORMAL
             ),
@@ -335,8 +345,8 @@ export class CursorService extends Service {
                 () => {
                     console.log('selection_change');
                     this.cursorUpdate();
-                    this.sentenceService.highlightCurrentSentence();
-                    return false;
+                    // this.sentenceService.highlightCurrentSentence();
+                    return true;
                 },
                 COMMAND_PRIORITY_NORMAL
             ),
@@ -430,25 +440,25 @@ export class CursorService extends Service {
         if (this.isCursorCollapsed) {
             let cursorOffset: CursorOffset = {
                 key: this.currentNode.parentKey,
-                offset: this.serializedRange.anchor.offset,
+                offset: this.currentNode.parentOffset,
             };
-            this.textEditorService.getEditor.getEditorState().read(() => {
-                const selection = $getSelection();
-                if (!$isRangeSelection(selection)) {
-                    return;
-                }
-                const node: LexicalNode | null = selection.anchor.getNode();
-                if (!node) {
-                    return;
-                }
-                const parent: LexicalNode | null = node.getParent();
-                const previousSiblings = node.getPreviousSiblings();
-                for (let sibling of previousSiblings) {
-                    cursorOffset.offset += sibling.getTextContentSize();
-                }
-                // cursorOffset.key =
-                //     parent?.getKey() ?? this.serializedRange.anchor.key;
-            });
+            // this.textEditorService.getEditor.getEditorState().read(() => {
+            //     const selection = $getSelection();
+            //     if (!$isRangeSelection(selection)) {
+            //         return;
+            //     }
+            //     const node: LexicalNode | null = selection.anchor.getNode();
+            //     if (!node) {
+            //         return;
+            //     }
+            //     const parent: LexicalNode | null = node.getParent();
+            //     const previousSiblings = node.getPreviousSiblings();
+            //     for (let sibling of previousSiblings) {
+            //         cursorOffset.offset += sibling.getTextContentSize();
+            //     }
+            //     // cursorOffset.key =
+            //     //     parent?.getKey() ?? this.serializedRange.anchor.key;
+            // });
             return cursorOffset;
         }
         return { key: this.currentNode.parentKey, offset: 0 };

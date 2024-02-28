@@ -8,7 +8,7 @@ import {
     getSpanForOffset,
     SentenceSpan,
 } from "@lib/sentence_boundaries";
-import { $addUpdateTag, $getCharacterOffsets, $getNodeByKey, $getPreviousSelection, $getSelection, $isRangeSelection, $isTextNode, $setSelection, $splitNode, LexicalNode, RangeSelection, TextNode } from "lexical";
+import { $addUpdateTag, $getCharacterOffsets, $getNodeByKey, $getPreviousSelection, $getSelection, $isRangeSelection, $isTextNode, $normalizeSelection__EXPERIMENTAL, $setSelection, $splitNode, LexicalNode, RangeSelection, TextNode } from "lexical";
 import { parseSentences } from "@lib/parse_sentences";
 import { $addNodeStyle, $getSelectionStyleValueForProperty, $patchStyleText, $sliceSelectedTextNodeContent } from "@lexical/selection";
 import {
@@ -103,10 +103,10 @@ export class SentencesService extends Service {
     get cursorSpan() {
         const paragraph = this.getParagraphDataAtCursor();
         if (!paragraph) return null;
-        const cursor = this.cursorService.cursorOffset;
+        const cursorOffset = this.cursorService.cursorOffset.offset;
         const { sentenceSpans } = paragraph;
 
-        return getSpanForOffset(sentenceSpans, cursor.offset);
+        return getSpanForOffset(sentenceSpans, cursorOffset);
     }
 
     get isLastCursorSpan() {
@@ -249,17 +249,14 @@ export class SentencesService extends Service {
         const previousMarkupRange =this.cursorService.makeSelectionFromSerializedLexicalRange(this.previousSelection);
         const previousStyleValue = $getSelectionStyleValueForProperty(previousMarkupRange,'color',DEFAULT_VALUE);
         
-        // if (previousMarkupRange !== null && this.currentSentenceSerializedRange === null && previousStyleValue!= '' ){
-        //     const nodes = previousMarkupRange.getNodes();
-        //     for (let node of nodes ){
-        //         if ($isTextNode(node)){
-        //             node.setStyle('');
-        //         }
-        //     }
-        //     // $patchStyleText(previousMarkupRange,{'color':''});
-        //     // $setSelection(prevSel);
-        //     // this.previousSelection = null;
-        // }
+        if (previousMarkupRange !== null && !isCursorCollapsed ){
+            const nodes = previousMarkupRange.getNodes();
+            for (let node of nodes ){
+                if ($isTextNode(node)){
+                    node.setStyle('');
+                }
+            }
+        }
         
         
         if (isCursorCollapsed && isCursorWithinSentence ) {
@@ -269,8 +266,8 @@ export class SentencesService extends Service {
             const style = "color:var(--md-sys-color-primary);font-weight:600;"
             const markupRange = this.cursorService.makeSelectionFromSerializedLexicalRange(currentSentenceRange);
             const currentStyleValue = $getSelectionStyleValueForProperty(markupRange,'color',DEFAULT_VALUE);
-            console.debug('previousValue',previousStyleValue,previousMarkupRange.getTextContent());
-            console.debug('currentValue',currentStyleValue, markupRange.getTextContent());
+            // console.debug('previousValue',previousStyleValue,previousMarkupRange.getTextContent());
+            // console.debug('currentValue',currentStyleValue, markupRange.getTextContent());
             const previousMarkupRangeAnchorNode = previousMarkupRange.anchor.getNode();
             const markupRangeAnchorNode = markupRange.anchor.getNode();
             if (previousMarkupRange !== null && !markupRange.is(previousMarkupRange) ){
@@ -280,14 +277,12 @@ export class SentencesService extends Service {
                         node.setStyle('');
                     }
                 }
-                // $patchStyleText(previousMarkupRange,{'color':''});
-                // $setSelection(prevSel);
             }
 
             if (currentStyleValue === '' || currentStyleValue === DEFAULT_VALUE){
                 // const slicedNode = $sliceSelectedTextNodeContent(markupRange,markupRange.anchor.getNode());
                 // if ($isTextNode(slicedNode)){
-                $patchStyleText(markupRange,{'color':'var(--md-sys-color-primary)'});
+                $patchStyleText(markupRange,{'color':'var(--md-sys-color-primary)','font-weight':'600'});
                 //     slicedNode.setStyle('color:blue');
                     // this.previousSelection = currentSentenceRange;
     
