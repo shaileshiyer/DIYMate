@@ -241,7 +241,7 @@ export class SentencesService extends Service {
 
         const selection = $getSelection();
         let prevSel = null;
-        if (selection){
+        if ($isRangeSelection(selection)){
             prevSel = selection.clone();
         }
 
@@ -287,6 +287,24 @@ export class SentencesService extends Service {
                     // this.previousSelection = currentSentenceRange;
     
                 // }
+                if (prevSel!== null){
+                    // Get the split node key and offset.
+                    let node = $getNodeByKey(prevSel.anchor.key);
+                    let key = prevSel.anchor.key;
+                    let offset = prevSel.anchor.offset;
+                    while(node!== null){
+                        if (offset> node.getTextContentSize()){
+                            key = node.getKey();  
+                            offset -= node.getTextContentSize();
+                        } else {
+                            break;
+                        }
+                        node = node.getNextSibling();
+                    }
+                    if ($isTextNode(node)){
+                        prevSel.setTextNodeRange(node,offset,node,offset);
+                    }
+                }
                 $setSelection(prevSel);
             }
             this.previousSelection = currentSentenceRange;
