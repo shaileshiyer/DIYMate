@@ -139,7 +139,7 @@ export class TextEditorService extends Service {
         this.editorListeners = [
             this.editor.registerUpdateListener(({ editorState }) => {
                 editorState.read(() => {
-                    this.cursorService.cursorUpdate();                    
+                    // this.cursorService.cursorUpdate();                    
                     this.onRead(editorState);
                     this.sentencesService.processText();
 
