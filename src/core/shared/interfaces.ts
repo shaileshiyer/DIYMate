@@ -1,4 +1,4 @@
-import { TextType } from "@core/shared/types";
+import { OperationTrigger, TextType } from "@core/shared/types";
 
 export interface OutlinePromptParams {
     description:string;
@@ -71,3 +71,23 @@ export interface ContinuePromptParams {
     toRewrite: string;
     textType: TextType;
   }
+
+type UUID = string;
+
+/**
+ * Operation Data is used to track the intent of the user to change the text
+ * Also allows for easier logging of Prompt Operations.
+ */
+
+export interface OperationData{
+  id:UUID;
+  documentId: UUID;
+  timestamp: number;
+  text:string;
+  cursorStart: number;
+  cursorEnd:number;
+}
+
+export interface OperationControls {
+    
+}

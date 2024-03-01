@@ -21,7 +21,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
     private sentencesService = diymateCore.getService(SentencesService);
 
     @property({type:Number})
-    private activeTab:number = 1;
+    private activeTab:number = 2;
 
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -43,14 +43,29 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         <p>Current Node: ${JSON.stringify(this.cursorService.currentNode)}</p>
         <p>serializedRange: ${JSON.stringify(this.cursorService.serializedRange)}</p>
         <p>cursorOffset:${JSON.stringify(this.cursorService.cursorOffset)}</p>
+        
+        <p>currentSentence: ${this.sentencesService.currentSentence} </p>
+        <p>cursorSpan: ${JSON.stringify(this.sentencesService.cursorSpan)} </p>
+        <p>currentSentenceIndex: ${this.sentencesService.currentSentenceIndex} </p>
+        <p>currentSentenceSerializedRange: ${JSON.stringify(this.sentencesService.currentSentenceSerializedRange)} </p>
+        <p>currentSentenceRange: ${this.sentencesService.getCurrentSentenceRange()} </p>
+        <p>nextSentenceOffset: ${this.sentencesService.nextSentenceOffset} </p>
+        <!-- Cursor Checks -->
+        <p>isCursorBetweenSentences: ${this.sentencesService.isCursorBetweenSentences} </p>
+        <p>isCursorinMiddleOfSentence: ${this.sentencesService.isCursorWithinSentence} </p>
+        <p>isCursorAtParagraphStart: ${this.cursorService.isCursorAtStartOfNode} </p>
+        <p>isCursorAtParagraphEnd: ${this.cursorService.isCursorAtEndOfNode} </p>
         <p>isCursorCollapsed: ${this.cursorService.isCursorCollapsed}</p>
         <p>isCursorSelection: ${this.cursorService.isCursorSelection}</p>
         <p>isCursorinSameNode: ${this.cursorService.isCursorInSingleNode}</p>
-        <p>isCursorAtStartOfNode: ${this.cursorService.isCursorAtStartOfNode}</p>
-        <p>isCursorAtEndOfNode: ${this.cursorService.isCursorAtEndOfNode}</p>
-        <p>isCursorinMiddle: <b>${this.cursorService.isCursorinMiddle}</b></p>
+        <p>isCursorinMiddle: ${this.cursorService.isCursorinMiddle}</p>
         <p>isCursorAtStartOfDocument: ${this.cursorService.isCursorAtStartOfText}</p>
         <p>isCursorAtEndOfDocument: ${this.cursorService.isCursorAtEndOfText}</p>
+        <p>isCursorAtTitle: ${this.cursorService.isCursorAtTitle}</p>
+        <p>isCursorInIntroduction: ${this.cursorService.isCursorInIntroduction}</p>
+        <p>isCursorInStep: ${this.cursorService.isCursorInStep}</p>
+        <p>isCursorInConclusion: ${this.cursorService.isCursorInConclusion}</p>
+        
         <p>Plain Text:</p> 
         <md-filled-text-field
                 style="width:100%;"
@@ -61,17 +76,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                 rows="20"
                 spellcheck="false"></md-filled-text-field>
         
-        </div>
-        <p>currentSentence: ${this.sentencesService.currentSentence} </p>
-        <p>cursorSpan: ${JSON.stringify(this.sentencesService.cursorSpan)} </p>
-        <p>currentSentenceIndex: ${this.sentencesService.currentSentenceIndex} </p>
-        <p>currentSentenceSerializedRange: ${JSON.stringify(this.sentencesService.currentSentenceSerializedRange)} </p>
-        <p>currentSentenceRange: ${this.sentencesService.getCurrentSentenceRange()} </p>
-        <p>nextSentenceOffset: ${this.sentencesService.nextSentenceOffset} </p>
-        <p>isCursorBetweenSentences: ${this.sentencesService.isCursorBetweenSentences} </p>
-        <p>isCursorinMiddleOfSentence: ${this.sentencesService.isCursorWithinSentence} </p>
-        <p>isCursorAtParagraphStart: ${this.cursorService.isCursorAtStartOfNode} </p>
-        <p>isCursorAtParagraphEnd: ${this.cursorService.isCursorAtEndOfNode} </p>
+        
         </div>
         `;
     }

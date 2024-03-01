@@ -7,7 +7,7 @@ import { TextEditorService } from "./text_editor_service";
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { ChatService } from "./chat_service";
-
+import { OperationsService } from "./operation_service";
 
 export {
     RouterService,
@@ -19,4 +19,5 @@ export {
     CursorService,
     SentencesService,
     ChatService,
+    OperationsService,
 };

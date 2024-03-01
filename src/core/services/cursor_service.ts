@@ -31,10 +31,12 @@ import {
     TextNode,
     createCommand,
 } from "lexical";
-import { $isHeadingNode } from "@lexical/rich-text";
+import { $isHeadingNode, HeadingNode } from "@lexical/rich-text";
 import { parseSentences } from "@lib/parse_sentences";
 
 import { SentencesService } from "./sentences_service";
+import { $getNearestNodeOfType } from "@lexical/utils";
+import { $isListItemNode } from "@lexical/list";
 
 interface ServiceProvider {
     textEditorService: TextEditorService;
@@ -53,6 +55,7 @@ export interface CurrentLexicalNode {
     key: string;
     parentKey:string;
     parentOffset:number;
+
     textContentSize: number;
 }
 
@@ -112,6 +115,8 @@ export class CursorService extends Service {
     selection: RangeSelection = $createRangeSelection();
     anchorNode: TextNode | null = null;
     focusNode: TextNode | null = null;
+    previousHeadingSiblings: HeadingNode[] = []
+    nextHeadingSiblings:HeadingNode[] = []
 
     cursorUpdate(): void {
         const selection = $getSelection();
@@ -157,6 +162,16 @@ export class CursorService extends Service {
             return;
         }
         let elementType = parent?.getType() ?? "";
+
+        let headingParent = parent;
+        if ($isListItemNode(headingParent)){
+            headingParent = parent.getTopLevelElement();
+        }
+        
+        this.previousHeadingSiblings = headingParent.getPreviousSiblings().filter((node:LexicalNode):node is HeadingNode=>$isHeadingNode(node));
+        this.nextHeadingSiblings = headingParent.getNextSiblings().filter((node:LexicalNode):node is HeadingNode=>$isHeadingNode(node));
+
+
 
         if ($isHeadingNode(parent)) {
             elementType = `${parent.getType()}-${parent.getTag()}`;
@@ -530,6 +545,22 @@ export class CursorService extends Service {
             }
         }
         return false;
+    }
+
+    get isCursorAtTitle(){
+        return this.currentNode.type === 'heading-h1'
+    }
+
+    get isCursorInIntroduction(){
+        return this.previousHeadingSiblings.length <= 1 && this.currentNode.type !== 'heading-h2';
+    }
+
+    get isCursorInConclusion(){
+        return this.nextHeadingSiblings.length === 0;
+    }
+
+    get isCursorInStep(){
+        return (!this.isCursorInIntroduction || this.currentNode.type === 'heading-h2' )&& !this.isCursorInConclusion;
     }
 
     getPreAndPostSelectionText(): [string, string] {
