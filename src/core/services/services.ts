@@ -7,7 +7,10 @@ import { TextEditorService } from "./text_editor_service";
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { ChatService } from "./chat_service";
-import { OperationsService } from "./operation_service";
+import { OperationsService } from "./operations_service";
+import { KeyboardService } from "./keyboard_service";
+import { InitializationService } from "./initialization_service";
+import { DocumentStoreService } from "./document_store_service";
 
 export {
     RouterService,
@@ -20,4 +23,7 @@ export {
     SentencesService,
     ChatService,
     OperationsService,
+    KeyboardService,
+    InitializationService,
+    DocumentStoreService,
 };

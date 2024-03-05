@@ -9,6 +9,9 @@ import { TextEditorService } from "@core/services/text_editor_service";
 import { CursorService } from "@core/services/cursor_service";
 import { SentencesService } from "@core/services/sentences_service";
 import { ChatService } from "@core/services/chat_service";
+import { OperationsService } from "@core/services/operations_service";
+import { KeyboardService } from "@core/services/keyboard_service";
+import { DocumentStoreService } from "@core/services/document_store_service";
 
 export function makeServiceProvider(self:DIYMateCore) {
     const serviceProvider = {
@@ -41,8 +44,17 @@ export function makeServiceProvider(self:DIYMateCore) {
         },
         get chatService(){
             return self.getService(ChatService);
-        }
-
+        },
+        get operationsService(){
+            return self.getService(OperationsService);
+        },
+        get keyboardService(){
+            return self.getService(KeyboardService);
+        },
+        get documentStoreService(){
+            return self.getService(DocumentStoreService);
+        },
+        
     }
 
     return serviceProvider;

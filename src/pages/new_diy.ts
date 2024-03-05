@@ -10,12 +10,13 @@ import "@material/web/button/outlined-button";
 import "@material/web/button/filled-tonal-button";
 import { diymateCore } from "@core/diymate_core";
 import { SessionService } from "@core/services/session_service";
-import { LocalStorageService } from "@core/services/local_storage_service";
+import { CurrentDIY, LocalStorageService } from "@core/services/local_storage_service";
 import { Task } from "@lit/task";
 import { ModelService } from "@core/services/model_service";
 import { defaultOutlinePrompt } from "@models/openai/prompts/outline";
 import "../components/outline-editor.ts";
 import { TextEditorService } from "@core/services/text_editor_service.ts";
+import { InitializationService } from "@core/services/initialization_service.ts";
 
 @customElement("diymate-new-diy")
 export class NewDIYPage extends MobxLitElement {
@@ -70,8 +71,11 @@ export class NewDIYPage extends MobxLitElement {
     private generatedOutline!: DIYStructureJSON;
 
     private sessionService = diymateCore.getService(SessionService);
+    private textEditorService = diymateCore.getService(TextEditorService);
+
     private localStorageService = diymateCore.getService(LocalStorageService);
     private modelService = diymateCore.getService(ModelService);
+    private initializationService = diymateCore.getService(InitializationService);
 
     constructor() {
         super();
@@ -184,6 +188,15 @@ export class NewDIYPage extends MobxLitElement {
         });
     }
 
+    private saveNewDIYInfo(){
+        const currentDIY:CurrentDIY = {
+            description: this.description,
+            outlinePrompt: this.outlinePrompt,
+            generatedOutline: this.textEditorService.getPlainText(),
+        };
+        this.localStorageService.setCurrentDIY(currentDIY);
+    }
+
     protected renderActionButtons(): TemplateResult {
         return !this.showOutline
             ? html`<md-filled-button
@@ -196,7 +209,7 @@ export class NewDIYPage extends MobxLitElement {
                       ?disabled=${this.isLoading}>
                       Regenerate Outline
                   </md-filled-tonal-button>
-                  <md-filled-button ?disabled=${this.isLoading} href="/loading">
+                  <md-filled-button ?disabled=${this.isLoading} @click=${this.saveNewDIYInfo} href="/loading">
                       Confirm Outline
                   </md-filled-button>`;
     }
@@ -206,8 +219,12 @@ export class NewDIYPage extends MobxLitElement {
     }
 
     protected renderBackButton(): TemplateResult {
+        const onBackClick = ()=>{
+            this.initializationService.reset(false);
+        }
+
         return !this.showOutline
-            ? html` <md-text-button href="/">Back</md-text-button>`
+            ? html` <md-text-button @click=${onBackClick} href="/">Back</md-text-button>`
             : html`<md-text-button @click=${this.hideOutlineEditor}>
                   Back
               </md-text-button>`;

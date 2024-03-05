@@ -37,6 +37,7 @@ import { parseSentences } from "@lib/parse_sentences";
 import { SentencesService } from "./sentences_service";
 import { $getNearestNodeOfType } from "@lexical/utils";
 import { $isListItemNode } from "@lexical/list";
+import { $createOffsetView, OffsetView } from "@lexical/offset";
 
 interface ServiceProvider {
     textEditorService: TextEditorService;
@@ -163,9 +164,11 @@ export class CursorService extends Service {
         }
         let elementType = parent?.getType() ?? "";
 
-        let headingParent = parent;
+        let headingParent = node.getTopLevelElement();
         if ($isListItemNode(headingParent)){
             headingParent = parent.getTopLevelElement();
+        } else if (headingParent === null){
+            headingParent = node;
         }
         
         this.previousHeadingSiblings = headingParent.getPreviousSiblings().filter((node:LexicalNode):node is HeadingNode=>$isHeadingNode(node));
@@ -479,10 +482,25 @@ export class CursorService extends Service {
         return { key: this.currentNode.parentKey, offset: 0 };
     }
 
+    offsetView!: OffsetView; 
+    getOffsetRange(){
+        let start = 0;
+        let end = 0;
+        this.textEditorService.getEditor.getEditorState().read(()=>{
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)){
+                return;
+            }
+            this.offsetView = $createOffsetView(this.textEditorService.getEditor);
+            [start,end] = this.offsetView.getOffsetsFromSelection(selection);
+        });
+        return {start,end};
+    }
+
     get isCursorCollapsed() {
         return (
-            this.serializedRange.anchor.offset ===
-            this.serializedRange.focus.offset
+            this.serializedRange.anchor.key === this.serializedRange.focus.key &&
+            this.serializedRange.anchor.offset === this.serializedRange.focus.offset
         );
     }
 

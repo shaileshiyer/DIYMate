@@ -107,7 +107,7 @@ export class DIYMateEditor extends MobxLitElement {
     }
     override disconnectedCallback(): void {
         super.disconnectedCallback();
-        this.textEditorService.saveEditorSnapshot();
+        // this.textEditorService.saveEditorSnapshot();
         this.textEditorService.onDisconnect();
     }
 

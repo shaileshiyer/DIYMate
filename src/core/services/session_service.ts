@@ -43,7 +43,7 @@ export class SessionService extends Service {
             isSessionActive:observable,
             startSession:flow,
             endSession:flow,
-        })
+        });
         const sessionInfo = this.localStorageService.getCurrentSession();
         if (sessionInfo!== null){
             this.sessionInfo = sessionInfo;
@@ -51,6 +51,10 @@ export class SessionService extends Service {
         }
     }
 
+    reset(){
+        this.isSessionActive = false;
+        this.sessionInfo = defaultSession;
+    }
 
     private get localStorageService():LocalStorageService{
         return this.serviceProvider.localStorageService;

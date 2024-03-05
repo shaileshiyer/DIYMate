@@ -4,7 +4,7 @@ Starts the backend api server that communicates with openAI
 import json
 import os
 import gc
-from time import sleep
+from time import sleep,time
 from argparse import ArgumentParser
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
@@ -21,7 +21,7 @@ from helper import (
 
 from reader import update_metadata
 
-load_dotenv()
+load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 SESSIONS = dict()
@@ -29,7 +29,7 @@ app = Flask(__name__)
 CORS(app)
 
 client = OpenAI()
-assistant_id = "asst_wGnLMklJXCbUvyF3myAdAVCf"
+assistant_id = "asst_N49231tQuA5jB1Eh4zrh6u9d"
 my_assistant = client.beta.assistants.retrieve(assistant_id=assistant_id)
 
 SUCCESS = True
@@ -45,7 +45,7 @@ def wait_on_run(run,thread):
         sleep(0.5)
     return run
 
-@app.route("/api/start_session", methods=["POST"])
+@app.route("/api/start_session", methods=["POST","OPTIONS"])
 @cross_origin(origin="*")
 def start_session():
     """Starts a session for a user"""
@@ -82,7 +82,7 @@ def start_session():
     return jsonify(result)
 
 
-@app.route("/api/end_session", methods=["POST"])
+@app.route("/api/end_session", methods=["POST","OPTIONS"])
 @cross_origin(origin="*")
 def end_session():
     content = request.json
@@ -128,7 +128,7 @@ def end_session():
     return jsonify(results)
 
 
-@app.route("/api/chat", methods=["POST"])
+@app.route("/api/chat", methods=["POST","OPTIONS"])
 @cross_origin(origin="*")
 def chat():
     """Chat with the assistant"""
@@ -170,7 +170,7 @@ def chat():
     
     return jsonify(result)
 
-@app.route("/api/query", methods=["POST"])
+@app.route("/api/query", methods=["POST","OPTIONS"])
 @cross_origin(origin="*")
 def query():
     """Query the assistant"""

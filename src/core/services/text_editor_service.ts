@@ -216,6 +216,23 @@ export class TextEditorService extends Service {
         return this.editor.getEditorState().toJSON();
     }
 
+    setStateFromSnapshot(editorState:SerializedEditorState){
+        const parsedEditorState = this.editor.parseEditorState(editorState);
+        this.editor.setEditorState(parsedEditorState);
+    }
+
+    private readonly updateCallbacks = new Set<() => void>();
+    onUpdate(updateCallback: () => void) {
+      this.updateCallbacks.add(updateCallback);
+      return () => void this.updateCallbacks.delete(updateCallback);
+    }
+    triggerUpdateCallbacks() {
+      for (const callback of this.updateCallbacks.values()) {
+        callback();
+      }
+    }
+  
+
     plainText: string = "";
 
     getPlainText(): string {
