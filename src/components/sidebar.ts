@@ -44,6 +44,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
     }
 
     protected renderDebug() {
+        const availableOps = this.operationsService.availableOperations.map((val)=> val.name)
         return html`<div id="debug-wrappper">
             <h1>Sidebar Wrapper</h1>
 
@@ -53,6 +54,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                 OperationSite:
                 ${this.operationsService.getLocationInDocumentStructure()}
             </p>
+            <p> AvailableOps: ${availableOps}</p>
             <p>Selected Text: ${this.cursorService.selectedText}</p>
             <!-- <p>Pre Text: ${this.cursorService.preText}</p>
         <p>Post Text: ${this.cursorService.postText}</p> -->

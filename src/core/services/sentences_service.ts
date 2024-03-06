@@ -249,13 +249,14 @@ export class SentencesService extends Service {
         const previousMarkupRange =this.cursorService.makeSelectionFromSerializedLexicalRange(this.previousSelection);
         const previousStyleValue = $getSelectionStyleValueForProperty(previousMarkupRange,'color',DEFAULT_VALUE);
         
-        if (previousMarkupRange !== null && !isCursorCollapsed ){
+        if (previousMarkupRange !== null && !isCursorCollapsed || this.currentSentenceSerializedRange === null){
             const nodes = previousMarkupRange.getNodes();
             for (let node of nodes ){
                 if ($isTextNode(node)){
                     node.setStyle('');
                 }
             }
+            this.previousSelection = null;
         }
         
         

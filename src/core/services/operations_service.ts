@@ -1,9 +1,13 @@
-import { computed, makeObservable, observable } from "mobx";
+import { computed, isObservableArray, makeObservable, observable, toJS } from "mobx";
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { Service } from "./service";
 import { TextEditorService } from "./text_editor_service";
-import { ModelResult, OperationSite, OperationTrigger } from "@core/shared/types";
+import {
+    ModelResult,
+    OperationSite,
+    OperationTrigger,
+} from "@core/shared/types";
 import { OperationClass } from "@core/shared/interfaces";
 import { Operation } from "@core/operations/operation";
 import { ChoiceOperation } from "@core/operations/choice_operation";
@@ -35,7 +39,7 @@ export class OperationsService extends Service {
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
-            allOperations: observable,
+            allOperations: observable.ref,
             availableOperations: computed,
             operationStack: observable,
             currentOperation: computed,
@@ -114,7 +118,7 @@ export class OperationsService extends Service {
         }
     }
 
-    readonly allOperations: OperationClass[] = [];
+    allOperations: OperationClass[] = [];
 
     get availableOperations(): OperationClass[] {
         const operationSite = this.getOperationsSite();
@@ -176,174 +180,192 @@ export class OperationsService extends Service {
 
     registerOperation(operationClass: OperationClass) {
         this.allOperations.push(operationClass);
-      }
-    
-      registerOperations(...operationClasses: OperationClass[]) {
+    }
+
+    registerOperations(...operationClasses: OperationClass[]) {
         this.allOperations.push(...operationClasses);
-      }
-    
-      triggerOperation(operationClass: OperationClass, trigger: OperationTrigger) {
-        if (operationClass != null) {
-          const factoryFn = this.makeOperationFactory(operationClass, trigger);
-          this.startOperation(factoryFn, trigger);
-        }
-      }
-    
-      private makeOperationFactory(
+    }
+
+    triggerOperation(
         operationClass: OperationClass,
         trigger: OperationTrigger
-      ): OperationFactory {
+    ) {
+        if (operationClass != null) {
+            const factoryFn = this.makeOperationFactory(
+                operationClass,
+                trigger
+            );
+            this.startOperation(factoryFn, trigger);
+        }
+    }
+
+    private makeOperationFactory(
+        operationClass: OperationClass,
+        trigger: OperationTrigger
+    ): OperationFactory {
         return () => new operationClass(this.serviceProvider, trigger);
-      }
-    
-      buildOperation<T extends Operation>(
+    }
+
+    buildOperation<T extends Operation>(
         operationClass: Constructor<T>,
         trigger: OperationTrigger
-      ): T {
+    ): T {
         return new operationClass(this.serviceProvider, trigger);
-      }
-    
-      cancelCurrentOperation() {
+    }
+
+    cancelCurrentOperation() {
         if (this.currentOperation) {
-          this.currentOperation.cancel();
+            this.currentOperation.cancel();
         }
-      }
-    
-      async startOperationWithParams(
+    }
+
+    async startOperationWithParams(
         // tslint:disable-next-line:no-any
         operationClass: OperationClass,
         params: any,
         trigger = OperationTrigger.APP
-      ) {
+    ) {
         const factory: OperationFactory = () => {
-          return new operationClass(this.serviceProvider, trigger, params);
+            return new operationClass(this.serviceProvider, trigger, params);
         };
         return this.startOperation(factory);
-      }
-    
-      async startOperation(
+    }
+
+    async startOperation(
         factoryOrClass: OperationClass | OperationFactory,
         trigger = OperationTrigger.APP
-      ) {
+    ) {
         const factory: OperationFactory = isOperationClass(factoryOrClass)
-          ? this.makeOperationFactory(factoryOrClass as OperationClass, trigger)
-          : (factoryOrClass as OperationFactory);
-    
+            ? this.makeOperationFactory(
+                  factoryOrClass as OperationClass,
+                  trigger
+              )
+            : (factoryOrClass as OperationFactory);
+
         // Ensure that we get initial state before the text editor is disabled,
         // because we need to make sure the cursor position is captured.
         const initialState = this.textEditorService.getStateSnapshot();
-    
+
         // Ensure the text editor undo/redo snapshot is taken before the operation
         // is run.
         if (!this.isInOperation) {
-          this.textEditorService.disableEditor();
-        //   this.textEditorService.maybeMakePseudoSelection();
-    
-          // If we're starting this operation from another operation, then don't set
-          // the undo stack.
-          if (trigger !== OperationTrigger.OPERATION) {
-            // this.textEditorService.setUndo();
-          }
+            this.textEditorService.disableEditor();
+            //   this.textEditorService.maybeMakePseudoSelection();
+
+            // If we're starting this operation from another operation, then don't set
+            // the undo stack.
+            if (trigger !== OperationTrigger.OPERATION) {
+                // this.textEditorService.setUndo();
+            }
         }
-    
+
         const operation = factory();
-    
+
         const cursorOffset = this.cursorService.getOffsetRange();
         const operationData = {
-          id: uuid(),
-          documentId: this.sessionService.sessionInfo.session_id,
-          timestamp: Date.now(),
-          text: this.textEditorService.getPlainText(),
-          cursorStart: cursorOffset.start,
-          cursorEnd: cursorOffset.end,
+            id: uuid(),
+            documentId: this.sessionService.sessionInfo.session_id,
+            timestamp: Date.now(),
+            text: this.textEditorService.getPlainText(),
+            cursorStart: cursorOffset.start,
+            cursorEnd: cursorOffset.end,
         };
-    
+
         operation.setOperationData(operationData);
-    
+
         operation.onFinish((wasSuccess: boolean) => {
-          this.removeOperation(operation);
-          if (operation.isHelperOperation) {
-            if (!wasSuccess) {
-              this.finalizeOperation();
+            this.removeOperation(operation);
+            if (operation.isHelperOperation) {
+                if (!wasSuccess) {
+                    this.finalizeOperation();
+                }
+            } else {
+                this.finalizeOperation();
             }
-          } else {
-            this.finalizeOperation();
-          }
         });
         operation.onRun(() => {
-          for (const callback of this.onRunCallbacks) {
-            callback(operation);
-          }
+            for (const callback of this.onRunCallbacks) {
+                callback(operation);
+            }
         });
-    
+
         this.operationStack.push(operation);
         const currentOperation = this.currentOperation!;
-    
+
         // tslint:disable-next-line:no-any
         let result: any;
         try {
-          currentOperation.setInitialState(initialState);
-          const operationPromise = currentOperation.start();
-          result = await operationPromise;
-          // tslint:disable-next-line:no-any
+            currentOperation.setInitialState(initialState);
+            const operationPromise = currentOperation.start();
+            result = await operationPromise;
+            // tslint:disable-next-line:no-any
         } catch (err: any) {
-          // Reset all pending state in the TextEditor
-          currentOperation.resetTextEditor();
-          currentOperation.finish();
-    
-          if (err instanceof CancelOperationError) {
-            return;
-          }
-    
-          this.isError = true;
-          throw err;
+            // Reset all pending state in the TextEditor
+            currentOperation.resetTextEditor();
+            currentOperation.finish();
+
+            if (err instanceof CancelOperationError) {
+                return;
+            }
+
+            this.isError = true;
+            throw err;
         }
-    
+
         this.textEditorService.triggerUpdateCallbacks();
         return result;
-      }
-    
-      async rewriteCurrentChoice() {
+    }
+
+    async rewriteCurrentChoice() {
         const parentOperation = this.currentOperation;
         if (parentOperation instanceof ChoiceOperation) {
-          const parentChoiceStep = parentOperation.currentStep as ChoiceStep;
-          parentChoiceStep.pause();
-          const choiceToRewrite = parentChoiceStep.choices.getCurrentEntry();
-          if (choiceToRewrite == null) return;
-    
-          const indexToRewrite = parentChoiceStep.choices.getIndex();
-          return this.startOperation(() => {
-            // We need to cast this.serviceProvider as the correct interface for
-            // the operation.
-            const serviceProvider = this.serviceProvider as unknown as OperationServiceProvider;
-            const rewriteChoiceOperation = new RewriteChoiceOperation(
-              serviceProvider,
-              OperationTrigger.OPERATION
-            );
-            rewriteChoiceOperation.initialize(choiceToRewrite.content);
-            rewriteChoiceOperation.onPendingChoice = (choice: ModelResult) => {
-              parentChoiceStep.choices.updateEntry(indexToRewrite, choice);
-            };
-    
-            rewriteChoiceOperation.onSelectChoice = async () => {
-              /**
-               * We need to implement the logic of the choice step's callback, but
-               * ensure that we finish the adjustment operation before we finish the
-               * underlying choice operation.
-               */
-              parentChoiceStep.chooseIndex(indexToRewrite);
-              await rewriteChoiceOperation.finish();
-              return parentOperation.finish();
-            };
-    
-            rewriteChoiceOperation.onCancel = async () => {
-              parentChoiceStep.choices.updateEntry(indexToRewrite, choiceToRewrite);
-              parentChoiceStep.unpause();
-            };
-            return rewriteChoiceOperation;
-          }, OperationTrigger.OPERATION);
+            const parentChoiceStep = parentOperation.currentStep as ChoiceStep;
+            parentChoiceStep.pause();
+            const choiceToRewrite = parentChoiceStep.choices.getCurrentEntry();
+            if (choiceToRewrite == null) return;
+
+            const indexToRewrite = parentChoiceStep.choices.getIndex();
+            return this.startOperation(() => {
+                // We need to cast this.serviceProvider as the correct interface for
+                // the operation.
+                const serviceProvider = this
+                    .serviceProvider as unknown as OperationServiceProvider;
+                const rewriteChoiceOperation = new RewriteChoiceOperation(
+                    serviceProvider,
+                    OperationTrigger.OPERATION
+                );
+                rewriteChoiceOperation.initialize(choiceToRewrite.content);
+                rewriteChoiceOperation.onPendingChoice = (
+                    choice: ModelResult
+                ) => {
+                    parentChoiceStep.choices.updateEntry(
+                        indexToRewrite,
+                        choice
+                    );
+                };
+
+                rewriteChoiceOperation.onSelectChoice = async () => {
+                    /**
+                     * We need to implement the logic of the choice step's callback, but
+                     * ensure that we finish the adjustment operation before we finish the
+                     * underlying choice operation.
+                     */
+                    parentChoiceStep.chooseIndex(indexToRewrite);
+                    await rewriteChoiceOperation.finish();
+                    return parentOperation.finish();
+                };
+
+                rewriteChoiceOperation.onCancel = async () => {
+                    parentChoiceStep.choices.updateEntry(
+                        indexToRewrite,
+                        choiceToRewrite
+                    );
+                    parentChoiceStep.unpause();
+                };
+                return rewriteChoiceOperation;
+            }, OperationTrigger.OPERATION);
         }
-      }
+    }
 }
 
 /**

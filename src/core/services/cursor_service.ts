@@ -204,150 +204,6 @@ export class CursorService extends Service {
     previousSelection: RangeSelection = $createRangeSelection();
     registerCursorListeners(): (() => void)[] {
         return [
-            // this.textEditorService.getEditor.registerMutationListener(
-            //     TextNode,
-            //     (mutatedNodes) => {
-            //         for (let [nodeKey, mutation] of mutatedNodes) {
-            //             console.log(nodeKey, mutation);
-            //             this.textEditorService.getEditor.update(() => {
-            //                 const textNode: TextNode = $getNodeByKey(nodeKey)!;
-            //                 if (!textNode) {
-            //                     return;
-            //                 }
-
-            //                 const textString = textNode.getTextContent();
-            //                 const sentences = parseSentences(textString);
-            //                 console.debug(sentences);
-            //                 if (
-            //                     (mutation === "created" ||
-            //                         mutation === "updated") &&
-            //                     sentences.length > 1
-            //                 ) {
-            //                     textNode.toggleUnmergeable();
-            //                     let val = 0;
-            //                     const charOffsets = sentences.map(
-            //                         (sentence) => {
-            //                             val += sentence.length;
-            //                             return val;
-            //                         }
-            //                     );
-            //                     textNode.setStyle("");
-            //                     textNode.splitText(...charOffsets);
-            //                 }
-            //             });
-            //         }
-            //     }
-            // ),
-            // this.textEditorService.getEditor.registerCommand(
-            //     SELECTION_CHANGE_COMMAND,
-            //     () => {
-            //         const prevSelection = $getPreviousSelection();
-            //         const selection = $getSelection();
-            //         if (
-            //             !$isRangeSelection(selection) ||
-            //             !$isRangeSelection(prevSelection)
-            //         ) {
-            //             return false;
-            //         }
-            //         const currentNode: LexicalNode = selection.anchor.getNode();
-            //         if (!selection.isCollapsed()) {
-            //             if ($isTextNode(currentNode)) {
-            //                 currentNode.setStyle("");
-            //             }
-            //         }
-            //         if (selection.isCollapsed()) {
-            //             const style =
-            //                 "color:var(--md-sys-color-primary);font-weight:600;";
-            //             if (
-            //                 $isTextNode(currentNode) &&
-            //                 currentNode.getStyle() === ""
-            //             ) {
-            //                 currentNode.setStyle(style);
-            //             }
-            //         }
-            //         if (prevSelection !== null) {
-            //             const prevNode: LexicalNode =
-            //                 prevSelection.anchor.getNode();
-            //             if (
-            //                 $isTextNode(prevNode) &&
-            //                 !prevNode.is(currentNode) &&
-            //                 prevNode.getStyle() !== ""
-            //             ) {
-            //                 prevNode.setStyle("");
-            //             }
-            //         }
-            //         return false;
-            //     },
-            //     COMMAND_PRIORITY_NORMAL
-            // ),
-            // this.textEditorService.getEditor.registerCommand(
-            //     KEY_ENTER_COMMAND,
-            //     () => {
-            //         const selection = $getPreviousSelection();
-            //         if (
-            //             selection === null ||
-            //             !$isRangeSelection(selection) ||
-            //             !selection.isCollapsed()
-            //         ) {
-            //             return false;
-            //         }
-            //         const currentNode: LexicalNode = selection.anchor.getNode();
-            //         if (
-            //             $isTextNode(currentNode) &&
-            //             currentNode.getStyle() !== ""
-            //         ) {
-            //             currentNode.setStyle("");
-            //         }
-            //         return false;
-            //     },
-            //     COMMAND_PRIORITY_NORMAL
-            // ),
-            // this.textEditorService.getEditor.registerCommand(
-            //     DELETE_CHARACTER_COMMAND,
-            //     (isBackward) => {
-            //         const selection = $getSelection();
-            //         if (
-            //             selection === null ||
-            //             !$isRangeSelection(selection) ||
-            //             !selection.isCollapsed()
-            //         ) {
-            //             return false;
-            //         }
-            //         const originalSelection = selection.clone();
-            //         selection.modify("extend", isBackward, "character");
-            //         let character = selection.getTextContent();
-            //         character = character.trimStart().trimEnd();
-            //         console.debug(character);
-            //         if (
-            //             character === "." ||
-            //             character === "?" ||
-            //             character === "!"
-            //         ) {
-            //             const anchorNode: LexicalNode =
-            //                 selection.anchor.getNode();
-
-            //             const focusNode = anchorNode.getNextSibling();
-            //             if (
-            //                 $isTextNode(anchorNode) &&
-            //                 $isTextNode(focusNode) &&
-            //                 !anchorNode.is(focusNode)
-            //             ) {
-            //                 anchorNode.mergeWithSibling(focusNode);
-            //                 anchorNode.setStyle("");
-            //             }
-            //         }
-            //         return false;
-            //     },
-            //     COMMAND_PRIORITY_NORMAL
-            // ),
-            // this.textEditorService.getEditor.registerNodeTransform(
-            //     TextNode,
-            //     (node) => {
-            //         if (node.isUnmergeable()) {
-            //             node.toggleUnmergeable();
-            //         }
-            //     }
-            // ),
              this.textEditorService.getEditor.registerCommand(
                 HIGHLIGHT_CURRENT_SENTENCE,
                 (currentNodeKey) => {
@@ -361,22 +217,10 @@ export class CursorService extends Service {
             this.textEditorService.getEditor.registerCommand(
                 SELECTION_CHANGE_COMMAND,
                 () => {
-                    console.log('selection_change');
                     this.cursorUpdate();
-                    // this.sentenceService.highlightCurrentSentence();
                     return true;
                 },
                 COMMAND_PRIORITY_NORMAL
-            ),
-
-
-            this.textEditorService.getEditor.registerTextContentListener(
-                (newTextContent) => {
-                    // console.debug(newTextContent);
-                    this.textEditorService.getEditor.update(() => {
-                        this.sentenceService.highlightCurrentSentence();
-                    });
-                }
             ),
         ];
     }
@@ -406,18 +250,24 @@ export class CursorService extends Service {
 
 
     convertPointtoTextPoint(point:PointType):void{
-        const node:ElementNode = point.getNode();
-        const textChildren = node.getChildren();
-        let prevOffset = 0;
-        for (let textChild of textChildren){
-            const childsize = textChild.getTextContentSize();
-            if (prevOffset <= point.offset && point.offset<= (prevOffset+childsize)){
-                const calcoffset = point.offset - prevOffset;
-                point.set(textChild.getKey(),calcoffset,'text');
-                break;
+        try{
+            const node:ElementNode = point.getNode();
+            const textChildren = node.getChildren();
+            let prevOffset = 0;
+            for (let textChild of textChildren){
+                const childsize = textChild.getTextContentSize();
+                if (prevOffset <= point.offset && point.offset<= (prevOffset+childsize)){
+                    const calcoffset = point.offset - prevOffset;
+                    point.set(textChild.getKey(),calcoffset,'text');
+                    break;
+                }
+                prevOffset+= childsize;
             }
-            prevOffset+= childsize;
+        } catch(err){
+            console.error(err);
+            console.debug(point);
         }
+
     }
 
     makeSelectionFromSerializedLexicalRange(
