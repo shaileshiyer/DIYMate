@@ -377,6 +377,12 @@ export class TextEditorService extends Service {
 }
 
 /**
+ * Easier and more ergonomic keyboard shortcuts... just arranged on the right
+ * side of the keyboard.
+ */
+export const commandKeys = ['j', 'k', 'l', 'u', 'i', 'o', 'p', 'h', 'n', 'm'];
+
+/**
  * We need to hack the window.getSelection method to use the shadow DOM,
  * since the mobiledoc editor internals need to get the selection to detect
  * cursor changes. First, we walk down into the shadow DOM to find the

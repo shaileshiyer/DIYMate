@@ -20,7 +20,21 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "plugins": [
-      {"name": "ts-lit-plugin"}
+      {
+        "name": "ts-lit-plugin",
+        "htmlTemplateTags": [
+          "html",
+          "raw"
+        ],
+        "strict": true
+      },
+      {
+        "name": "typescript-lit-html-plugin",
+        "tags": [
+        "html",
+        "raw"
+        ]
+      }
     ],
     "baseUrl": "src/",
     "paths": {
@@ -28,6 +42,9 @@
       "@services/*": ["core/services/*"],
       "@models/*":["models/*"],
       "@lib/*":["lib/*"],
+      "@components/*":["components/*"],
+      "@operations/*":["core/operations/*"],
+      "@context/*":["context/*"]
     }
     
   },

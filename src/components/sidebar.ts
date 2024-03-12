@@ -12,11 +12,15 @@ import "@material/web/icon/icon";
 
 import "./chat";
 import "./error_message";
+import "./controls/key_command"
+
 import { OperationsService } from "@core/services/operations_service";
 import { runInAction } from "mobx";
 import { classMap } from "lit/directives/class-map.js";
 import { DocumentStoreService } from "@core/services/document_store_service";
 import { InitializationService } from "@core/services/initialization_service";
+import "./operations";
+import "./current_operation";
 
 @customElement("diymate-editor-sidebar")
 export class DIYMateEditorSidebar extends MobxLitElement {
@@ -30,7 +34,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
     );
 
     @property({ type: Number })
-    private activeTab: number = 0;
+    activeTab: number = 0;
 
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -298,7 +302,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         let bottom: TemplateResult = html``;
 
         if (this.operationsService.currentOperation !== null) {
-            top = html`<diymate-operation></diymate-operation>`;
+            top = html`<dm-current-operation></dm-current-operation>`;
             bottom = html``;
         } else if (this.operationsService.isError) {
             // If the operation has errored, we'll add a message in the sidebar
@@ -321,7 +325,8 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                 </diymate-error-message>
             `;
         } else {
-            top = html`<diymate-operations></diymate-operations>`;
+            top = html`<dm-operations></dm-operations>`;
+            
 
             const documentRow = html`
                 ${this.renderMainMenuButton()} ${this.renderSaveButton()}

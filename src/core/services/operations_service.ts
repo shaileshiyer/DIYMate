@@ -1,4 +1,4 @@
-import { computed, isObservableArray, makeObservable, observable, toJS } from "mobx";
+import { action, computed, isObservableArray, makeObservable, observable, toJS } from "mobx";
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { Service } from "./service";
@@ -47,6 +47,8 @@ export class OperationsService extends Service {
             isError: observable,
             isInOperation: computed,
             hoverTooltip: observable,
+            setHoverTooltip:action,
+            clearHoverTooltip:action,
         });
     }
 
