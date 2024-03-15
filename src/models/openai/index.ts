@@ -1,6 +1,6 @@
 import { ModelMessage, ModelResults } from 'types';
 import { Model } from '../model';
-import { OutlinePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, OutlinePromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
 import {
     createModelResults,
@@ -11,7 +11,8 @@ import {
 
 import { ContextService, SessionService } from "@services/services";
 import { makePromptHandler as outline } from './prompts/outline';
-import { DIYMateContext } from 'context';
+import { makePromptHandler as continuation } from './prompts/continue';
+
 
 const D0 = '{';
 const D1 = '}';
@@ -117,5 +118,7 @@ export class OpenAIModel extends Model {
     }
 
     override outline:(params:OutlinePromptParams)=>Promise<ModelResults> = this.makePromptHandler(outline);
+
+    override continue:(params:ContinuePromptParams)=>Promise<ModelResults> = this.makePromptHandler(continuation);
 
 }

@@ -76,8 +76,8 @@ export class CursorService extends Service {
         makeObservable(this, {
             selection: observable,
             currentNode: observable,
-            selectedText: observable,
-            selectedNodesMarkdownText:observable,
+            selectedPlainText: observable,
+            selectedMdText:observable,
             selectedNodeKeys: observable,
             preText: observable,
             postText: observable,
@@ -105,9 +105,9 @@ export class CursorService extends Service {
     }
 
     // plain text
-    selectedText: string = "";
+    selectedPlainText: string = "";
     // Gives the markdown text for the selected Element nodes.
-    selectedNodesMarkdownText:string = "";
+    selectedMdText:string = "";
     // Saves the keys of selectedNodes 
     selectedNodeKeys:string[] = [];
     preText: string = "";
@@ -285,7 +285,7 @@ export class CursorService extends Service {
                 }
                 
                 let selectedText = "";
-                this.selectedNodesMarkdownText = "";
+                this.selectedMdText = "";
                 this.selectedNodeKeys = [];
                 if(!selection.isCollapsed()){
                     let selectionNodes = selection.getNodes().filter((n)=> { return !$isTextNode(n) && !$isListItemNode(n);});
@@ -302,7 +302,7 @@ export class CursorService extends Service {
                     }
                     if (selectionNodes.length > 0){
                         // Commenting this out since it is making the selection messy in terms of experience
-                        
+
                         // if (!selection.isBackward()) {
                         //     const lastNode = selectionNodes[selectionNodes.length-1];
                         //     if ($isElementNode(lastNode)){
@@ -325,7 +325,7 @@ export class CursorService extends Service {
                     }
                     console.debug('selectionNodeText');
                     console.debug(selectionNodeText);
-                    this.selectedNodesMarkdownText = selectionNodeText;
+                    this.selectedMdText = selectionNodeText;
                 }
                 
                 // Get Previous and next Content from top Level Node
@@ -354,7 +354,7 @@ export class CursorService extends Service {
 
                 this.preText = textBeforeSelection;
                 this.postText = textAfterSelection;
-                this.selectedText = selection.getTextContent();
+                this.selectedPlainText = selection.getTextContent();
 
         }
     }
@@ -505,6 +505,18 @@ export class CursorService extends Service {
         });
         return {start,end};
     }
+
+    // Only Call from inside lexical range.
+    // getSelectionFromOffsets(start:number,end:number){
+    //     let selection= $createRangeSelection();
+    //     this.textEditorService.getEditor.getEditorState().read(()=>{
+    //         const offsetSelection = this.offsetView.createSelectionFromOffsets(start,end);
+    //         if(offsetSelection!== null){
+    //             selection = offsetSelection;
+    //         }
+    //     });
+    //     return selection;
+    // }
 
     get isCursorCollapsed() {
         return (

@@ -1,6 +1,6 @@
 import { CursorService } from "@core/services/cursor_service";
 import { ModelService } from "@core/services/model_service";
-import { OperationsService } from "@core/services/operation_service";
+import { OperationsService } from "@core/services/operations_service";
 import { RouterService } from "@core/services/router_service";
 import { SentencesService } from "@core/services/sentences_service";
 import { TextEditorService } from "@core/services/text_editor_service";
@@ -10,7 +10,7 @@ import { Model } from "@models/model";
 import { SerializedEditorState } from "lexical";
 import { TemplateResult } from "lit";
 import { OperationControls } from "@core/shared/interfaces";
-import { observable } from "mobx";
+import { makeObservable, observable } from "mobx";
 import { FinishedStep, NotStartedStep, Step } from "./steps/step";
 import { LoadingStep } from "./steps/loading_step";
 import { CancelOperationError, CancelStepError } from "@lib/errors";
@@ -30,7 +30,11 @@ export abstract class Operation {
     constructor(
         protected serviceProvider: ServiceProvider,
         public trigger: OperationTrigger
-    ) {}
+    ) {
+        makeObservable(this,{
+            currentStep:observable.ref,
+        })
+    }
 
     protected get routerService() {
         return this.serviceProvider.routerService;
@@ -100,7 +104,8 @@ export abstract class Operation {
         return Object.keys(this.instanceControls).length > 0;
     }
 
-    @observable.ref currentStep: Step = new NotStartedStep();
+    // @observable.shallow currentStep: Step = new NotStartedStep();
+    currentStep: Step = new NotStartedStep();
     setCurrentStep(step: Step) {
         if (this.currentStep) {
             this.currentStep.finish();

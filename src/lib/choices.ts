@@ -17,7 +17,7 @@
  * ==============================================================================
  */
 
-import { makeObservable, observable, runInAction} from 'mobx';
+import { action, computed, makeObservable, observable, runInAction} from 'mobx';
 
 /**
  * A handy observable data structure for supporting choosing from a list of
@@ -29,6 +29,18 @@ export class Choices<T> {
     makeObservable(this,{
       entries:observable.shallow,
       index: observable,
+      // getEntries:computed,
+      // getNEntries:computed,
+      // getCurrentEntry:computed,
+      // getEntry:computed,
+      // getIndex:computed,
+      clear:action,
+      decrementIndex:action,
+      incrementIndex:action,
+      removeAtIndex:action,
+      setEntries:action,
+      setIndex:action,
+      updateEntry:action,
     })
 
   }

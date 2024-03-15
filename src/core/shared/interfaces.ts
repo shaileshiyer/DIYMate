@@ -88,6 +88,11 @@ export interface OperationData {
     text: string;
     cursorStart: number;
     cursorEnd: number;
+    preText:string;
+    postText:string;
+    selectedPlainText:string;
+    selectedMdText:string;
+    selectedNodesKeys:string[];
 }
 
 export interface OperationControl {

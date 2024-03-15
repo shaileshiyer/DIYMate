@@ -1,6 +1,6 @@
 import { Choices } from "@lib/choices";
 import { OperationsService } from "@core/services/operation_service";
-import { ModelResult } from "@core/shared/types";
+import { ModelResult, StepLifecycle } from "@core/shared/types";
 import { Step } from "./step";
 import { reaction } from "mobx";
 

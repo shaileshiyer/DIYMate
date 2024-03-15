@@ -17,7 +17,7 @@ import {
     OperationSite,
     OperationTrigger,
 } from "@core/shared/types";
-import { OperationClass } from "@core/shared/interfaces";
+import { OperationClass, OperationData } from "@core/shared/interfaces";
 import { Operation } from "@core/operations/operation";
 import { ChoiceOperation } from "@core/operations/choice_operation";
 import { ChoiceStep } from "@core/operations/steps/choice_step";
@@ -282,13 +282,18 @@ export class OperationsService extends Service {
         const operation = factory();
 
         const cursorOffset = this.cursorService.getOffsetRange();
-        const operationData = {
+        const operationData: OperationData = {
             id: uuid(),
             documentId: this.sessionService.sessionInfo.session_id,
             timestamp: Date.now(),
             text: this.textEditorService.getPlainText(),
             cursorStart: cursorOffset.start,
             cursorEnd: cursorOffset.end,
+            preText:this.cursorService.preText,
+            postText:this.cursorService.postText,
+            selectedPlainText:this.cursorService.selectedPlainText,
+            selectedMdText:this.cursorService.selectedMdText,
+            selectedNodesKeys:this.cursorService.selectedNodeKeys,
         };
 
         operation.setOperationData(operationData);

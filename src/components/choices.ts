@@ -125,8 +125,7 @@ export class ChoicesComponent extends MobxLitElement {
     }
 
     private readonly keyboardService = diymateCore.getService(KeyboardService);
-    private readonly operationsService =
-        diymateCore.getService(OperationsService);
+    private readonly operationsService = diymateCore.getService(OperationsService);
 
     @property({ type: Object }) choiceStep!: ChoiceStep;
 
@@ -323,18 +322,7 @@ export class ChoicesComponent extends MobxLitElement {
                             title="remove">
                             <md-icon slot="icon">close</md-icon>
                         </md-fab>
-                        <!-- 
-                            ${canStar
-                            ? html`<md-fab
-                                  class="add-remove"
-                                  title="star result"
-                                  size="small"
-                                  icon=${starIcon}
-                                  @click=${onClickStar}>
-                                  <md-icon slot="icon">star</md-icon>
-                              </md-fab>`
-                            : ""} 
-                        -->
+                        
                         <md-fab
                             class="choose"
                             title="select"

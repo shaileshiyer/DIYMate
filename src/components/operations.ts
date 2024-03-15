@@ -52,8 +52,7 @@ export class OperationsComponent extends MobxLitElement {
         return [style];
     }
 
-    private readonly operationsService =
-        diymateCore.getService(OperationsService);
+    private readonly operationsService = diymateCore.getService(OperationsService);
 
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>

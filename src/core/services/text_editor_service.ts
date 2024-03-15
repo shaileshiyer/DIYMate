@@ -13,6 +13,7 @@ import {
     LexicalNode,
     ParagraphNode,
     PointType,
+    RangeSelection,
     SerializedEditorState,
     TextNode,
     createEditor,
@@ -26,6 +27,7 @@ import {
 import { action, computed, makeObservable, observable } from "mobx";
 import { $isHeadingNode, HeadingNode, registerRichText } from "@lexical/rich-text";
 import {
+    $convertFromMarkdownString,
     $convertToMarkdownString,
     registerMarkdownShortcuts,
     TRANSFORMERS,
@@ -40,9 +42,9 @@ import {
     ListNode,
 } from "@lexical/list";
 import { LocalStorageService } from "./local_storage_service";
-import { CursorService } from "./cursor_service";
+import { CursorService, SerializedLexicalRange } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
-import { LexicalConfig } from "@lib/lexical";
+import { $createChoiceNode, $createLoadingNode, LexicalConfig } from "@lib/lexical";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
@@ -365,6 +367,69 @@ export class TextEditorService extends Service {
             root.append(...filteredNodes);
             console.debug("Finished outline");
         });
+    }
+
+
+
+    insertLoadingNode(position:{start:number,end:number}){
+        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
+        let nodes:LexicalNode[] = []
+        this.editor.update(()=>{
+            const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
+            if (!$isRangeSelection(selection)){
+                return;
+            }
+            const loadingNode = $createLoadingNode();
+            nodes.push(loadingNode);
+            selection.insertNodes([loadingNode]);
+        },{discrete:true})
+        return ()=> this.deleteAtPosition(nodes);
+    }
+
+    insertChoiceNode(text:string,position:{start:number,end:number}){
+        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
+        let nodes:LexicalNode[] = []
+        this.editor.update(()=>{
+            const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
+            if (!$isRangeSelection(selection)){
+                return;
+            }
+            const choiceNode = $createChoiceNode(text);
+            nodes.push(choiceNode);
+            selection.insertNodes([choiceNode]);
+        },{discrete:true})
+        return ()=> this.deleteAtPosition(nodes);
+    }
+
+    lastGeneratedText:string = "";
+    insertGeneratedText(text:string,position:{start:number,end:number}){
+        this.lastGeneratedText = text;
+        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
+        this.editor.update(()=>{
+            let generatedNodes:LexicalNode[] = [];
+            // $convertFromMarkdownString(text,TRANSFORMERS,{append:(...appendNodes)=>{generatedNodes = appendNodes;}}as ElementNode);
+            const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
+            if (!$isRangeSelection(selection)){
+                return;
+            }
+            const textParagraphs = text.split('\n');
+            textParagraphs.map((lineText)=>{
+                const paragraph = $createParagraphNode();
+                const textNode = $createTextNode(lineText);
+                paragraph.append(textNode);
+                generatedNodes.push(paragraph);    
+            });
+            
+            selection.insertNodes(generatedNodes);
+        },{discrete:true})
+    }
+
+    deleteAtPosition(nodes:LexicalNode[]){
+        this.editor.update(()=>{
+            for(let node of nodes){
+                node.remove();
+            }
+        },{discrete:true});
     }
 
 
