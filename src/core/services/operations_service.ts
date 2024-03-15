@@ -1,4 +1,13 @@
-import { action, computed, isObservableArray, makeObservable, observable, toJS } from "mobx";
+import {
+    action,
+    computed,
+    flow,
+    isObservableArray,
+    makeAutoObservable,
+    makeObservable,
+    observable,
+    toJS,
+} from "mobx";
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { Service } from "./service";
@@ -36,6 +45,11 @@ type OperationFactory = () => Operation;
  */
 export class OperationsService extends Service {
     isError = false;
+    readonly allOperations: OperationClass[] = [];
+    operationStack: Operation[] = [];
+    private readonly onRunCallbacks = new Set<(op: Operation) => void>();
+    hoverTooltip: string | TemplateResult = "";
+
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
@@ -47,8 +61,17 @@ export class OperationsService extends Service {
             isError: observable,
             isInOperation: computed,
             hoverTooltip: observable,
-            setHoverTooltip:action,
-            clearHoverTooltip:action,
+            setHoverTooltip: action,
+            clearHoverTooltip: action,
+            onRun: action,
+            finalizeOperation: action,
+            registerOperation: action,
+            registerOperations: action,
+            cancelCurrentOperation: action,
+            removeOperation: action,
+            startOperationWithParams: flow,
+            startOperation: flow,
+            rewriteCurrentChoice: flow,
         });
     }
 
@@ -120,8 +143,6 @@ export class OperationsService extends Service {
         }
     }
 
-    allOperations: OperationClass[] = [];
-
     get availableOperations(): OperationClass[] {
         const operationSite = this.getOperationsSite();
         const documentSite = this.getLocationInDocumentStructure();
@@ -130,7 +151,6 @@ export class OperationsService extends Service {
         });
     }
 
-    operationStack: Operation[] = [];
     get currentOperation(): Operation | null {
         const index = this.operationStack.length - 1;
         return this.operationStack[index] ? this.operationStack[index] : null;
@@ -149,7 +169,6 @@ export class OperationsService extends Service {
         );
     }
 
-    private readonly onRunCallbacks = new Set<(op: Operation) => void>();
     onRun(callback: (op: Operation) => void) {
         this.onRunCallbacks.add(callback);
     }
@@ -160,7 +179,6 @@ export class OperationsService extends Service {
         );
     }
 
-    hoverTooltip: string | TemplateResult = "";
     setHoverTooltip(tooltip: string | TemplateResult) {
         this.hoverTooltip = tooltip;
     }
@@ -221,7 +239,7 @@ export class OperationsService extends Service {
         }
     }
 
-    async startOperationWithParams(
+    *startOperationWithParams(
         // tslint:disable-next-line:no-any
         operationClass: OperationClass,
         params: any,
@@ -233,10 +251,10 @@ export class OperationsService extends Service {
         return this.startOperation(factory);
     }
 
-    async startOperation(
+    *startOperation(
         factoryOrClass: OperationClass | OperationFactory,
         trigger = OperationTrigger.APP
-    ) {
+    ):any {
         const factory: OperationFactory = isOperationClass(factoryOrClass)
             ? this.makeOperationFactory(
                   factoryOrClass as OperationClass,
@@ -299,8 +317,8 @@ export class OperationsService extends Service {
         try {
             currentOperation.setInitialState(initialState);
             const operationPromise = currentOperation.start();
-            result = await operationPromise;
-            // tslint:disable-next-line:no-any
+            
+            result = yield operationPromise;
         } catch (err: any) {
             // Reset all pending state in the TextEditor
             currentOperation.resetTextEditor();
@@ -318,7 +336,7 @@ export class OperationsService extends Service {
         return result;
     }
 
-    async rewriteCurrentChoice() {
+    *rewriteCurrentChoice() {
         const parentOperation = this.currentOperation;
         if (parentOperation instanceof ChoiceOperation) {
             const parentChoiceStep = parentOperation.currentStep as ChoiceStep;

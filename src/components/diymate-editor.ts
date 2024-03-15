@@ -2,16 +2,12 @@ import { MobxLitElement } from "@adobe/lit-mobx";
 import { diymateCore } from "@core/diymate_core";
 import { LocalStorageService } from "@core/services/local_storage_service";
 import {
-    LexicalConfig,
     TextEditorService,
 } from "@core/services/text_editor_service";
-import { CodeNode } from "@lexical/code";
-import { LinkNode } from "@lexical/link";
-import { ListItemNode, ListNode } from "@lexical/list";
-import { MarkNode } from "@lexical/mark";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { getLexicalConfig } from "@lib/lexical";
+
+import { PropertyValueMap, TemplateResult, css, html } from "lit";
+import { customElement, property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
 @customElement("diymate-editor")
@@ -69,23 +65,7 @@ export class DIYMateEditor extends MobxLitElement {
     ): void {
         const editorRoot: HTMLElement = this._editorRoot;
 
-        const config: LexicalConfig = {
-            root: editorRoot,
-            editorConfig: {
-                namespace: "DIYMateEditor",
-                onError: console.error,
-                nodes: [
-                    HeadingNode,
-                    QuoteNode,
-                    LinkNode,
-                    ListNode,
-                    ListItemNode,
-                    CodeNode,
-                    MarkNode,
-                ],
-                editable: true,
-            },
-        };
+        const config = getLexicalConfig(editorRoot,"DIYMateEditor");
 
         this.textEditorService.initiliaze(config);
     }

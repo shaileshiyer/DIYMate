@@ -107,7 +107,6 @@ export class NewDIYPage extends MobxLitElement {
                 description: this.description,
                 outlinePrompt: this.outlinePrompt,
             });
-            console.debug(response);
             return response;
         },
         onError: (err) => {

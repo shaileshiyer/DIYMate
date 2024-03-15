@@ -7,7 +7,6 @@ import {
     $isRangeSelection,
     $isTextNode,
     $setSelection,
-    CreateEditorArgs,
     EditorState,
     ElementNode,
     LexicalEditor,
@@ -43,12 +42,7 @@ import {
 import { LocalStorageService } from "./local_storage_service";
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
-
-export interface LexicalConfig {
-    root: HTMLElement | null;
-    editorConfig: CreateEditorArgs;
-}
-
+import { LexicalConfig } from "@lib/lexical";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;

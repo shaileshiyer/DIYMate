@@ -60,8 +60,10 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             </p>
             <p> AvailableOps: ${availableOps}</p>
             <p>Selected Text: ${this.cursorService.selectedText}</p>
-            <!-- <p>Pre Text: ${this.cursorService.preText}</p>
-        <p>Post Text: ${this.cursorService.postText}</p> -->
+            <p>Selected Node Md Text: ${this.cursorService.selectedNodesMarkdownText}</p>
+            
+            <p>Pre Text: ${this.cursorService.preText}</p>
+            <p>Post Text: ${this.cursorService.postText}</p>
             <p>
                 Current Node: ${JSON.stringify(this.cursorService.currentNode)}
             </p>
