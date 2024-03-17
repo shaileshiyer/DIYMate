@@ -24,6 +24,13 @@ export class DIYMateEditor extends MobxLitElement {
 
     static override get styles() {
         return css`
+            .marked {
+                background-color:unset;
+                color: var(--md-sys-color-primary);
+                font-weight: 700;
+            }
+
+
             #diymate-editor-container {
                 display: flex;
                 flex-direction: column;
@@ -32,7 +39,7 @@ export class DIYMateEditor extends MobxLitElement {
                 /* margin: 2em; */
                 /* padding: 2em auto; */
             }
-            #diymate-editor {
+            #diymate-editor .tap-editor {
                 background-color: var(--md-sys-color-surface-container-highest);
                 padding: 0 2em;
                 border-bottom: 1px solid var(--md-sys-color-scrim);
@@ -44,12 +51,12 @@ export class DIYMateEditor extends MobxLitElement {
                 display:none;
             }
 
-            #diymate-editor::-webkit-scrollbar{
+            #diymate-editor .tap-editor::-webkit-scrollbar{
                 display:none;
             }
 
 
-            #diymate-editor:focus {
+            #diymate-editor .tap-editor:focus {
                 outline: none;
                 border-bottom: 3px solid var(--md-sys-color-primary);
             }
@@ -65,9 +72,9 @@ export class DIYMateEditor extends MobxLitElement {
     ): void {
         const editorRoot: HTMLElement = this._editorRoot;
 
-        const config = getLexicalConfig(editorRoot,"DIYMateEditor");
+        // const config = getLexicalConfig(editorRoot,"DIYMateEditor");
 
-        this.textEditorService.initiliaze(config);
+        this.textEditorService.initiliaze(editorRoot);
     }
 
     protected updated(
@@ -97,7 +104,6 @@ export class DIYMateEditor extends MobxLitElement {
                 <div
                     id="diymate-editor"
                     class=${classMap({ disabled: this.disabled })}
-                    ?contenteditable=${!this.disabled}
                     spellcheck="false"></div>
             </div>
         `;

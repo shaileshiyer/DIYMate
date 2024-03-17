@@ -1,8 +1,9 @@
 import { Service } from "./service";
-import { SerializedEditorState } from "lexical";
+// import { SerializedEditorState } from "lexical";
 import { SessionInformation } from "./session_service";
 import { SavedDocument } from "./document_store_service";
 import { uuid } from "@lib/uuid";
+import { JSONContent } from "@tiptap/core";
 
 
 export interface CurrentDIY {
@@ -19,7 +20,7 @@ interface LocalStorageState {
     hasBeenWelcomed: boolean;
     currentSession: SessionInformation | null;
     currentDIY: CurrentDIY | null;
-    editorState: SerializedEditorState | null;
+    editorState: JSONContent | null;
     savedDocuments: SavedDocuments;
 }
 
@@ -102,12 +103,12 @@ export class LocalStorageService extends Service {
         return this.getData<CurrentDIY | null>(CURRENT_DIY_KEY, null);
     }
 
-    setEditorState(editorState:SerializedEditorState){
+    setEditorState(editorState:JSONContent){
         this.setState(EDITOR_STATE_KEY,editorState);
     }
 
-    getEditorState():SerializedEditorState|null {
-        return this.getData<SerializedEditorState|null>(EDITOR_STATE_KEY,null);
+    getEditorState():JSONContent|null {
+        return this.getData<JSONContent|null>(EDITOR_STATE_KEY,null);
     }
 
     setDocumentId(documentId: string){
@@ -160,7 +161,7 @@ export class LocalStorageService extends Service {
             hasBeenWelcomed: this.getData<boolean>(HAS_BEEN_WELCOMED_KEY, false),
             currentSession: this.getData<SessionInformation | null>(CURRENT_SESSSION_KEY, null),
             currentDIY: this.getData<CurrentDIY | null>(CURRENT_DIY_KEY, null),
-            editorState: this.getData<SerializedEditorState | null>(EDITOR_STATE_KEY, null),
+            editorState: this.getData<JSONContent | null>(EDITOR_STATE_KEY, null),
             savedDocuments: this.getData<SavedDocuments>(SAVED_DOCUMENTS_KEY, {}),
         }
     }

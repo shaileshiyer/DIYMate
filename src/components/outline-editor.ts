@@ -22,12 +22,15 @@ export class OutlineEditor extends MobxLitElement {
     @property({type:Boolean})
     public disabled:boolean = false;
 
-    get _editorRoot(): HTMLElement {
-        return this.renderRoot!.querySelector("#outline-editor")!;
-    }
-
     static override get styles() {
         return css`
+            .marked {
+                background-color:unset;
+                color: var(--md-sys-color-primary);
+                font-weight: 700;
+            }
+
+
             .outline-container {
                 display: flex;
                 flex-direction: column;
@@ -37,7 +40,7 @@ export class OutlineEditor extends MobxLitElement {
                 margin: 2em auto;
                 padding: 2em auto;
             }
-            #outline-editor {                
+            #outline-editor .tap-editor {                
                 background-color: var(--md-sys-color-surface-container-highest);
                 width: 100%;
                 padding: 0 1em;
@@ -48,7 +51,7 @@ export class OutlineEditor extends MobxLitElement {
             }
 
 
-            #outline-editor:focus{
+            #outline-editor .tap-editor:focus{
                 outline:none;
                 border-bottom: 3px solid var(--md-sys-color-primary);
             }
@@ -62,10 +65,10 @@ export class OutlineEditor extends MobxLitElement {
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        const editorRoot: HTMLElement = this._editorRoot;
+        const editorRoot: Element|undefined = this.shadowRoot?.querySelector("#outline-editor");
 
-        const config = getLexicalConfig(editorRoot,"OutlineEditor");
-        this.textEditorService.initiliaze(config);
+        // const config = getLexicalConfig(editorRoot,"OutlineEditor");
+        this.textEditorService.initiliaze(editorRoot);
         if (this.outline !== null) {
             this.textEditorService.insertOutline(this.outline);
         }
@@ -103,7 +106,6 @@ export class OutlineEditor extends MobxLitElement {
                 <div
                     id="outline-editor"
                     class=${classMap({disabled:this.disabled})}
-                    ?contenteditable=${!this.disabled}
                     spellcheck="false"></div>
             </div>
         `;

@@ -5,7 +5,7 @@ import { RouterService } from "./router_service";
 import { TextEditorService } from "./text_editor_service";
 import { makeObservable, observable, runInAction } from "mobx";
 import { delay } from "@lib/utils";
-import { SerializedEditorState } from "lexical";
+import { JSONContent } from "@tiptap/core";
 
 export interface SavedDocument {
     id:string;
@@ -90,7 +90,7 @@ export class DocumentStoreService extends Service {
     }
 
     async loadSavedDocument(document: SavedDocument) {
-        let editorState: SerializedEditorState| null = null;
+        let editorState: JSONContent| null = null;
         try {
             editorState = JSON.parse(document.editorState);
             if (editorState === null){
