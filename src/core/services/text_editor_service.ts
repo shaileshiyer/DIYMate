@@ -2,6 +2,7 @@ import { action, computed, makeObservable, observable } from "mobx";
 import { Editor, JSONContent,EditorEvents, NodePos } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import {Transaction} from "@tiptap/pm/state";
+import { Node } from "@tiptap/pm/model";
 
 import { Service } from "./service";
 
@@ -18,8 +19,8 @@ interface ServiceProvider {
     sentencesService: SentencesService;
 }
 
-interface NodeText {
-    key: string;
+interface Paragraphs {
+    offset: number;
     text: string;
 }
 
@@ -33,7 +34,7 @@ export class TextEditorService extends Service {
         makeObservable(this, {
             isEnabled: observable,
             plainText: observable,
-            onRead: action,
+            onTextUpdate: action,
         });
     }
 
@@ -75,6 +76,9 @@ export class TextEditorService extends Service {
                             class: "marked",
                         },
                     },
+                    listItem:{
+                      
+                    },
                 }),
                 HighlightMark.configure({
                     class: "marked",
@@ -82,11 +86,6 @@ export class TextEditorService extends Service {
             ],
             content: "<p> Test Content...</p>",
             injectCSS: false,
-            // onUpdate({ editor }) {
-            //     console.debug("onUpdate");
-            //     console.debug(editor.getHTML());
-            //     console.debug(editor.getText());
-            // },
             editorProps: {
                 attributes: {
                     class: "tap-editor",
@@ -108,42 +107,29 @@ export class TextEditorService extends Service {
         ];
 
         this.updateHandler = ({editor,transaction}): void=>{
-          this.onRead(editor,transaction);
+          this.onTextUpdate(editor,transaction);
         };
 
         this.selectionUpdateHandler = ({editor,transaction})=>{
           console.debug('selection');
-          console.debug(transaction.selection.anchor);
-          
-          // console.debug(editor.$doc.size);
-          // console.debug(editor.$doc.firstChild?.element);
-          // console.debug(editor.$doc.lastChild?.element);
+          // console.debug(editor.getHTML());
+          this.cursorService.cursorUpdate(editor,transaction);
+          this.sentencesService.highlightCurrentSentence(editor,transaction);
         };
-
 
         this.editor.on('update',this.updateHandler);
         this.editor.on('selectionUpdate',this.selectionUpdateHandler);
-
+ 
     }
 
-    paragraphs: NodeText[] = [];
 
-    onRead(editor:Editor,transaction: Transaction) {
+
+    onTextUpdate(editor:Editor,transaction: Transaction) {
       console.debug("onRead");
-      this.plainText = editor.getText();
+      this.updatePlainText(editor,transaction);
     }
 
     onDisconnect() {
-        // this.richtextCallback();
-        // this.historyCallback();
-        // this.markdownCallback();
-        // // disconnect listeners.
-        // for (let listener of this.editorListeners) {
-        //     listener();
-        // }
-
-        // this.editor.setRootElement(null);
-        // this.editor.blur();
         if (this.updateHandler!== null && this.selectionUpdateHandler){
           this.editor.off('update',this.updateHandler);
           this.editor.off('selectionUpdate',this.selectionUpdateHandler);
@@ -193,12 +179,51 @@ export class TextEditorService extends Service {
     }
 
     plainText: string = "";
+    paragraphs: Paragraphs[] = [];
+    private updatePlainText(editor:Editor,tr:Transaction) {
+      // Adding the condition where i check for changes actually makes the highlight selection lag.
+      // if(this.plainText === editor.getText({blockSeparator:'\n\n'})) return;
+      this.plainText = editor.getText({blockSeparator:'\n\n'});
+      
+      this.paragraphs = [];
+
+      const headingNodes = editor.$doc.querySelectorAll('heading');
+      const paragraphNodes = editor.$doc.querySelectorAll('paragraph');
+      const ulNodes = editor.$doc.querySelectorAll('bulletList').flatMap((listcontainer)=> listcontainer);
+      const olNodes = editor.$doc.querySelectorAll('orderedList').flatMap((listcontainer)=> listcontainer);
+      
+
+      const allLists = [...ulNodes,...olNodes];
+      const allListItems:NodePos[] = [];
+      // console.debug(allListItems.map((val)=>{ return{pos:val.pos,val}}));
+      allLists.forEach((list)=>{
+        list.node.descendants((item,pos,parent)=>{
+          if(item.isText){
+            // console.debug(item.toString(),list.pos+pos+1,parent?.nodeSize)
+            allListItems.push(editor.$pos(list.pos+pos+1));
+          }
+        });
+      });
+
+
+      const nodesList = [
+        ...headingNodes,
+        ...paragraphNodes,
+        ...allListItems,
+      ];
+
+
+      nodesList.sort((a,b)=>  a.pos - b.pos);
+      this.paragraphs = nodesList.map((node)=>{return {offset:node.pos,text:node.textContent}});
+
+      this.sentencesService.processText();
+    }
 
     getPlainText(): string {
         return this.editor.getText();
     }
 
-    getParagraphs(): NodeText[] {
+    getParagraphs(): Paragraphs[] {
         return this.paragraphs;
     }
 
@@ -211,6 +236,15 @@ export class TextEditorService extends Service {
     enableEditor() {
         this.editor.setEditable(true);
         this.isEnabled = true;
+        this.editor
+          .chain()
+          .focus('start')
+          .command(({editor,tr})=>{
+            this.cursorService.cursorUpdate(editor,tr);
+            return true;
+          })
+          .run();
+
     }
 
     get isEmpty(): boolean {

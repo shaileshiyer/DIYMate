@@ -1,7 +1,6 @@
 import { ModelResult, OperationSite, OperationType } from "@core/shared/types";
 import { ChoiceOperation } from "./choice_operation";
 import { TemplateResult } from "lit";
-import { SerializedLexicalRange } from "@core/services/cursor_service";
 import { ContinuePromptParams, OperationData } from "@core/shared/interfaces";
 import { RangeSelection } from "lexical";
 

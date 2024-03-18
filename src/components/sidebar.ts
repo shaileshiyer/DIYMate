@@ -51,80 +51,32 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         const availableOps = this.operationsService.availableOperations.map((val)=> val.name)
         return html`<div id="debug-wrappper">
             <h1>Sidebar Wrapper</h1>
-
-            <!-- Operation Site and Document Site -->
-            <p>OperationSite: ${this.operationsService.getOperationsSite()}</p>
-            <p>
-                OperationSite:
-                ${this.operationsService.getLocationInDocumentStructure()}
-            </p>
-            <p> AvailableOps: ${availableOps}</p>
             <p>Selected Text: ${this.cursorService.selectedPlainText}</p>
-            <p>Selected Node Md Text: ${this.cursorService.selectedMdText}</p>
             
-            <p>Pre Text: ${this.cursorService.preText}</p>
+            <!-- <p>Pre Text: ${this.cursorService.preText}</p>
             <p>Post Text: ${this.cursorService.postText}</p>
-            <p>
-                Current Node: ${JSON.stringify(this.cursorService.currentNode)}
-            </p>
+             -->
             <p>
                 serializedRange:
                 ${JSON.stringify(this.cursorService.serializedRange)}
             </p>
-            <p>
-                cursorOffset:${JSON.stringify(this.cursorService.cursorOffset)}
-            </p>
-
             <p>currentSentence: ${this.sentencesService.currentSentence}</p>
-            <p>
-                cursorSpan: ${JSON.stringify(this.sentencesService.cursorSpan)}
-            </p>
-            <p>
-                currentSentenceIndex:
-                ${this.sentencesService.currentSentenceIndex}
-            </p>
-            <p>
-                currentSentenceSerializedRange:
-                ${JSON.stringify(
-                    this.sentencesService.currentSentenceSerializedRange
-                )}
-            </p>
-            <p>
-                currentSentenceRange:
-                ${this.sentencesService.getCurrentSentenceRange()}
-            </p>
-            <p>
-                nextSentenceOffset: ${this.sentencesService.nextSentenceOffset}
-            </p>
-
-            <!-- Cursor Checks -->
-            <p>
-                CursorOffsetRange:
-                ${JSON.stringify(this.cursorService.getOffsetRange())}
-            </p>
-            <!-- <p>isCursorBetweenSentences: ${this.sentencesService
-                .isCursorBetweenSentences} </p>
-        <p>isCursorinMiddleOfSentence: ${this.sentencesService
-                .isCursorWithinSentence} </p>
-        <p>isCursorAtParagraphStart: ${this.cursorService
-                .isCursorAtStartOfNode} </p>
-        <p>isCursorAtParagraphEnd: ${this.cursorService
-                .isCursorAtEndOfNode} </p>
-        <p>isCursorCollapsed: ${this.cursorService.isCursorCollapsed}</p>
-        <p>isCursorSelection: ${this.cursorService.isCursorSelection}</p>
-        <p>isCursorinSameNode: ${this.cursorService.isCursorInSingleNode}</p>
-        <p>isCursorinMiddle: ${this.cursorService.isCursorinMiddle}</p>
-        <p>isCursorAtStartOfDocument: ${this.cursorService
-                .isCursorAtStartOfText}</p>
-        <p>isCursorAtEndOfDocument: ${this.cursorService
-                .isCursorAtEndOfText}</p>
-        <p>isCursorAtTitle: ${this.cursorService.isCursorAtTitle}</p>
-        <p>isCursorInIntroduction: ${this.cursorService
-                .isCursorInIntroduction}</p>
-        <p>isCursorInStep: ${this.cursorService.isCursorInStep}</p>
-        <p>isCursorInConclusion: ${this.cursorService
-                .isCursorInConclusion}</p> -->
-
+            <p>currentSentenceSerializedRange:${JSON.stringify(this.sentencesService.currentSentenceSerializedRange)}</p>
+            
+            <p><strong>CursorOffset: ${this.cursorService.cursorOffset} </strong></p>
+            <p>isCursorAtStartOfNode: ${this.cursorService.isCursorAtStartOfNode}</p>
+            <p>isCursorAtEndOfNode: ${this.cursorService.isCursorAtEndOfNode}</p>
+            <p>isCurrentNodeEmpty: ${this.cursorService.isCurrentNodeEmpty}</p>
+            <p>isCollapsed: ${this.cursorService.isCursorCollapsed}</p>
+            <p>isAtStart: ${this.cursorService.isCursorAtStartOfText}</p>
+            <p>isAtEnd: ${this.cursorService.isCursorAtEndOfText}</p>
+            <p>InSingleNode: ${this.cursorService.isCursorInSingleNode}</p>
+            <p>InTitle: ${this.cursorService.isCursorAtTitle}</p>
+            <p>InIntro: ${this.cursorService.isCursorInIntroduction}</p>
+            <p>InStepTitle: ${this.cursorService.isCursorAtStepTitle}</p>
+            <p>InStep: ${this.cursorService.isCursorInStep}</p>
+            <p>InConclusionTitle: ${this.cursorService.isCursorAtConclusionTitle}</p>
+            <p>InConclusion: ${this.cursorService.isCursorInConclusion}</p>
             <p>Plain Text:</p>
             <md-filled-text-field
                 style="width:100%;"

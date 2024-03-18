@@ -65,12 +65,14 @@ export class OutlineEditor extends MobxLitElement {
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        const editorRoot: Element|undefined = this.shadowRoot?.querySelector("#outline-editor");
+        const editorRoot= this.shadowRoot?.querySelector("#outline-editor");
 
-        // const config = getLexicalConfig(editorRoot,"OutlineEditor");
-        this.textEditorService.initiliaze(editorRoot);
-        if (this.outline !== null) {
-            this.textEditorService.insertOutline(this.outline);
+        if (editorRoot){
+            // const config = getLexicalConfig(editorRoot,"OutlineEditor");
+            this.textEditorService.initiliaze(editorRoot);
+            if (this.outline !== null) {
+                this.textEditorService.insertOutline(this.outline);
+            }
         }
     }
 
