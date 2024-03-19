@@ -53,9 +53,6 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             <h1>Sidebar Wrapper</h1>
             <p>Selected Text: ${this.cursorService.selectedPlainText}</p>
             
-            <!-- <p>Pre Text: ${this.cursorService.preText}</p>
-            <p>Post Text: ${this.cursorService.postText}</p>
-             -->
             <p>
                 serializedRange:
                 ${JSON.stringify(this.cursorService.serializedRange)}
@@ -84,7 +81,25 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                 name="plain-text"
                 placeholder="PlainText"
                 .value=${this.textEditorService.plainText}
-                rows="20"
+                rows="5"
+                spellcheck="false"></md-filled-text-field>
+                <p>Pre Text:</p>
+            <md-filled-text-field
+                style="width:100%;"
+                type="textarea"
+                name="plain-text"
+                placeholder="PlainText"
+                .value=${this.cursorService.preText}
+                rows="10"
+                spellcheck="false"></md-filled-text-field>
+                <p>Post Text:</p>
+            <md-filled-text-field
+                style="width:100%;"
+                type="textarea"
+                name="plain-text"
+                placeholder="PlainText"
+                .value=${this.cursorService.postText}
+                rows="10"
                 spellcheck="false"></md-filled-text-field>
         </div> `;
     }

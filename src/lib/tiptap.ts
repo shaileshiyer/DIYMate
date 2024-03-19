@@ -27,13 +27,13 @@ export const HighlightMark = Mark.create({
 
     parseHTML() {
         return [{
-            tag: `span[data-type="${this.name}"]`, 
+            tag: `mark[data-type="${this.name}"]`, 
         }];
     },
     renderHTML({ HTMLAttributes }) {
         HTMLAttributes["class"];
         return [
-            "span",
+            "mark",
             mergeAttributes(this.options.HTMLAttributes,
                 {
                     'data-type':this.name,
@@ -118,11 +118,6 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
             StarterKit.configure({
                 heading: {
                     levels: [1, 2, 3],
-                },
-                bold: {
-                    HTMLAttributes: {
-                        class: "marked",
-                    },
                 },
             }),
             HighlightMark.configure({

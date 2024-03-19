@@ -242,9 +242,9 @@ export class SentencesService extends Service {
         const { isCursorWithinSentence } = this;
             editor
                 .chain()
-                .command(({tr})=>{
+                .command(({editor,tr})=>{
                     if (this.previousRange!==null){
-                        tr.removeMark(this.previousRange.from,this.previousRange.to);
+                        tr.removeMark(this.previousRange.from,this.previousRange.to,editor.schema.mark('highlight-mark'));
                     }
                     return true;
                 })

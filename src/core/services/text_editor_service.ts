@@ -4,10 +4,9 @@ import {
     JSONContent,
     EditorEvents,
     NodePos,
-    Content,
-    Node,
 } from "@tiptap/core";
-import { Transaction } from "@tiptap/pm/state";
+import { TextSelection, Transaction } from "@tiptap/pm/state";
+import { Fragment, DOMParser as TiptapParser, DOMSerializer as TiptapSerializer } from "@tiptap/pm/model";
 
 import { Service } from "./service";
 
@@ -19,7 +18,7 @@ import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { getEditorConfig } from "@lib/tiptap";
 import { OperationsService } from "./operations_service";
-import { Fragment, DOMParser as TiptapParser } from "@tiptap/pm/model";
+
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
@@ -340,6 +339,26 @@ export class TextEditorService extends Service {
       // console.debug(parsedHTML);
       // console.debug(parsedNodes);
       return parsedNodes;
+    }
+
+    getHTMLFromRange(range:SerializedCursor) {
+      const selection = this.cursorService.makeSelectionFromSerializedCursorRange(range);
+      const slice = selection.content();
+      const serializer = TiptapSerializer.fromSchema(this.editor.schema);
+      const fragment = serializer.serializeFragment(slice.content);
+      const div = document.createElement('div');
+      div.appendChild(fragment);
+    
+      return div.innerHTML;
+    }
+
+    getMarkdownFromRange(range:SerializedCursor){
+      let htmlString = this.getHTMLFromRange(range);
+      // const regex = /ab+c/;
+      const regex = /<mark .*>(.*)?<\/mark>/g;
+      htmlString = htmlString.replace(regex,"$1");
+      const markdownString = this.converter.makeMarkdown(htmlString).replace(/<!-- -->/g,"");
+      return markdownString;
     }
 
 

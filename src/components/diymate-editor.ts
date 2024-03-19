@@ -58,7 +58,6 @@ export class DIYMateEditor extends MobxLitElement {
                 opacity: 0.38;
             }
         `;
-        console.debug(tipTapStyles);
         return [tipTapStyles,styles];
     }
 

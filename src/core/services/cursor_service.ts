@@ -73,13 +73,16 @@ export class CursorService extends Service {
             // console.debug(this.previousHeadingSiblings.map((npos)=> npos.element));
             // console.debug(this.nextHeadingSiblings.map((npos)=> npos.element));
         }
-        const doc = editor.state.doc;
-        this.selectedPlainText = doc.textBetween(from, to,'\n');
-        this.preText = doc.textBetween(1,from,'\n');
+        // const doc = editor.state.doc;
+        // this.selectedPlainText = doc.textBetween(from, to,'\n');
+        this.selectedPlainText = this.textEditorService.getMarkdownFromRange({from,to});
+        // this.preText = doc.textBetween(1,from,'\n');
+        this.preText = this.textEditorService.getMarkdownFromRange({from:1,to:from});
         const size = editor.$doc.lastChild?.range;
         // console.log(size);
         if (size){
-            this.postText = doc.textBetween(to,size.to,'\n');
+            // this.postText = doc.textBetween(to,size.to,'\n');
+            this.postText = this.textEditorService.getMarkdownFromRange({from:to,to:size.to});
            
         }
 
