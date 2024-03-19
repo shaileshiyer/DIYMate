@@ -1,24 +1,31 @@
 import { action, computed, makeObservable, observable } from "mobx";
-import { Editor, JSONContent,EditorEvents, NodePos } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
-import {Transaction} from "@tiptap/pm/state";
-import { Node } from "@tiptap/pm/model";
+import {
+    Editor,
+    JSONContent,
+    EditorEvents,
+    NodePos,
+    Content,
+    Node,
+} from "@tiptap/core";
+import { Transaction } from "@tiptap/pm/state";
 
 import { Service } from "./service";
 
 import { DIYStructureJSON } from "@core/shared/types";
+import { Converter } from "showdown";
 
 import { LocalStorageService } from "./local_storage_service";
 import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
-import { HighlightMark } from "@lib/tiptap";
+import { getEditorConfig } from "@lib/tiptap";
 import { OperationsService } from "./operations_service";
+import { Fragment, DOMParser as TiptapParser } from "@tiptap/pm/model";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
     cursorService: CursorService;
     sentencesService: SentencesService;
-    operationsService:OperationsService;
+    operationsService: OperationsService;
 }
 
 interface Paragraphs {
@@ -26,9 +33,9 @@ interface Paragraphs {
     text: string;
 }
 
-
 export class TextEditorService extends Service {
     private editor!: Editor;
+    converter = new Converter();
 
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
@@ -50,8 +57,8 @@ export class TextEditorService extends Service {
         return this.serviceProvider.sentencesService;
     }
 
-    private get operationsService(){
-      return this.serviceProvider.operationsService;
+    private get operationsService() {
+        return this.serviceProvider.operationsService;
     }
 
     get getEditor() {
@@ -60,43 +67,19 @@ export class TextEditorService extends Service {
 
     private editorListeners: (() => void)[] = [];
 
-
-    private updateHandler:((props:EditorEvents['update'])=>void)| null = null;
-    private selectionUpdateHandler:((props:EditorEvents['selectionUpdate'])=>void)| null = null;
+    private updateHandler: ((props: EditorEvents["update"]) => void) | null =
+        null;
+    private selectionUpdateHandler:
+        | ((props: EditorEvents["selectionUpdate"]) => void)
+        | null = null;
 
     initiliaze(element: Element | undefined) {
         /**
          * Setup the editor here.
          */
 
-        this.editor = new Editor({
-            element: element,
-            extensions: [
-                StarterKit.configure({
-                    heading: {
-                        levels: [1, 2, 3],
-                    },
-                    bold: {
-                        HTMLAttributes: {
-                            class: "marked",
-                        },
-                    },
-                    listItem:{
-                      
-                    },
-                }),
-                HighlightMark.configure({
-                    class: "marked",
-                }),
-            ],
-            content: "<p> Test Content...</p>",
-            injectCSS: false,
-            editorProps: {
-                attributes: {
-                    class: "tap-editor",
-                },
-            },
-        });
+        const editorConf = getEditorConfig(element);
+        this.editor = new Editor(editorConf);
         /** Can set content to an empty editor here */
 
         if (this.editorStateForInitialization !== null) {
@@ -108,41 +91,44 @@ export class TextEditorService extends Service {
         }
 
         /**Setup listeners here. */
-        this.editorListeners = [
-        ];
+        this.editorListeners = [];
 
-        this.updateHandler = ({editor,transaction}): void=>{
-          this.onTextUpdate(editor,transaction);
+        this.updateHandler = ({ editor, transaction }): void => {
+            this.onTextUpdate(editor, transaction);
         };
 
-        this.selectionUpdateHandler = ({editor,transaction})=>{
-          console.debug('selection');
-          // console.debug(editor.getHTML());
-          this.cursorService.cursorUpdate(editor,transaction);
-          if (!this.operationsService.isInOperation){
-            this.sentencesService.highlightCurrentSentence(editor,transaction);
-          }
+        this.selectionUpdateHandler = ({ editor, transaction }) => {
+            console.debug("selection");
+            // console.debug(editor.getHTML());
+            this.cursorService.cursorUpdate(editor, transaction);
+            if (!this.operationsService.isInOperation) {
+                this.sentencesService.highlightCurrentSentence(
+                    editor,
+                    transaction
+                );
+            }
         };
 
-        this.editor.on('update',this.updateHandler);
-        this.editor.on('selectionUpdate',this.selectionUpdateHandler);
- 
-        this.editor.commands.focus('start');
+        this.editor.on("update", this.updateHandler);
+        this.editor.on("selectionUpdate", this.selectionUpdateHandler);
+
+        this.editor.commands.focus("start");
     }
 
-
-
-    onTextUpdate(editor:Editor,transaction: Transaction) {
-      console.debug("onRead");
-      this.updatePlainText(editor,transaction);
+    onTextUpdate(editor: Editor, transaction: Transaction) {
+        console.debug("onRead");
+        // if (!this.operationsService.isInOperation){
+        console.debug('processtext');
+        this.updatePlainText(editor, transaction);
+        // }
     }
 
     onDisconnect() {
-        if (this.updateHandler!== null && this.selectionUpdateHandler){
-          this.editor.off('update',this.updateHandler);
-          this.editor.off('selectionUpdate',this.selectionUpdateHandler);
+        if (this.updateHandler !== null && this.selectionUpdateHandler) {
+            this.editor.off("update", this.updateHandler);
+            this.editor.off("selectionUpdate", this.selectionUpdateHandler);
         }
-        
+
         this.editor.destroy();
     }
 
@@ -188,43 +174,42 @@ export class TextEditorService extends Service {
 
     plainText: string = "";
     paragraphs: Paragraphs[] = [];
-    private updatePlainText(editor:Editor,tr:Transaction) {
-      // Adding the condition where i check for changes actually makes the highlight selection lag.
-      // if(this.plainText === editor.getText({blockSeparator:'\n\n'})) return;
-      this.plainText = editor.getText({blockSeparator:'\n\n'});
-      
-      this.paragraphs = [];
+    private updatePlainText(editor: Editor, tr: Transaction) {
+        // Adding the condition where i check for changes actually makes the highlight selection lag.
+        // if(this.plainText === editor.getText({blockSeparator:'\n\n'})) return;
+        this.plainText = editor.getText({ blockSeparator: "\n\n" });
 
-      const headingNodes = editor.$doc.querySelectorAll('heading');
-      const paragraphNodes = editor.$doc.querySelectorAll('paragraph');
-      const ulNodes = editor.$doc.querySelectorAll('bulletList').flatMap((listcontainer)=> listcontainer);
-      const olNodes = editor.$doc.querySelectorAll('orderedList').flatMap((listcontainer)=> listcontainer);
-      
+        this.paragraphs = [];
 
-      const allLists = [...ulNodes,...olNodes];
-      const allListItems:NodePos[] = [];
-      // console.debug(allListItems.map((val)=>{ return{pos:val.pos,val}}));
-      allLists.forEach((list)=>{
-        list.node.descendants((item,pos,parent)=>{
-          if(item.isText){
-            // console.debug(item.toString(),list.pos+pos+1,parent?.nodeSize)
-            allListItems.push(editor.$pos(list.pos+pos+1));
-          }
+        const headingNodes = editor.$doc.querySelectorAll("heading");
+        const paragraphNodes = editor.$doc.querySelectorAll("paragraph");
+        const ulNodes = editor.$doc
+            .querySelectorAll("bulletList")
+            .flatMap((listcontainer) => listcontainer);
+        const olNodes = editor.$doc
+            .querySelectorAll("orderedList")
+            .flatMap((listcontainer) => listcontainer);
+
+        const allLists = [...ulNodes, ...olNodes];
+        const allListItems: NodePos[] = [];
+        // console.debug(allListItems.map((val)=>{ return{pos:val.pos,val}}));
+        allLists.forEach((list) => {
+            list.node.descendants((item, pos, parent) => {
+                if (item.isText) {
+                    // console.debug(item.toString(),list.pos+pos+1,parent?.nodeSize)
+                    allListItems.push(editor.$pos(list.pos + pos + 1));
+                }
+            });
         });
-      });
 
+        const nodesList = [...headingNodes, ...paragraphNodes, ...allListItems];
 
-      const nodesList = [
-        ...headingNodes,
-        ...paragraphNodes,
-        ...allListItems,
-      ];
+        nodesList.sort((a, b) => a.pos - b.pos);
+        this.paragraphs = nodesList.map((node) => {
+            return { offset: node.pos, text: node.textContent };
+        });
 
-
-      nodesList.sort((a,b)=>  a.pos - b.pos);
-      this.paragraphs = nodesList.map((node)=>{return {offset:node.pos,text:node.textContent}});
-
-      this.sentencesService.processText();
+        this.sentencesService.processText();
     }
 
     getPlainText(): string {
@@ -237,7 +222,7 @@ export class TextEditorService extends Service {
 
     isEnabled = true;
     disableEditor() {
-        this.editor.setEditable(false)
+        this.editor.setEditable(false);
         this.isEnabled = false;
     }
 
@@ -245,14 +230,13 @@ export class TextEditorService extends Service {
         this.editor.setEditable(true);
         this.isEnabled = true;
         this.editor
-          .chain()
-          // .focus('start')
-          .command(({editor,tr})=>{
-            this.cursorService.cursorUpdate(editor,tr);
-            return true;
-          })
-          .run();
-
+            .chain()
+            // .focus('start')
+            .command(({ editor, tr }) => {
+                this.cursorService.cursorUpdate(editor, tr);
+                return true;
+            })
+            .run();
     }
 
     get isEmpty(): boolean {
@@ -265,11 +249,11 @@ export class TextEditorService extends Service {
             .length;
     }
 
-    getStartOfDocument():NodePos|null {
+    getStartOfDocument(): NodePos | null {
         return this.editor.$doc.firstChild;
     }
 
-    getEndOfDocument():NodePos|null {
+    getEndOfDocument(): NodePos | null {
         return this.editor.$doc.lastChild;
     }
 
@@ -281,89 +265,130 @@ export class TextEditorService extends Service {
         <p>${generatedOutline?.introduction}</p>
         <p>Materials:</p>
         <ul>
-            ${generatedOutline?.materials.map((val) => {
-                return `<li>${val}</li>`;
-            }).join("")}
+            ${generatedOutline?.materials
+                .map((val) => {
+                    return `<li>${val}</li>`;
+                })
+                .join("")}
         </ul>
         <p>Tools:</p>
         <ul>
-            ${generatedOutline?.tools.map((val) => {
-                return `<li>${val}</li>`;
-            }).join("")}
+            ${generatedOutline?.tools
+                .map((val) => {
+                    return `<li>${val}</li>`;
+                })
+                .join("")}
         </ul>
         <p>Competences:</p>
         <ul>
-        ${generatedOutline?.competences.map((val) => {
-            return `<li>${val}</li>`;
-        }).join("")}
+        ${generatedOutline?.competences
+            .map((val) => {
+                return `<li>${val}</li>`;
+            })
+            .join("")}
         </ul>
         <p>Safety Instructions </p>
         <ol>
-            ${generatedOutline?.safety_instruction.map((val) => {
-                return `<li>${val}</li>`;
-            }).join("")}
+            ${generatedOutline?.safety_instruction
+                .map((val) => {
+                    return `<li>${val}</li>`;
+                })
+                .join("")}
         </ol>
-        ${generatedOutline?.steps.map((step) => {
-            return `
+        ${generatedOutline?.steps
+            .map((step) => {
+                return `
                 <h2>${step.title}</h2>
                 <p>Materials used in this step:</p>
                 <ul>
-                    ${step.materials_in_step.map((val) => {
-                        return `<li>${val}</li>`;
-                    }).join("")}
+                    ${step.materials_in_step
+                        .map((val) => {
+                            return `<li>${val}</li>`;
+                        })
+                        .join("")}
                 </ul>
                 <p>Tools used in this step:</p>
                 <ul>
-                    ${step.tools_in_step.map((val) => {
-                        return `<li>${val}</li>`;
-                    }).join("")}
+                    ${step.tools_in_step
+                        .map((val) => {
+                            return `<li>${val}</li>`;
+                        })
+                        .join("")}
                 </ul>
                 <p>Instructions:</p>
                 
-                ${step.instructions.map((val) => {
-                    return `<p>${val}</p>`;
-                }).join("")}
+                ${step.instructions
+                    .map((val) => {
+                        return `<p>${val}</p>`;
+                    })
+                    .join("")}
             `;
-        }).join("")}
+            })
+            .join("")}
         <h2>Conclusion</h2>
         <p>${generatedOutline?.conclusion.text}</p>`;
 
         this.editor.commands.setContent(htmlstring);
-
     }
 
-    insertLoadingNode(position:SerializedCursor) {
-        this.editor
-          .chain()
-          .insertContentAt(position,'<mark>Loading...</mark>',{ updateSelection:true})
-          .run()
-        return ()=> this.deleteAtPosition(position)
 
+    parseHTMLToNodes(htmlString:string):Fragment{
+      const parsedHTML = new DOMParser().parseFromString(htmlString,'text/html');
+      const container = document.createElement('div');
+      container.append(parsedHTML.childNodes.item(0));
+      const parsedNodes = TiptapParser.fromSchema(this.editor.schema).parse(container).content;
+      // console.debug(parsedHTML);
+      // console.debug(parsedNodes);
+      return parsedNodes;
     }
 
-    insertChoiceNode(text: string, position:SerializedCursor) {
+
+    insertLoadingNode(position: SerializedCursor) {
+        const loadingNode = this.editor.schema.node("loading-atom").toJSON();
         this.editor
-          .chain()
-          .insertContentAt(position,`<strong>${text}</strong>`,{updateSelection:true})
-          .run()
-        return ()=> this.deleteAtPosition(position)
+            .chain()
+            .insertContentAt(position, loadingNode, { updateSelection: true })
+            .run();
+        return () => this.deleteAtPosition(position);
+    }
+
+    insertChoiceNode(text: string, position: SerializedCursor) {
+        const content = this.parseHTMLToNodes(text);
+
+        const choiceNode = this.editor.schema.node('choice-atom',{},content);
+        console.debug('choiceNode',choiceNode);
+
+        this.editor
+            .chain()
+            .insertContentAt(position, choiceNode.toJSON(),{
+                parseOptions: {
+                    preserveWhitespace: "full",
+                },
+                updateSelection: true,
+            })
+            .run();
+        return () => this.deleteAtPosition(position);
     }
 
     lastGeneratedText: string = "";
-    insertGeneratedText(text: string,position:SerializedCursor) {
+    insertGeneratedText(text: string, position: SerializedCursor) {
         this.lastGeneratedText = text;
+        const content = this.parseHTMLToNodes(text);
+        console.debug('insertGenerated Content');
+        console.debug(content.toJSON());
         this.editor
-          .chain()
-          .insertContentAt(position,`${text}`,{updateSelection:true})
-          .focus(position.to,{scrollIntoView:true})
-          .run()
-        return ()=> this.deleteAtPosition(position)
+            .chain()
+            .insertContentAt(position, content.toJSON(), { updateSelection: true })
+            .focus(position.to, { scrollIntoView: true })
+            .run();
+        
+        return () => this.deleteAtPosition(position);
     }
 
-    deleteAtPosition(position:SerializedCursor) {
+    deleteAtPosition(position: SerializedCursor) {
         const nodePos = this.editor.$pos(position.from);
         const nodeAfterthis = nodePos.after;
-        console.debug('deleteAtPosition Called');
+        console.debug("deleteAtPosition Called");
         this.editor.commands.deleteSelection();
         // this.editor.update(()=>{
         //     for(let node of nodes){
@@ -379,37 +404,3 @@ export class TextEditorService extends Service {
  */
 export const commandKeys = ["j", "k", "l", "u", "i", "o", "p", "h", "n", "m"];
 
-/**
- * We need to hack the window.getSelection method to use the shadow DOM,
- * since the mobiledoc editor internals need to get the selection to detect
- * cursor changes. First, we walk down into the shadow DOM to find the
- * actual focused element. Then, we get the root node of the active element
- * (either the shadow root or the document itself) and call that root's
- * getSelection method.
- */
-export function patchGetSelection() {
-    const oldGetSelection = window.getSelection.bind(window);
-    window.getSelection = (useOld: boolean = false) => {
-        const activeElement = findActiveElementWithinShadow();
-        const shadowRootOrDocument: ShadowRoot | Document = activeElement
-            ? (activeElement.getRootNode() as ShadowRoot | Document)
-            : document;
-        const selection = (shadowRootOrDocument as any).getSelection();
-
-        if (!selection || useOld) return oldGetSelection();
-        return selection;
-    };
-}
-
-/**
- * Recursively walks down the DOM tree to find the active element within any
- * shadow DOM that it might be contained in.
- */
-function findActiveElementWithinShadow(
-    element: Element | null = document.activeElement
-): Element | null {
-    if (element?.shadowRoot) {
-        return findActiveElementWithinShadow(element.shadowRoot.activeElement);
-    }
-    return element;
-}

@@ -11,7 +11,7 @@ import {
 import { parseSentences } from "@lib/parse_sentences";
 import { TextSelection, Transaction } from "@tiptap/pm/state";
 import { Editor } from "@tiptap/core";
-import { Schema } from "@tiptap/pm/model";
+import { MarkType, Schema } from "@tiptap/pm/model";
 
 interface ServiceProvider {
     cursorService: CursorService;
@@ -238,31 +238,31 @@ export class SentencesService extends Service {
     // Turns out it is getting a stale value from the computed stuff.
     previousRange:SerializedCursor|null = null;
     highlightCurrentSentence(editor:Editor,tr:Transaction) {
-        const { isCursorCollapsed, serializedRange } = this.cursorService;
+        const { isCursorCollapsed } = this.cursorService;
         const { isCursorWithinSentence } = this;
-
-        if (this.previousRange!==null){
-            // tr.removeMark(this.previousRange.from,this.previousRange.to,editor.schema.mark('bold'));
             editor
                 .chain()
-                .setTextSelection(this.previousRange)
-                .unsetAllMarks()
-                .setTextSelection(serializedRange)
-                .run();
-        }
-
+                .command(({tr})=>{
+                    if (this.previousRange!==null){
+                        tr.removeMark(this.previousRange.from,this.previousRange.to);
+                    }
+                    return true;
+                })
+                .run()
         if (isCursorCollapsed && isCursorWithinSentence) {
             if (!this.currentSentenceSerializedRange) return;
-            const {from,to} = this.currentSentenceSerializedRange;
-
             editor
                 .chain()
-                .setTextSelection(this.currentSentenceSerializedRange)
-                .setMark('bold',{class:'marked'})
-                .setTextSelection(serializedRange)
+                .command(({editor,tr})=>{
+                    if (this.previousRange!==null){
+                        const {from,to} = this.currentSentenceSerializedRange;
+                        tr.addMark(from,to,editor.schema.mark('highlight-mark'));
+                    }
+                    return true;
+                })
                 .run();
 
-            // tr.addMark(from,to,editor.schema.mark('bold',{class:'marked'}));
+
             this.previousRange = this.currentSentenceSerializedRange;
         }
     }

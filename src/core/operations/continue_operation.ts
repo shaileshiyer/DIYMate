@@ -54,11 +54,13 @@ export class ContinueOperation extends ChoiceOperation {
 
     onSelectChoice(choice: ModelResult, index: number): void {
         const operatingPosition = this.getOperatingPosition();
-        this.textEditorService.insertGeneratedText(choice.content,operatingPosition);
+        const choiceContent = this.textEditorService.converter.makeHtml(choice.content);
+        this.textEditorService.insertGeneratedText(choiceContent,operatingPosition);
     }
     onPendingChoice(choice: ModelResult, index: number): void {
         const operatingPosition = this.getOperatingPosition();
-        this.textEditorService.insertChoiceNode(choice.content,operatingPosition);
+        const choiceContent = this.textEditorService.converter.makeHtml(choice.content);
+        this.textEditorService.insertChoiceNode(choiceContent,operatingPosition);
     }
 
 }

@@ -4,7 +4,7 @@ import { LocalStorageService } from "@core/services/local_storage_service";
 import {
     TextEditorService,
 } from "@core/services/text_editor_service";
-import { getLexicalConfig } from "@lib/lexical";
+import { tipTapStyles } from "@lib/tiptap";
 
 import { PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
@@ -23,14 +23,7 @@ export class DIYMateEditor extends MobxLitElement {
     }
 
     static override get styles() {
-        return css`
-            .marked {
-                background-color:unset;
-                color: var(--md-sys-color-primary);
-                font-weight: 700;
-            }
-
-
+        const styles =  css`
             #diymate-editor-container {
                 display: flex;
                 flex-direction: column;
@@ -65,6 +58,8 @@ export class DIYMateEditor extends MobxLitElement {
                 opacity: 0.38;
             }
         `;
+        console.debug(tipTapStyles);
+        return [tipTapStyles,styles];
     }
 
     protected firstUpdated(

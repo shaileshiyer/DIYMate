@@ -1,19 +1,142 @@
-import { Mark, mergeAttributes } from "@tiptap/core";
+import { EditorOptions, Mark, Node, mergeAttributes } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import { css } from "lit";
 
+export const tipTapStyles = css`
+    .marked {
+        background-color:unset;
+        color: var(--md-sys-color-primary);
+        font-weight: 700;
+    }
+
+    .loading-atom{
+        background-color:var(--md-sys-color-primary);
+        color:var(--md-sys-color-on-primary);
+    }
+    .choice-atom {
+        background-color:var(--md-sys-color-inverse-primary);
+        color:var(--md-sys-color-on-primary-fixed);
+    }
+`;
+
+console.debug(tipTapStyles);
 
 export const HighlightMark = Mark.create({
-    name: 'highlight',
-
-    addOptions() {
-        return {
-            HTMLAttributes: {},
-        };
-    },
+    name: "highlight-mark",
+    group: "basic",
 
     parseHTML() {
-        return [{ tag: 'span' }];
+        return [{
+            tag: `span[data-type="${this.name}"]`, 
+        }];
     },
     renderHTML({ HTMLAttributes }) {
-        return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+        HTMLAttributes["class"];
+        return [
+            "span",
+            mergeAttributes(this.options.HTMLAttributes,
+                {
+                    'data-type':this.name,
+                    'class':'marked'
+                }, 
+                HTMLAttributes),
+            0,
+        ];
     },
 });
+
+export const LoadingAtom = Node.create({
+    name: "loading-atom",
+    atom: true,
+    group: "inline",
+    // content: "empty",
+    inline:true,
+    draggable: false,
+    parseHTML() {
+        return [
+            {
+                tag: `span[data-type="${this.name}"]`,
+            },
+        ];
+    },
+    renderHTML({HTMLAttributes,node}){
+        return[
+            'span',
+            mergeAttributes({
+                'data-type':this.name,
+                'class':'loading-atom'
+            },
+            HTMLAttributes,
+            ),
+            '  Loading...  '
+        ]
+    },
+});
+
+export const ChoiceAtom = Node.create({
+    name: "choice-atom",
+    atom: true,
+    group: "inline",
+    content: "block*",
+    inline:true,
+    draggable: false,
+    addAttributes(){
+        return {
+            ...this.parent?.(),
+            value:{
+                default:'<p>Choice Atom</p>',
+            }
+        }
+    },
+    parseHTML() {
+        return [
+            {
+                tag: `div[data-type="${this.name}"]`,
+            },
+        ];
+    },
+    renderHTML({HTMLAttributes,node}){
+        return[
+            'div',
+            mergeAttributes({
+                'data-type':this.name,
+                'class':'choice-atom'
+            },
+            HTMLAttributes,
+            ),
+            0,
+        ]
+    },
+});
+
+
+
+export function getEditorConfig(element:Element|undefined):Partial<EditorOptions>{
+    return {
+        element: element,
+        extensions: [
+            StarterKit.configure({
+                heading: {
+                    levels: [1, 2, 3],
+                },
+                bold: {
+                    HTMLAttributes: {
+                        class: "marked",
+                    },
+                },
+            }),
+            HighlightMark.configure({
+                class: "marked",
+            }),
+            LoadingAtom,
+            ChoiceAtom,
+        ],
+        content: "<p> Test Content...</p>",
+        injectCSS: false,
+        editorProps: {
+            attributes: {
+                class: "tap-editor",
+            },
+        },
+    }
+}
