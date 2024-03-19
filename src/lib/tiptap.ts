@@ -1,4 +1,5 @@
 import { EditorOptions, Mark, Node, mergeAttributes } from "@tiptap/core";
+import ListKeymap from "@tiptap/extension-list-keymap";
 import StarterKit from "@tiptap/starter-kit";
 import { css } from "lit";
 
@@ -122,6 +123,7 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
             HighlightMark.configure({
                 class: "marked",
             }),
+            ListKeymap,
             LoadingAtom,
             ChoiceAtom,
         ],

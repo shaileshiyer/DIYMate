@@ -17,6 +17,9 @@ dependencies:
   '@tiptap/core':
     specifier: ^2.2.4
     version: 2.2.4(@tiptap/pm@2.2.4)
+  '@tiptap/extension-list-keymap':
+    specifier: ^2.2.4
+    version: 2.2.4(@tiptap/core@2.2.4)
   '@tiptap/pm':
     specifier: ^2.2.4
     version: 2.2.4
@@ -824,6 +827,14 @@ packages:
 
   /@tiptap/extension-list-item@2.2.4(@tiptap/core@2.2.4):
     resolution: {integrity: sha512-lPLKGKsHpM9ClUa8n7GEUn8pG6HCYU0vFruIy3l2t6jZdHkrgBnYtVGMZ13K8UDnj/hlAlccxku0D0P4mA1Vrg==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0
+    dependencies:
+      '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
+    dev: false
+
+  /@tiptap/extension-list-keymap@2.2.4(@tiptap/core@2.2.4):
+    resolution: {integrity: sha512-cDfvDK7A63oLsmF+X3JW6Q0Jgi/g+vp3CordWX2ohQNKNsCEs+8XUX5uyjB2k9cMtdm2z41EMn+3CHEgwuzhFQ==}
     peerDependencies:
       '@tiptap/core': ^2.0.0
     dependencies:
