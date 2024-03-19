@@ -226,7 +226,7 @@ export class SentencesService extends Service {
                     text: nodeText.text,
                     sentenceSpans,
                 };
-                console.debug(data);
+                // console.debug(data);
                 return data;
             }
             return existing;

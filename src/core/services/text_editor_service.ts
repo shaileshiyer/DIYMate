@@ -9,14 +9,16 @@ import { Service } from "./service";
 import { DIYStructureJSON } from "@core/shared/types";
 
 import { LocalStorageService } from "./local_storage_service";
-import { CursorService } from "./cursor_service";
+import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { HighlightMark } from "@lib/tiptap";
+import { OperationsService } from "./operations_service";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
     cursorService: CursorService;
     sentencesService: SentencesService;
+    operationsService:OperationsService;
 }
 
 interface Paragraphs {
@@ -24,7 +26,6 @@ interface Paragraphs {
     text: string;
 }
 
-type editorEventProp = {editor:Editor,transaction:Transaction};
 
 export class TextEditorService extends Service {
     private editor!: Editor;
@@ -47,6 +48,10 @@ export class TextEditorService extends Service {
     }
     private get sentencesService() {
         return this.serviceProvider.sentencesService;
+    }
+
+    private get operationsService(){
+      return this.serviceProvider.operationsService;
     }
 
     get getEditor() {
@@ -114,12 +119,15 @@ export class TextEditorService extends Service {
           console.debug('selection');
           // console.debug(editor.getHTML());
           this.cursorService.cursorUpdate(editor,transaction);
-          this.sentencesService.highlightCurrentSentence(editor,transaction);
+          if (!this.operationsService.isInOperation){
+            this.sentencesService.highlightCurrentSentence(editor,transaction);
+          }
         };
 
         this.editor.on('update',this.updateHandler);
         this.editor.on('selectionUpdate',this.selectionUpdateHandler);
  
+        this.editor.commands.focus('start');
     }
 
 
@@ -238,7 +246,7 @@ export class TextEditorService extends Service {
         this.isEnabled = true;
         this.editor
           .chain()
-          .focus('start')
+          // .focus('start')
           .command(({editor,tr})=>{
             this.cursorService.cursorUpdate(editor,tr);
             return true;
@@ -324,62 +332,39 @@ export class TextEditorService extends Service {
 
     }
 
-    insertLoadingNode(position: { start: number; end: number }) {
-        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
-        // let nodes:LexicalNode[] = []
-        // this.editor.update(()=>{
-        //     const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
-        //     if (!$isRangeSelection(selection)){
-        //         return;
-        //     }
-        //     const loadingNode = $createLoadingNode();
-        //     nodes.push(loadingNode);
-        //     selection.insertNodes([loadingNode]);
-        // },{discrete:true})
-        // return ()=> this.deleteAtPosition(nodes);
+    insertLoadingNode(position:SerializedCursor) {
+        this.editor
+          .chain()
+          .insertContentAt(position,'<mark>Loading...</mark>',{ updateSelection:true})
+          .run()
+        return ()=> this.deleteAtPosition(position)
+
     }
 
-    insertChoiceNode(text: string, position: { start: number; end: number }) {
-        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
-        // let nodes:LexicalNode[] = []
-        // this.editor.update(()=>{
-        //     const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
-        //     if (!$isRangeSelection(selection)){
-        //         return;
-        //     }
-        //     const choiceNode = $createChoiceNode(text);
-        //     nodes.push(choiceNode);
-        //     selection.insertNodes([choiceNode]);
-        // },{discrete:true})
-        // return ()=> this.deleteAtPosition(nodes);
+    insertChoiceNode(text: string, position:SerializedCursor) {
+        this.editor
+          .chain()
+          .insertContentAt(position,`<strong>${text}</strong>`,{updateSelection:true})
+          .run()
+        return ()=> this.deleteAtPosition(position)
     }
 
     lastGeneratedText: string = "";
-    insertGeneratedText(
-        text: string,
-        position: { start: number; end: number }
-    ) {
-        // this.lastGeneratedText = text;
-        // // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
-        // this.editor.update(()=>{
-        //     let generatedNodes:LexicalNode[] = [];
-        //     // $convertFromMarkdownString(text,TRANSFORMERS,{append:(...appendNodes)=>{generatedNodes = appendNodes;}}as ElementNode);
-        //     const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
-        //     if (!$isRangeSelection(selection)){
-        //         return;
-        //     }
-        //     const textParagraphs = text.split('\n');
-        //     textParagraphs.map((lineText)=>{
-        //         const paragraph = $createParagraphNode();
-        //         const textNode = $createTextNode(lineText);
-        //         paragraph.append(textNode);
-        //         generatedNodes.push(paragraph);
-        //     });
-        //     selection.insertNodes(generatedNodes);
-        // },{discrete:true})
+    insertGeneratedText(text: string,position:SerializedCursor) {
+        this.lastGeneratedText = text;
+        this.editor
+          .chain()
+          .insertContentAt(position,`${text}`,{updateSelection:true})
+          .focus(position.to,{scrollIntoView:true})
+          .run()
+        return ()=> this.deleteAtPosition(position)
     }
 
-    deleteAtPosition() {
+    deleteAtPosition(position:SerializedCursor) {
+        const nodePos = this.editor.$pos(position.from);
+        const nodeAfterthis = nodePos.after;
+        console.debug('deleteAtPosition Called');
+        this.editor.commands.deleteSelection();
         // this.editor.update(()=>{
         //     for(let node of nodes){
         //         node.remove();
