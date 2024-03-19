@@ -98,7 +98,8 @@ export class TextEditorService extends Service {
             console.debug("selection");
             // console.debug(editor.getHTML());
             this.cursorService.cursorUpdate(editor, transaction);
-            if (!this.operationsService.isInOperation) {
+            console.debug('docChanged',transaction.docChanged,transaction.steps);
+            if (!this.operationsService.isInOperation && !transaction.docChanged) {
                 this.sentencesService.highlightCurrentSentence(
                     editor,
                     transaction
