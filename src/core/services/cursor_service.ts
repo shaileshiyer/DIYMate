@@ -4,7 +4,12 @@ import { TextEditorService } from "./text_editor_service";
 
 import { SentencesService } from "./sentences_service";
 import { Editor, NodePos } from "@tiptap/core";
-import { Selection, SelectionRange, TextSelection, Transaction } from "@tiptap/pm/state";
+import {
+    Selection,
+    SelectionRange,
+    TextSelection,
+    Transaction,
+} from "@tiptap/pm/state";
 
 interface ServiceProvider {
     textEditorService: TextEditorService;
@@ -59,43 +64,39 @@ export class CursorService extends Service {
 
     cursorUpdate(editor: Editor, transaction: Transaction): void {
         const { from, to } = transaction.selection;
-        // console.debug(editor.$pos(from));
-        // console.debug(from,$from.pos,to,$to.pos);
         this.serializedRange = this.makeSerializedCursorRangeFromSelection(
             transaction.selection
         );
-        // console.debug(editor.state.doc.textBetween(from, to));
-        // console.debug(editor.$pos(from));
-        const headernodes = editor.$nodes('heading');
-        if (headernodes!== null){
-            this.previousHeadingSiblings= headernodes.filter((npos)=> npos.from < from);
-            this.nextHeadingSiblings= headernodes.filter((npos)=> npos.to > to);
-            // console.debug(this.previousHeadingSiblings.map((npos)=> npos.element));
-            // console.debug(this.nextHeadingSiblings.map((npos)=> npos.element));
+
+        const headernodes = editor.$nodes("heading");
+        if (headernodes !== null) {
+            this.previousHeadingSiblings = headernodes.filter(
+                (npos) => npos.from < from
+            );
+            this.nextHeadingSiblings = headernodes.filter(
+                (npos) => npos.to > to
+            );
         }
         // const doc = editor.state.doc;
         // this.selectedPlainText = doc.textBetween(from, to,'\n');
-        this.selectedPlainText = this.textEditorService.getMarkdownFromRange({from,to});
+        this.selectedPlainText = this.textEditorService.getMarkdownFromRange({
+            from,
+            to,
+        });
         // this.preText = doc.textBetween(1,from,'\n');
-        this.preText = this.textEditorService.getMarkdownFromRange({from:1,to:from});
-        const size = editor.$doc.lastChild?.range;
+        this.preText = this.textEditorService.getMarkdownFromRange({
+            from: 1,
+            to: from,
+        });
+        const range = editor.$doc.lastChild?.range;
         // console.log(size);
-        if (size){
+        if (range) {
             // this.postText = doc.textBetween(to,size.to,'\n');
-            this.postText = this.textEditorService.getMarkdownFromRange({from:to,to:size.to});
-           
+            this.postText = this.textEditorService.getMarkdownFromRange({
+                from: to,
+                to: range.to,
+            });
         }
-
-        // let hasStepHeading = false;
-        // console.debug('stepheading',hasStepHeading)
-        // const range = editor.state.doc.nodesBetween(from,to,(node,pos,parent)=>{
-        //     const check = node.type.name ==='heading' && node.attrs["level"]=== 2;
-        //     if (check){
-        //         hasStepHeading = check;
-        //     }
-        //     console.debug('check',node,hasStepHeading);
-        //     return hasStepHeading;
-        // });
     }
 
     serializedRange: SerializedCursor = makeEmptySerializedRange();
@@ -119,31 +120,31 @@ export class CursorService extends Service {
 
     makeSelectionFromSerializedCursorRange(
         serializedRange: SerializedCursor | null
-    ):TextSelection {
+    ): TextSelection {
         const editor = this.textEditorService.getEditor;
         if (serializedRange === null) return this.blankRange();
-        try{
-            const {from,to} = serializedRange;
+        try {
+            const { from, to } = serializedRange;
             const $from = editor.state.doc.resolve(from);
             const $to = editor.state.doc.resolve(to);
-            const range = new TextSelection($from,$to);
+            const range = new TextSelection($from, $to);
             return range;
-        } catch(err:unknown){
+        } catch (err: unknown) {
             console.error(err);
         }
         return this.blankRange();
     }
 
-    blankRange():TextSelection{
+    blankRange(): TextSelection {
         const editor = this.textEditorService.getEditor;
         const $from = editor.state.doc.resolve(0);
         const $to = editor.state.doc.resolve(0);
-        return new TextSelection($from,$to);
+        return new TextSelection($from, $to);
     }
 
     // Get cursor offset in parent node
     get cursorOffset() {
-        return this.isCursorCollapsed? this.serializedRange.from:0;
+        return this.isCursorCollapsed ? this.serializedRange.from : 0;
     }
 
     getOffsetRange() {
@@ -161,9 +162,6 @@ export class CursorService extends Service {
     }
 
     get isCursorInSingleNode() {
-        // return (
-        //     this.serializedRange.anchor.key === this.serializedRange.focus.key
-        // );
         const editor = this.textEditorService.getEditor;
         const fromNode = editor.$pos(this.serializedRange.from).node;
         const toNode = editor.$pos(this.serializedRange.to).node;
@@ -171,25 +169,21 @@ export class CursorService extends Service {
     }
 
     get isCursorAtEndOfNode() {
-        // return this.isCursorCollapsed && this.sentenceService.isLastCursorSpan;
-        if (this.isCursorCollapsed){
+        if (this.isCursorCollapsed) {
             const editor = this.textEditorService.getEditor;
             const pos = editor.$pos(this.serializedRange.from);
-            
+
             return this.serializedRange.from === pos.range.to - 1;
-            
         }
         return false;
     }
 
     get isCursorAtStartOfNode() {
-        // return this.isCursorCollapsed && this.sentenceService.isFirstCursorSpan;
-        if (this.isCursorCollapsed){
+        if (this.isCursorCollapsed) {
             const editor = this.textEditorService.getEditor;
             const pos = editor.$pos(this.serializedRange.from);
-            
-            return this.serializedRange.from === pos.range.from;
 
+            return this.serializedRange.from === pos.range.from;
         }
         return false;
     }
@@ -208,17 +202,16 @@ export class CursorService extends Service {
     }
 
     get isCurrentNodeEmpty() {
-        // return this.currentNode.textContentSize === 0;
         const editor = this.textEditorService.getEditor;
         const currentNode = editor.$pos(this.serializedRange.from).node;
         return currentNode.nodeSize === 2;
     }
 
     get isCursorAtStartOfText() {
-        if(this.isCursorCollapsed){
+        if (this.isCursorCollapsed) {
             const startPos = this.textEditorService.getStartOfDocument();
-            if (startPos!== null){
-                const {from } = startPos.range;
+            if (startPos !== null) {
+                const { from } = startPos.range;
                 return this.serializedRange.from === from;
             }
         }
@@ -226,9 +219,9 @@ export class CursorService extends Service {
     }
 
     get isCursorAtEndOfText() {
-        if(this.isCursorCollapsed){
+        if (this.isCursorCollapsed) {
             const endPos = this.textEditorService.getEndOfDocument();
-            if (endPos!== null){
+            if (endPos !== null) {
                 const { to } = endPos.range;
                 return this.serializedRange.from === to - 1;
             }
@@ -236,36 +229,57 @@ export class CursorService extends Service {
         return false;
     }
 
-
     get isCursorAtTitle() {
-        const node = this.textEditorService.getEditor.$pos(this.serializedRange.from);
-        return node.attributes["level"]===1 && node.node.type.name === 'heading';
+        const node = this.textEditorService.getEditor.$pos(
+            this.serializedRange.from
+        );
+        return (
+            node.attributes["level"] === 1 && node.node.type.name === "heading"
+        );
     }
-
 
     get isCursorInIntroduction() {
-        return !this.isCursorAtTitle && this.previousHeadingSiblings.length <= 1 && !this.isCursorAtStepTitle ;
+        return (
+            !this.isCursorAtTitle &&
+            this.previousHeadingSiblings.length <= 1 &&
+            !this.isCursorAtStepTitle
+        );
     }
 
-    get isCursorAtStepTitle(){
-        const node = this.textEditorService.getEditor.$pos(this.serializedRange.from);
-        const isHeading2 = node.node.type.name === 'heading' && node.attributes["level"]===2 ;
+    get isCursorAtStepTitle() {
+        const node = this.textEditorService.getEditor.$pos(
+            this.serializedRange.from
+        );
+        const isHeading2 =
+            node.node.type.name === "heading" && node.attributes["level"] === 2;
         return isHeading2 && this.nextHeadingSiblings.length > 1;
-    }    
+    }
     get isCursorInStep() {
-        return !this.isCursorAtTitle && !this.isCursorInIntroduction && !this.isCursorAtStepTitle && !this.isCursorInConclusion && !this.isCursorAtConclusionTitle;
+        return (
+            !this.isCursorAtTitle &&
+            !this.isCursorInIntroduction &&
+            !this.isCursorAtStepTitle &&
+            !this.isCursorInConclusion &&
+            !this.isCursorAtConclusionTitle
+        );
     }
 
-    get isCursorAtConclusionTitle(){
-        const node = this.textEditorService.getEditor.$pos(this.serializedRange.from);
-        const isHeading2 = node.node.type.name === 'heading' && node.attributes["level"]===2 ;
-        return !this.isCursorAtTitle && isHeading2 && this.nextHeadingSiblings.length === 1;
+    get isCursorAtConclusionTitle() {
+        const node = this.textEditorService.getEditor.$pos(
+            this.serializedRange.from
+        );
+        const isHeading2 =
+            node.node.type.name === "heading" && node.attributes["level"] === 2;
+        return (
+            !this.isCursorAtTitle &&
+            isHeading2 &&
+            this.nextHeadingSiblings.length === 1
+        );
     }
 
     get isCursorInConclusion() {
         return this.nextHeadingSiblings.length === 0;
     }
-
 
     getPreAndPostSelectionText(): [string, string] {
         return [this.preText, this.postText];

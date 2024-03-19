@@ -2,7 +2,6 @@ import { ModelResult, OperationSite, OperationType } from "@core/shared/types";
 import { ChoiceOperation } from "./choice_operation";
 import { TemplateResult } from "lit";
 import { ContinuePromptParams, OperationData } from "@core/shared/interfaces";
-import { RangeSelection } from "lexical";
 import { SerializedCursor } from "@core/services/cursor_service";
 
 /**
@@ -10,10 +9,7 @@ import { SerializedCursor } from "@core/services/cursor_service";
  */
 export class ContinueOperation extends ChoiceOperation {
     
-    static override isAvailable(
-        operationSite: OperationSite,
-        documentSite: OperationSite,
-    ) {
+    static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
             operationSite === OperationSite.END_OF_SECTION ||
             operationSite === OperationSite.EMPTY_SECTION

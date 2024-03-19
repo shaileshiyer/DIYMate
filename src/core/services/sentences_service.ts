@@ -8,10 +8,8 @@ import {
     getSpanForOffset,
     SentenceSpan,
 } from "@lib/sentence_boundaries";
-import { parseSentences } from "@lib/parse_sentences";
 import { TextSelection, Transaction } from "@tiptap/pm/state";
 import { Editor } from "@tiptap/core";
-import { MarkType, Schema } from "@tiptap/pm/model";
 
 interface ServiceProvider {
     cursorService: CursorService;
@@ -51,14 +49,13 @@ export class SentencesService extends Service {
     get currentSentenceSerializedRange(): SerializedCursor | null {
         if (!this.isCursorWithinSentence) return null;
         const paragraphData = this.getParagraphDataAtCursor();
-        if(paragraphData===null) return null;
-        const offset = this.cursorService.cursorOffset;
+        if (paragraphData === null) return null;
         if (!this.cursorSpan) return null;
         const { start, end } = this.cursorSpan.span;
-        
+
         return {
-            from: paragraphData.startOffset+start,
-            to: paragraphData.startOffset+end,
+            from: paragraphData.startOffset + start,
+            to: paragraphData.startOffset + end,
         };
     }
 
@@ -102,7 +99,10 @@ export class SentencesService extends Service {
         const cursorOffset = this.cursorService.cursorOffset;
         const { sentenceSpans } = paragraph;
 
-        return getSpanForOffset(sentenceSpans, cursorOffset-paragraph.startOffset);
+        return getSpanForOffset(
+            sentenceSpans,
+            cursorOffset - paragraph.startOffset
+        );
     }
 
     get isLastCursorSpan() {
@@ -163,8 +163,8 @@ export class SentencesService extends Service {
         const offset = this.nextSentenceOffset;
         const cursorOffset = this.cursorService.cursorOffset;
         const serialized: SerializedCursor = {
-            from:cursorOffset+offset,
-            to:cursorOffset+offset,
+            from: cursorOffset + offset,
+            to: cursorOffset + offset,
         };
         return this.cursorService.makeSelectionFromSerializedCursorRange(
             serialized
@@ -180,16 +180,8 @@ export class SentencesService extends Service {
         return selection;
     }
 
-    // Helps eliminate mobx out-of-bounds read errors on the observable
-    // paragraph.
-    private getParagraphDataAtIndex(i: number) {
-        return i <= this.paragraphData.length - 1
-        ? this.paragraphData[i]
-        : undefined;
-    }
-
-    private getParagraphDataAtStartOffset(offset:number){
-        return this.paragraphData.find((pdata)=> pdata.startOffset === offset);
+    private getParagraphDataAtStartOffset(offset: number) {
+        return this.paragraphData.find((pdata) => pdata.startOffset === offset);
     }
 
     private stringEquals(a: string, b: string) {
@@ -206,20 +198,17 @@ export class SentencesService extends Service {
         return paragraph || null;
     }
 
-    getSentencesForElement(key: string): string[] {
-        const paragraphs = this.textEditorService.getParagraphs();
-        const paragraphText = paragraphs.find((value) => value.key === key);
-        if (!paragraphText) {
-            return [];
-        }
-        return parseSentences(paragraphText.text);
-    }
-
     processText() {
         const textParagraphs = this.textEditorService.getParagraphs();
-        this.paragraphData = textParagraphs.map((nodeText,index) => {
-            const existing = this.getParagraphDataAtStartOffset(nodeText.offset);
-            if (!existing || !this.stringEquals(nodeText.text, existing.text) || existing.startOffset !== nodeText.offset) {
+        this.paragraphData = textParagraphs.map((nodeText) => {
+            const existing = this.getParagraphDataAtStartOffset(
+                nodeText.offset
+            );
+            if (
+                !existing ||
+                !this.stringEquals(nodeText.text, existing.text) ||
+                existing.startOffset !== nodeText.offset
+            ) {
                 const sentenceSpans = getSentenceBoundaries(nodeText.text);
                 const data = {
                     startOffset: nodeText.offset,
@@ -234,36 +223,41 @@ export class SentencesService extends Service {
         // console.debug(this.paragraphData);
     }
 
-    /**Forget about this for now The current solution works and is good enough for most cases */
-    // Turns out it is getting a stale value from the computed stuff.
-    previousRange:SerializedCursor|null = null;
-    highlightCurrentSentence(editor:Editor,tr:Transaction) {
+    /**It works easily now */
+    highlightCurrentSentence(editor: Editor, tr: Transaction) {
         const { isCursorCollapsed } = this.cursorService;
         const { isCursorWithinSentence } = this;
-            editor
-                .chain()
-                .command(({editor,tr})=>{
-                    if (this.previousRange!==null){
-                        tr.removeMark(this.previousRange.from,this.previousRange.to,editor.schema.mark('highlight-mark'));
-                    }
-                    return true;
-                })
-                .run()
+        editor
+            .chain()
+            .command(({ editor, tr }) => {
+                const docRange = editor.$doc.range;
+
+                tr.removeMark(
+                    docRange.from + 1,
+                    docRange.to - 2,
+                    editor.schema.mark("highlight-mark")
+                );
+                return true;
+            })
+            .run();
         if (isCursorCollapsed && isCursorWithinSentence) {
             if (!this.currentSentenceSerializedRange) return;
             editor
                 .chain()
-                .command(({editor,tr})=>{
-                    if (this.previousRange!==null){
-                        const {from,to} = this.currentSentenceSerializedRange;
-                        tr.addMark(from,to,editor.schema.mark('highlight-mark'));
+                .command(({ editor, tr }) => {
+                    if (this.currentSentenceSerializedRange !== null) {
+                        const { from, to } =
+                            this.currentSentenceSerializedRange;
+                        tr.addMark(
+                            from,
+                            to,
+                            editor.schema.mark("highlight-mark")
+                        );
                     }
                     return true;
                 })
                 .run();
 
-
-            this.previousRange = this.currentSentenceSerializedRange;
         }
     }
 }

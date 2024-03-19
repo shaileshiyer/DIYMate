@@ -1,12 +1,11 @@
 import { action, computed, makeObservable, observable } from "mobx";
-import {
-    Editor,
-    JSONContent,
-    EditorEvents,
-    NodePos,
-} from "@tiptap/core";
+import { Editor, JSONContent, EditorEvents, NodePos } from "@tiptap/core";
 import { TextSelection, Transaction } from "@tiptap/pm/state";
-import { Fragment, DOMParser as TiptapParser, DOMSerializer as TiptapSerializer } from "@tiptap/pm/model";
+import {
+    Fragment,
+    DOMParser as TiptapParser,
+    DOMSerializer as TiptapSerializer,
+} from "@tiptap/pm/model";
 
 import { Service } from "./service";
 
@@ -18,7 +17,6 @@ import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { getEditorConfig } from "@lib/tiptap";
 import { OperationsService } from "./operations_service";
-
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
@@ -117,7 +115,7 @@ export class TextEditorService extends Service {
     onTextUpdate(editor: Editor, transaction: Transaction) {
         console.debug("onRead");
         // if (!this.operationsService.isInOperation){
-        console.debug('processtext');
+        console.debug("processtext");
         this.updatePlainText(editor, transaction);
         // }
     }
@@ -330,37 +328,43 @@ export class TextEditorService extends Service {
         this.editor.commands.setContent(htmlstring);
     }
 
-
-    parseHTMLToNodes(htmlString:string):Fragment{
-      const parsedHTML = new DOMParser().parseFromString(htmlString,'text/html');
-      const container = document.createElement('div');
-      container.append(parsedHTML.childNodes.item(0));
-      const parsedNodes = TiptapParser.fromSchema(this.editor.schema).parse(container).content;
-      // console.debug(parsedHTML);
-      // console.debug(parsedNodes);
-      return parsedNodes;
+    parseHTMLToNodes(htmlString: string): Fragment {
+        const parsedHTML = new DOMParser().parseFromString(
+            htmlString,
+            "text/html"
+        );
+        const container = document.createElement("div");
+        container.append(parsedHTML.childNodes.item(0));
+        const parsedNodes = TiptapParser.fromSchema(this.editor.schema).parse(
+            container
+        ).content;
+        // console.debug(parsedHTML);
+        // console.debug(parsedNodes);
+        return parsedNodes;
     }
 
-    getHTMLFromRange(range:SerializedCursor) {
-      const selection = this.cursorService.makeSelectionFromSerializedCursorRange(range);
-      const slice = selection.content();
-      const serializer = TiptapSerializer.fromSchema(this.editor.schema);
-      const fragment = serializer.serializeFragment(slice.content);
-      const div = document.createElement('div');
-      div.appendChild(fragment);
-    
-      return div.innerHTML;
+    getHTMLFromRange(range: SerializedCursor) {
+        const selection =
+            this.cursorService.makeSelectionFromSerializedCursorRange(range);
+        const slice = selection.content();
+        const serializer = TiptapSerializer.fromSchema(this.editor.schema);
+        const fragment = serializer.serializeFragment(slice.content);
+        const div = document.createElement("div");
+        div.appendChild(fragment);
+
+        return div.innerHTML;
     }
 
-    getMarkdownFromRange(range:SerializedCursor){
-      let htmlString = this.getHTMLFromRange(range);
-      // const regex = /ab+c/;
-      const regex = /<mark .*>(.*)?<\/mark>/g;
-      htmlString = htmlString.replace(regex,"$1");
-      const markdownString = this.converter.makeMarkdown(htmlString).replace(/<!-- -->/g,"");
-      return markdownString;
+    getMarkdownFromRange(range: SerializedCursor) {
+        let htmlString = this.getHTMLFromRange(range);
+        // const regex = /ab+c/;
+        const regex = /<mark .*>(.*)?<\/mark>/g;
+        htmlString = htmlString.replace(regex, "$1");
+        const markdownString = this.converter
+            .makeMarkdown(htmlString)
+            .replace(/<!-- -->/g, "");
+        return markdownString;
     }
-
 
     insertLoadingNode(position: SerializedCursor) {
         const loadingNode = this.editor.schema.node("loading-atom").toJSON();
@@ -374,12 +378,12 @@ export class TextEditorService extends Service {
     insertChoiceNode(text: string, position: SerializedCursor) {
         const content = this.parseHTMLToNodes(text);
 
-        const choiceNode = this.editor.schema.node('choice-atom',{},content);
-        console.debug('choiceNode',choiceNode);
+        const choiceNode = this.editor.schema.node("choice-atom", {}, content);
+        console.debug("choiceNode", choiceNode);
 
         this.editor
             .chain()
-            .insertContentAt(position, choiceNode.toJSON(),{
+            .insertContentAt(position, choiceNode.toJSON(), {
                 parseOptions: {
                     preserveWhitespace: "full",
                 },
@@ -393,14 +397,16 @@ export class TextEditorService extends Service {
     insertGeneratedText(text: string, position: SerializedCursor) {
         this.lastGeneratedText = text;
         const content = this.parseHTMLToNodes(text);
-        console.debug('insertGenerated Content');
+        console.debug("insertGenerated Content");
         console.debug(content.toJSON());
         this.editor
             .chain()
-            .insertContentAt(position, content.toJSON(), { updateSelection: true })
-            .focus(position.to, { scrollIntoView: true })
+            .insertContentAt(position, content.toJSON(), {
+                updateSelection: true,
+            })
+            // .focus(position.to, { scrollIntoView: true })
             .run();
-        
+
         return () => this.deleteAtPosition(position);
     }
 
@@ -422,4 +428,3 @@ export class TextEditorService extends Service {
  * side of the keyboard.
  */
 export const commandKeys = ["j", "k", "l", "u", "i", "o", "p", "h", "n", "m"];
-

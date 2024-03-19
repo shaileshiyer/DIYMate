@@ -19,7 +19,6 @@ export const tipTapStyles = css`
     }
 `;
 
-console.debug(tipTapStyles);
 
 export const HighlightMark = Mark.create({
     name: "highlight-mark",
@@ -126,7 +125,7 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
             LoadingAtom,
             ChoiceAtom,
         ],
-        content: "<p> Test Content...</p>",
+        content: "<p> Start writing your DIY...</p>",
         injectCSS: false,
         editorProps: {
             attributes: {
