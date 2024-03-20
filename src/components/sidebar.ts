@@ -59,6 +59,8 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             </p>
             <p>currentSentence: ${this.sentencesService.currentSentence}</p>
             <p>currentSentenceSerializedRange:${JSON.stringify(this.sentencesService.currentSentenceSerializedRange)}</p>
+            <p>nextSentenceOffset:${JSON.stringify(this.sentencesService.getNextSentenceRange())}</p>
+            <p>currentSentenceIndex:${this.sentencesService.currentSentenceIndex}</p>
             
             <p><strong>CursorOffset: ${this.cursorService.cursorOffset} </strong></p>
             <p>isCursorAtStartOfNode: ${this.cursorService.isCursorAtStartOfNode}</p>
@@ -67,9 +69,12 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             <p>isCollapsed: ${this.cursorService.isCursorCollapsed}</p>
             <p>isAtStart: ${this.cursorService.isCursorAtStartOfText}</p>
             <p>isAtEnd: ${this.cursorService.isCursorAtEndOfText}</p>
+
             <p>InSingleNode: ${this.cursorService.isCursorInSingleNode}</p>
             <p>InTitle: ${this.cursorService.isCursorAtTitle}</p>
+            <p>SectionTitle: ${this.cursorService.isCursorAtSectionTitle}</p>
             <p>InIntro: ${this.cursorService.isCursorInIntroduction}</p>
+            
             <p>InStepTitle: ${this.cursorService.isCursorAtStepTitle}</p>
             <p>InStep: ${this.cursorService.isCursorInStep}</p>
             <p>InConclusionTitle: ${this.cursorService.isCursorAtConclusionTitle}</p>

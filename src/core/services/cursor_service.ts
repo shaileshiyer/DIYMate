@@ -68,7 +68,7 @@ export class CursorService extends Service {
             transaction.selection
         );
 
-        const headernodes = editor.$nodes("heading");
+        const headernodes = editor.$nodes("heading",{level:2});
         if (headernodes !== null) {
             this.previousHeadingSiblings = headernodes.filter(
                 (npos) => npos.from < from
@@ -88,7 +88,7 @@ export class CursorService extends Service {
             from: 1,
             to: from,
         });
-        const range = editor.$doc.lastChild?.range;
+        const range = this.textEditorService.getEndOfDocument()?.range;
         // console.log(size);
         if (range) {
             // this.postText = doc.textBetween(to,size.to,'\n');
@@ -238,6 +238,15 @@ export class CursorService extends Service {
         );
     }
 
+    get isCursorAtSectionTitle(){
+        const node = this.textEditorService.getEditor.$pos(
+            this.serializedRange.from
+        );
+        return (
+            node.attributes["level"] === 2 && node.node.type.name === "heading"
+        );
+    }
+
     get isCursorInIntroduction() {
         return (
             !this.isCursorAtTitle &&
@@ -250,12 +259,13 @@ export class CursorService extends Service {
         const node = this.textEditorService.getEditor.$pos(
             this.serializedRange.from
         );
-        const isHeading2 =
-            node.node.type.name === "heading" && node.attributes["level"] === 2;
-        return isHeading2 && this.nextHeadingSiblings.length > 1;
+        const isHeading3 =
+            node.node.type.name === "heading" && node.attributes["level"] === 3;
+        return isHeading3 && this.previousHeadingSiblings.length === 3;
     }
     get isCursorInStep() {
         return (
+            this.previousHeadingSiblings.length === 3 &&
             !this.isCursorAtTitle &&
             !this.isCursorInIntroduction &&
             !this.isCursorAtStepTitle &&
@@ -271,8 +281,7 @@ export class CursorService extends Service {
         const isHeading2 =
             node.node.type.name === "heading" && node.attributes["level"] === 2;
         return (
-            !this.isCursorAtTitle &&
-            isHeading2 &&
+            this.isCursorAtSectionTitle &&
             this.nextHeadingSiblings.length === 1
         );
     }

@@ -1,6 +1,6 @@
 import { ModelMessage, ModelResults } from 'types';
 import { Model } from '../model';
-import { ContinuePromptParams, OutlinePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, NextSentencePromptParams, OutlinePromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
 import {
     createModelResults,
@@ -12,11 +12,12 @@ import {
 import { ContextService, SessionService } from "@services/services";
 import { makePromptHandler as outline } from './prompts/outline';
 import { makePromptHandler as continuation } from './prompts/continue';
+import { makePromptHandler as nextSentence } from './prompts/next_sentence';
 
 
 const D0 = '{';
 const D1 = '}';
-const BLANK = '____';
+const BLANK = '_____';
 
 interface ServiceProvider {
     contextService: ContextService,
@@ -103,16 +104,17 @@ export class OpenAIModel extends Model {
         }
 
         const res= await callTextModel(userPrompt,params);
-
+        
         const response = await res.json();
         const responseJson = JSON.parse(response.response);
         const choices:string[] = responseJson.choices.map((choice:any) => choice.message.content);
-
+        
         const results = createModelResults(choices);
-
+        
         // console.log(results)
         // const output = shouldParse ? this.parseResults(results, promptText) : results;
         const output = results;
+        console.debug(userPrompt,output);
         // console.log(output)
         return output;
     }
@@ -120,5 +122,8 @@ export class OpenAIModel extends Model {
     override outline:(params:OutlinePromptParams)=>Promise<ModelResults> = this.makePromptHandler(outline);
 
     override continue:(params:ContinuePromptParams)=>Promise<ModelResults> = this.makePromptHandler(continuation);
+
+    override nextSentence:(params:NextSentencePromptParams)=>Promise<ModelResults> = this.makePromptHandler(nextSentence);
+    
 
 }

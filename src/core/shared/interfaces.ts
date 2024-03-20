@@ -4,7 +4,7 @@ import { TemplateResult } from "lit";
 
 export interface OutlinePromptParams {
     description: string;
-    outlinePrompt?: string;
+    outlineDescription?: string;
 }
 
 export interface ContinuePromptParams {

@@ -109,6 +109,43 @@ export const ChoiceAtom = Node.create({
     },
 });
 
+export const ChoiceTextAtom = Node.create({
+    name: "choice-text-atom",
+    atom: true,
+    group: "inline",
+    content: "inline*",
+    inline:true,
+    draggable: false,
+    addAttributes(){
+        return {
+            ...this.parent?.(),
+            value:{
+                default:'Choice Atom',
+            }
+        }
+    },
+    parseHTML() {
+        return [
+            {
+                tag: `span[data-type="${this.name}"]`,
+            },
+        ];
+    },
+    renderHTML({HTMLAttributes,node}){
+        return[
+            'span',
+            mergeAttributes({
+                'data-type':this.name,
+                'class':'choice-atom'
+            },
+            HTMLAttributes,
+            ),
+            0,
+        ]
+    },
+});
+
+
 
 
 export function getEditorConfig(element:Element|undefined):Partial<EditorOptions>{
@@ -126,6 +163,7 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
             ListKeymap,
             LoadingAtom,
             ChoiceAtom,
+            ChoiceTextAtom,
         ],
         content: "<p> Start writing your DIY...</p>",
         injectCSS: false,

@@ -25,7 +25,7 @@ export class SentencesService extends Service {
             currentSentenceIndex: computed,
             currentSentenceSerializedRange: computed,
             nextSentenceOffset: computed,
-            paragraphData: observable.ref,
+            paragraphData: observable.shallow,
             processText: action,
         });
     }
@@ -40,6 +40,7 @@ export class SentencesService extends Service {
 
     paragraphData: ParagraphData[] = [];
     initialized = false;
+    startOffset=0;
 
     get currentSentence(): string {
         if (!this.cursorSpan) return "";
@@ -150,34 +151,34 @@ export class SentencesService extends Service {
      * between or at the start/end) of a sentence.
      */
     get nextSentenceOffset() {
-        const { serializedRange } = this.cursorService;
+        const { serializedRange,cursorOffset } = this.cursorService;
+        const nodePos = this.textEditorService.getEditor.$pos(cursorOffset);
+        const paragraphOffset = nodePos.from;
         if (this.isCursorWithinSentence && this.cursorSpan != null) {
             const { span } = this.cursorSpan;
-            return span.end;
+            return paragraphOffset+span.end;
         } else {
             return serializedRange.from;
         }
     }
 
-    getNextSentenceRange(): TextSelection {
+    getNextSentenceRange(): SerializedCursor {
         const offset = this.nextSentenceOffset;
-        const cursorOffset = this.cursorService.cursorOffset;
+
         const serialized: SerializedCursor = {
-            from: cursorOffset + offset,
-            to: cursorOffset + offset,
+            from: offset,
+            to: offset,
         };
-        return this.cursorService.makeSelectionFromSerializedCursorRange(
-            serialized
-        );
+        return serialized;
     }
 
-    getCurrentSentenceRange(): TextSelection {
+    getCurrentSentenceRange(): SerializedCursor {
         const { currentSentenceSerializedRange } = this;
-        const selection =
-            this.cursorService.makeSelectionFromSerializedCursorRange(
-                currentSentenceSerializedRange
-            );
-        return selection;
+        // const selection =
+        //     this.cursorService.makeSelectionFromSerializedCursorRange(
+        //         currentSentenceSerializedRange
+        //     );
+        return currentSentenceSerializedRange?? {from:0,to:0};
     }
 
     private getParagraphDataAtStartOffset(offset: number) {
@@ -188,13 +189,14 @@ export class SentencesService extends Service {
         return a.length === b.length && a === b;
     }
 
-    private getParagraphDataAtCursor() {
+    getParagraphDataAtCursor() {
         const { isCursorCollapsed, cursorOffset } = this.cursorService;
         if (!cursorOffset) return null;
         if (!isCursorCollapsed) return null;
         const nodePos = this.textEditorService.getEditor.$pos(cursorOffset);
         const paragraphOffset = nodePos.from;
         const paragraph = this.getParagraphDataAtStartOffset(paragraphOffset);
+        // console.debug(paragraph);
         return paragraph || null;
     }
 

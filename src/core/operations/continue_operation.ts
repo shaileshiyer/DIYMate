@@ -11,7 +11,6 @@ export class ContinueOperation extends ChoiceOperation {
     
     static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
-            operationSite === OperationSite.END_OF_SECTION ||
             operationSite === OperationSite.EMPTY_SECTION
         );
     }

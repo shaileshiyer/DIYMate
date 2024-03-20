@@ -14,6 +14,7 @@ diymateCore.initialize(makeServiceProvider);
 const operationService = diymateCore.getService(OperationsService);
 operationService.registerOperations(
   Operations.ContinueOperation,
+  Operations.NextSentenceOperation,
 )
 
 

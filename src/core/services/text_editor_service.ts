@@ -17,6 +17,7 @@ import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { getEditorConfig } from "@lib/tiptap";
 import { OperationsService } from "./operations_service";
+import { AddMarkStep } from "@tiptap/pm/transform";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
@@ -89,21 +90,31 @@ export class TextEditorService extends Service {
 
         /**Setup listeners here. */
         this.editorListeners = [];
+        this.editor.commands.command(({editor,tr})=>{
+          this.onTextUpdate(editor,tr);
+          return false;
+        })
 
         this.updateHandler = ({ editor, transaction }): void => {
-            this.onTextUpdate(editor, transaction);
+            console.debug('docChanged',transaction.docChanged,transaction.steps);
+            const checkSteps = transaction.steps.filter((step)=> console.debug(step));
+            if (!this.operationsService.isInOperation){
+              this.onTextUpdate(editor, transaction);
+            }
         };
 
         this.selectionUpdateHandler = ({ editor, transaction }) => {
             console.debug("selection");
             // console.debug(editor.getHTML());
-            this.cursorService.cursorUpdate(editor, transaction);
             console.debug('docChanged',transaction.docChanged,transaction.steps);
-            if (!this.operationsService.isInOperation && !transaction.docChanged) {
-                this.sentencesService.highlightCurrentSentence(
-                    editor,
-                    transaction
-                );
+            if (!this.operationsService.isInOperation){
+              this.cursorService.cursorUpdate(editor, transaction);
+              if (!transaction.docChanged) {
+                  this.sentencesService.highlightCurrentSentence(
+                      editor,
+                      transaction
+                  );
+              }
             }
         };
 
@@ -170,13 +181,17 @@ export class TextEditorService extends Service {
         }
     }
 
+    getPlainTextFromJSON(){
+      
+    }
+
     plainText: string = "";
     paragraphs: Paragraphs[] = [];
     private updatePlainText(editor: Editor, tr: Transaction) {
         // Adding the condition where i check for changes actually makes the highlight selection lag.
         // if(this.plainText === editor.getText({blockSeparator:'\n\n'})) return;
-        this.plainText = editor.getText({ blockSeparator: "\n\n" });
-
+        this.plainText = editor.getText({ blockSeparator: "\n" });
+        console.debug(this.editor.getJSON());
         this.paragraphs = [];
 
         const headingNodes = editor.$doc.querySelectorAll("heading");
@@ -260,7 +275,9 @@ export class TextEditorService extends Service {
         // console.debug(generatedOutline);
         const htmlstring = `
         <h1>${generatedOutline?.title}</h1>
+        <h2>Introduction</h2>
         <p>${generatedOutline?.introduction}</p>
+        <h2>Supplies</h2>
         <p>Materials:</p>
         <ul>
             ${generatedOutline?.materials
@@ -293,10 +310,11 @@ export class TextEditorService extends Service {
                 })
                 .join("")}
         </ol>
+        <h2>Steps</h2>
         ${generatedOutline?.steps
             .map((step) => {
                 return `
-                <h2>${step.title}</h2>
+                <h3>${step.title}</h3>
                 <p>Materials used in this step:</p>
                 <ul>
                     ${step.materials_in_step
@@ -394,6 +412,24 @@ export class TextEditorService extends Service {
         return () => this.deleteAtPosition(position);
     }
 
+    insertChoiceInline(text: string, position: SerializedCursor) {
+      // const content = this.parseHTMLToNodes(text);
+
+      const choiceNode = this.editor.schema.node("choice-text-atom", {},this.editor.schema.text(text));
+      console.debug("choiceNode", choiceNode);
+
+      this.editor
+          .chain()
+          .insertContentAt(position, choiceNode.toJSON(), {
+              parseOptions: {
+                  preserveWhitespace: "full",
+              },
+              updateSelection: true,
+          })
+          .run();
+      return () => this.deleteAtPosition(position);
+  }
+
     lastGeneratedText: string = "";
     insertGeneratedText(text: string, position: SerializedCursor) {
         this.lastGeneratedText = text;
@@ -405,11 +441,26 @@ export class TextEditorService extends Service {
             .insertContentAt(position, content.toJSON(), {
                 updateSelection: true,
             })
-            // .focus(position.to, { scrollIntoView: true })
             .run();
 
         return () => this.deleteAtPosition(position);
     }
+
+    insertGeneratedTextInline(text: string, position: SerializedCursor) {
+      this.lastGeneratedText = text;
+      const content = this.parseHTMLToNodes(text);
+      console.debug("insertGenerated Content");
+      console.debug(content.toJSON());
+
+      this.editor
+          .chain()
+          .insertContentAt(position, text, {
+              updateSelection: true,
+          })
+          .run();
+
+      return () => this.deleteAtPosition(position);
+  }
 
     deleteAtPosition(position: SerializedCursor) {
         const nodePos = this.editor.$pos(position.from);
