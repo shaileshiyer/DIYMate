@@ -14,6 +14,7 @@ import "@material/web/fab/fab"
 import "@material/web/icon/icon";
 import { OperationClass, OperationControls } from "@core/shared/interfaces";
 import "./operation_controls";
+import { ref } from "lit/directives/ref.js";
 
 @customElement("dm-choices")
 export class ChoicesComponent extends MobxLitElement {
@@ -23,12 +24,13 @@ export class ChoicesComponent extends MobxLitElement {
                 display: flex;
                 flex-direction: column;
                 width: 100%;
-                height: 100vh;
+                height: 100%;
             }
 
             .choices-controls-container {
                 flex-grow: 0;
             }
+
 
             .choices-controls-container .operation-message {
                 line-height: 1.5;
@@ -38,10 +40,15 @@ export class ChoicesComponent extends MobxLitElement {
             .choices-container {
                 flex-grow: 1;
                 overflow: auto;
-                padding-bottom: 150px;
+                /* padding-bottom: 150px; */
                 padding-right: 10px;
                 width: 100%;
-                margin-bottom: 140px;
+                height:32em;
+                margin-bottom: 1em;
+            }
+
+            .choices-container::-webkit-scrollbar {
+                display: none;
             }
 
             .actions-container {
@@ -98,7 +105,8 @@ export class ChoicesComponent extends MobxLitElement {
             .choice-buttons {
                 transform: scale(0.7);
                 position: absolute;
-                right: -25px;
+                /* right: -25px; */
+                right: 0px;
                 bottom: -25px;
             }
 
@@ -128,6 +136,12 @@ export class ChoicesComponent extends MobxLitElement {
     private readonly operationsService = diymateCore.getService(OperationsService);
 
     @property({ type: Object }) choiceStep!: ChoiceStep;
+
+    // selectedChoiceRef:Ref<HTMLElement> = createRef();
+
+    choiceSelectedCallback= (selectedChoiceElement:Element|undefined)=>{
+        selectedChoiceElement?.scrollIntoView()
+    };
 
     private readonly keyboardServiceHelper =
         this.keyboardService.makeHelper("choiceStep");
@@ -338,9 +352,12 @@ export class ChoicesComponent extends MobxLitElement {
             // clang-format off
             return html`
                 <div
+                    tabindex=${index}
                     class=${choiceClasses}
                     @click=${selectIndex(index)}
-                    @dblclick=${choose}>
+                    @dblclick=${choose}
+                    ${isSelected?ref(this.choiceSelectedCallback):""}
+                    >
                     ${isOrigText ? origTextLabel : ""}
                     ${this.renderText(choice.content)}
                     ${isSelected ? renderChoiceButtons() : ""}

@@ -35,7 +35,7 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
     }
 
 
-    return async function next(params:NextSentencePromptParams) {
+    return async function nextSentence(params:NextSentencePromptParams) {
         const userMessages: ModelMessage[] = generatePrompt(params.pre,params.post,params.previousSentence);
 
         const modelParams: Partial<ModelParams> = {

@@ -233,7 +233,7 @@ export class SentencesService extends Service {
             .chain()
             .command(({ editor, tr }) => {
                 const docRange = editor.$doc.range;
-
+                tr.setMeta("addToHistory",false);
                 tr.removeMark(
                     docRange.from + 1,
                     docRange.to - 2,
@@ -250,6 +250,8 @@ export class SentencesService extends Service {
                     if (this.currentSentenceSerializedRange !== null) {
                         const { from, to } =
                             this.currentSentenceSerializedRange;
+                        tr.setMeta("addToHistory",false);
+                        tr.setMeta("preventUpdate",true);
                         tr.addMark(
                             from,
                             to,

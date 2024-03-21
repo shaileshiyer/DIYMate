@@ -91,8 +91,6 @@ export interface OperationData {
     preText:string;
     postText:string;
     selectedPlainText:string;
-    selectedMdText:string;
-    selectedNodesKeys:string[];
 }
 
 export interface OperationControl {

@@ -1,23 +1,30 @@
 import { DIYMateContext } from "@context/index";
 import { OpenAIModel } from "..";
-import { ContinuePromptParams } from "@core/shared/interfaces";
+import { FreeformPromptParams } from "@core/shared/interfaces";
 import { ModelMessage } from "@core/shared/types";
 import { ModelParams } from "../api";
 
 export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
 
-    function generatePrompt(text:string):ModelMessage[]{
+    function generatePrompt(
+        text:string,
+        instruction:string,
+        ):ModelMessage[]{
         
-        const suffix = 'Continue the Tutorial:';
+        const prefix = model.getPrefix();
+
+        const content = `${prefix} ${text}\n ${instruction}`;
+
+        
         return [
-            { role: 'system', content: 'You are a DIY Tutorial Assistant helping the user to continue write a DIY tutorial.' },
-            { role: 'user', content: `${model.getPrefix()} ${model.wrap(text)}\n ${suffix}` },
+            { role: 'system', content: 'You are a DIY Tutorial assistant.' },
+            { role: 'user', content: content },
         ];
     }
 
 
-    return async function continuation(params:ContinuePromptParams) {
-        const userMessages: ModelMessage[] = generatePrompt(params.text);
+    return async function freeform(params:FreeformPromptParams) {
+        const userMessages: ModelMessage[] = generatePrompt(params.text,params.instruction);
 
         const modelParams: Partial<ModelParams> = {
             n:5,
@@ -32,6 +39,5 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
         return model.query(userMessages,modelParams);
     };
 
-
-   
+  
 }

@@ -1,6 +1,6 @@
 import { ModelMessage, ModelResults } from 'types';
 import { Model } from '../model';
-import { ContinuePromptParams, NextSentencePromptParams, OutlinePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
 import {
     createModelResults,
@@ -13,11 +13,14 @@ import { ContextService, SessionService } from "@services/services";
 import { makePromptHandler as outline } from './prompts/outline';
 import { makePromptHandler as continuation } from './prompts/continue';
 import { makePromptHandler as nextSentence } from './prompts/next_sentence';
+import { makePromptHandler as elaborate } from './prompts/elaborate';
+import { makePromptHandler as freeform } from './prompts/freeform';
+import { makePromptHandler as replace } from './prompts/replace';
 
 
 const D0 = '{';
 const D1 = '}';
-const BLANK = '_____';
+const BLANK = '{__BLANK__}';
 
 interface ServiceProvider {
     contextService: ContextService,
@@ -125,5 +128,9 @@ export class OpenAIModel extends Model {
 
     override nextSentence:(params:NextSentencePromptParams)=>Promise<ModelResults> = this.makePromptHandler(nextSentence);
     
+    override elaborate:(params:ElaboratePromptParams)=>Promise<ModelResults> = this.makePromptHandler(elaborate);
 
+    override freeform:(params:FreeformPromptParams)=> Promise<ModelResults> = this.makePromptHandler(freeform);
+    
+    override replace:(params:ReplacePromptParams)=> Promise<ModelResults> = this.makePromptHandler(replace);
 }

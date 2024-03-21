@@ -18,6 +18,18 @@ export const tipTapStyles = css`
         background-color:var(--md-sys-color-inverse-primary);
         color:var(--md-sys-color-on-primary-fixed);
     }
+    .selection-mark{
+        
+    }
+    h1::before{
+        content:'# ';
+    }
+    h2::before{
+        content:'## ';
+    }
+    h3::before{
+        content:'### ';
+    }
 `;
 
 
@@ -52,6 +64,7 @@ export const LoadingAtom = Node.create({
     // content: "empty",
     inline:true,
     draggable: false,
+    selectable:false,
     parseHTML() {
         return [
             {
@@ -145,6 +158,30 @@ export const ChoiceTextAtom = Node.create({
     },
 });
 
+export const SelectionTextMark = Mark.create({
+    name: "selection-mark",
+    parseHTML() {
+        return [
+            {
+                tag: `mark[data-type="${this.name}"]`,
+            },
+        ];
+    },
+    renderHTML({HTMLAttributes,node}){
+        return[
+            'mark',
+            mergeAttributes({
+                'data-type':this.name,
+                'class':'selection-mark'
+            },
+            HTMLAttributes,
+            ),
+            0,
+        ]
+    },
+});
+
+
 
 
 
@@ -156,6 +193,10 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
                 heading: {
                     levels: [1, 2, 3],
                 },
+                history:{
+                    depth:100,
+                    newGroupDelay:500,
+                }
             }),
             HighlightMark.configure({
                 class: "marked",
@@ -164,6 +205,7 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
             LoadingAtom,
             ChoiceAtom,
             ChoiceTextAtom,
+            SelectionTextMark,
         ],
         content: "<p> Start writing your DIY...</p>",
         injectCSS: false,

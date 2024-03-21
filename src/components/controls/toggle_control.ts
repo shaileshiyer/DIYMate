@@ -5,6 +5,7 @@ import { customElement, property } from "lit/decorators.js";
 import controlStyles from "./control_styles";
 import { styleMap } from "lit/directives/style-map.js";
 import "@material/web/switch/switch";
+import { runInAction } from "mobx";
 
 /**
  * Shows a toggle control for an operation
@@ -37,8 +38,10 @@ export class ToggleControlComponent extends MobxLitElement {
                 <md-switch
                     ?selected=${control.value === true}
                     @change=${(e: any) => {
+                    runInAction(()=>{
                         control.value = e.currentTarget.selected;
-                    }}
+                    }) ;
+                }}
                     @mouseenter=${() => void this.onHover(hoverTooltip)}
                     @mouseleave=${() => void this.onHover("")}>
                 </md-switch>

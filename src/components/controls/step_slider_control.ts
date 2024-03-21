@@ -4,6 +4,7 @@ import { TemplateResult, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import controlStyles from './control_styles'
 import '@material/web/slider/slider'
+import { action, runInAction } from "mobx";
 
 
 @customElement('dm-step-slider-control')
@@ -31,7 +32,11 @@ export class StepSliderControlComponent extends MobxLitElement {
             max=${control.steps.length - 1}
             value=${control.value}
             @input=${
-                (e:any)=> (control.value = e.target.value)
+                (e:any)=> {
+                    runInAction(()=>{
+                        control.value = e.target.value
+                    }) ;
+                }
             }
             @mouseenter=${()=> void this.onHover(hoverTooltip)}
             @mouseleave=${()=> void this.onHover('')}

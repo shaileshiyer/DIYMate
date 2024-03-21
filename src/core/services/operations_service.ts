@@ -291,9 +291,7 @@ export class OperationsService extends Service {
             cursorEnd: cursorOffset.end,
             preText:this.cursorService.preText,
             postText:this.cursorService.postText,
-            selectedPlainText:this.cursorService.selectedPlainText,
-            selectedMdText:this.cursorService.selectedMdText,
-            selectedNodesKeys:this.cursorService.selectedNodeKeys,
+            selectedPlainText:this.cursorService.selectedText,
         };
 
         operation.setOperationData(operationData);

@@ -27,7 +27,7 @@ export interface SerializedCursor {
 }
 
 export class CursorService extends Service {
-    selectedPlainText: string = "";
+    selectedText: string = "";
     preText: string = "";
     postText: string = "";
 
@@ -37,7 +37,7 @@ export class CursorService extends Service {
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
-            selectedPlainText: observable,
+            selectedText: observable,
             serializedRange: observable,
             preText: observable,
             postText: observable,
@@ -79,7 +79,7 @@ export class CursorService extends Service {
         }
         // const doc = editor.state.doc;
         // this.selectedPlainText = doc.textBetween(from, to,'\n');
-        this.selectedPlainText = this.textEditorService.getMarkdownFromRange({
+        this.selectedText = this.textEditorService.getMarkdownFromRange({
             from,
             to,
         });
@@ -275,11 +275,6 @@ export class CursorService extends Service {
     }
 
     get isCursorAtConclusionTitle() {
-        const node = this.textEditorService.getEditor.$pos(
-            this.serializedRange.from
-        );
-        const isHeading2 =
-            node.node.type.name === "heading" && node.attributes["level"] === 2;
         return (
             this.isCursorAtSectionTitle &&
             this.nextHeadingSiblings.length === 1

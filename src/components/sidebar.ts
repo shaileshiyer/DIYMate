@@ -51,7 +51,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         const availableOps = this.operationsService.availableOperations.map((val)=> val.name)
         return html`<div id="debug-wrappper">
             <h1>Sidebar Wrapper</h1>
-            <p>Selected Text: ${this.cursorService.selectedPlainText}</p>
+            <p>Selected Text: ${this.cursorService.selectedText}</p>
             
             <p>
                 serializedRange:

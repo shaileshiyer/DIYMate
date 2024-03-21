@@ -4,7 +4,7 @@ import {
     OperationControl as OperationControlInterface,
 } from "@core/shared/interfaces";
 import { TemplateResult } from "lit";
-import { makeObservable, observable } from "mobx";
+import { action, makeObservable, observable } from "mobx";
 
 class OperationControl implements OperationControlInterface {
     value!: number | string | boolean;
@@ -101,12 +101,17 @@ export class TextInputControl extends OperationControl {
         this.placeholder = placeholder;
         makeObservable(this, { 
             value: observable,
+            setValue:action,
          });
     }
 
     override value: string;
     helperOperation?: OperationClass;
     placeholder: string;
+
+    setValue(value:string){
+        this.value = value;
+    }
 
     hasHelperOperation() {
         return this.helperOperation != null;

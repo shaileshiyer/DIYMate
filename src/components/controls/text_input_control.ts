@@ -8,6 +8,7 @@ import {classMap} from 'lit/directives/class-map.js';
 
 import {TextInputControl} from '@core/operations/operation_controls';
 import controlStyles from './control_styles';
+import { runInAction } from 'mobx';
 /**
  * A component that displays an input text control for an operation
  */
@@ -57,6 +58,7 @@ export class TextInputControlComponent extends MobxLitElement {
         <div class="operation-control-input">
           <md-filled-text-field
             type='text'
+            label=${control.getPrefix()}
             class=${inputClasses}
             @keydown=${(e: KeyboardEvent) => {
               if (e.key === 'Enter') {
@@ -69,7 +71,11 @@ export class TextInputControlComponent extends MobxLitElement {
             }}
             @input=${
               // tslint:disable-next-line:no-any
-              (e: any) => (control.value = e.target.value)
+              (e: any) => {
+                runInAction(()=>{
+                    control.value = e.target.value
+                }) ;
+            }
             }
             value='${control.value}'
             placeholder='${control.placeholder}'

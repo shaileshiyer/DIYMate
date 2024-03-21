@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from "mobx";
 import { Editor, JSONContent, EditorEvents, NodePos } from "@tiptap/core";
-import { TextSelection, Transaction } from "@tiptap/pm/state";
+import { EditorState, TextSelection, Transaction } from "@tiptap/pm/state";
 import {
     Fragment,
     DOMParser as TiptapParser,
@@ -17,7 +17,6 @@ import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { getEditorConfig } from "@lib/tiptap";
 import { OperationsService } from "./operations_service";
-import { AddMarkStep } from "@tiptap/pm/transform";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
@@ -86,6 +85,13 @@ export class TextEditorService extends Service {
              */
             this.editor.commands.setContent(this.editorStateForInitialization);
             this.editorStateForInitialization = null;
+            // To prevent completely removing all content on undo.
+            const newEditorState = EditorState.create({
+                doc:this.editor.state.doc,
+                plugins:this.editor.state.plugins,
+                schema:this.editor.state.schema,
+            });
+            this.editor.view.updateState(newEditorState);
         }
 
         /**Setup listeners here. */
@@ -168,6 +174,13 @@ export class TextEditorService extends Service {
     setStateFromSnapshot(editorState: JSONContent) {
         // const parsedEditorState = this.editor.parseEditorState(editorState);
         this.editor.commands.setContent(editorState);
+        // clears previous history.
+        const newEditorState = EditorState.create({
+            doc:this.editor.state.doc,
+            plugins:this.editor.state.plugins,
+            schema:this.editor.state.schema,
+        });
+        this.editor.view.updateState(newEditorState);
     }
 
     private readonly updateCallbacks = new Set<() => void>();
@@ -181,9 +194,6 @@ export class TextEditorService extends Service {
         }
     }
 
-    getPlainTextFromJSON(){
-      
-    }
 
     plainText: string = "";
     paragraphs: Paragraphs[] = [];
@@ -191,7 +201,7 @@ export class TextEditorService extends Service {
         // Adding the condition where i check for changes actually makes the highlight selection lag.
         // if(this.plainText === editor.getText({blockSeparator:'\n\n'})) return;
         this.plainText = editor.getText({ blockSeparator: "\n" });
-        console.debug(this.editor.getJSON());
+        // console.debug(this.editor.getJSON());
         this.paragraphs = [];
 
         const headingNodes = editor.$doc.querySelectorAll("heading");
@@ -226,7 +236,12 @@ export class TextEditorService extends Service {
     }
 
     getPlainText(): string {
-        return this.editor.getText();
+        return this.plainText;
+    }
+
+    getMarkdownText(){
+      const docRange = this.editor.$doc.range;
+      return this.getMarkdownFromRange({from:docRange.from+1,to:docRange.to-2});
     }
 
     getParagraphs(): Paragraphs[] {
@@ -268,6 +283,14 @@ export class TextEditorService extends Service {
 
     getEndOfDocument(): NodePos | null {
         return this.editor.$doc.lastChild;
+    }
+
+    getEndOfCurrentSection(cursorPosition:SerializedCursor):SerializedCursor{
+      const $nodePos = this.editor.$pos(cursorPosition.to);
+      return {
+        from:$nodePos.to-1,
+        to:$nodePos.to-1,
+      }
     }
 
     // Actions
@@ -389,6 +412,7 @@ export class TextEditorService extends Service {
         const loadingNode = this.editor.schema.node("loading-atom").toJSON();
         this.editor
             .chain()
+            .setMeta("addToHistory",false)
             .insertContentAt(position, loadingNode, { updateSelection: true })
             .run();
         return () => this.deleteAtPosition(position);
@@ -402,6 +426,7 @@ export class TextEditorService extends Service {
 
         this.editor
             .chain()
+            .setMeta("addToHistory",false)
             .insertContentAt(position, choiceNode.toJSON(), {
                 parseOptions: {
                     preserveWhitespace: "full",
@@ -420,6 +445,7 @@ export class TextEditorService extends Service {
 
       this.editor
           .chain()
+          .setMeta("addToHistory",false)
           .insertContentAt(position, choiceNode.toJSON(), {
               parseOptions: {
                   preserveWhitespace: "full",
@@ -448,10 +474,6 @@ export class TextEditorService extends Service {
 
     insertGeneratedTextInline(text: string, position: SerializedCursor) {
       this.lastGeneratedText = text;
-      const content = this.parseHTMLToNodes(text);
-      console.debug("insertGenerated Content");
-      console.debug(content.toJSON());
-
       this.editor
           .chain()
           .insertContentAt(position, text, {
@@ -462,11 +484,19 @@ export class TextEditorService extends Service {
       return () => this.deleteAtPosition(position);
   }
 
+  insertSelectionMark(position:SerializedCursor){
+    this.editor
+        .chain()
+        .setMeta('addToHistory',false)
+        .setMark('selection-mark')
+        .run();
+  }
+
     deleteAtPosition(position: SerializedCursor) {
-        const nodePos = this.editor.$pos(position.from);
-        const nodeAfterthis = nodePos.after;
-        console.debug("deleteAtPosition Called");
-        this.editor.commands.deleteSelection();
+        // const nodePos = this.editor.$pos(position.from);
+        // const nodeAfterthis = nodePos.after;
+        // console.debug("deleteAtPosition Called");
+        // this.editor.commands.deleteSelection();
         // this.editor.update(()=>{
         //     for(let node of nodes){
         //         node.remove();
