@@ -174,13 +174,7 @@ export class TextEditorService extends Service {
     setStateFromSnapshot(editorState: JSONContent) {
         // const parsedEditorState = this.editor.parseEditorState(editorState);
         this.editor.commands.setContent(editorState);
-        // clears previous history.
-        const newEditorState = EditorState.create({
-            doc:this.editor.state.doc,
-            plugins:this.editor.state.plugins,
-            schema:this.editor.state.schema,
-        });
-        this.editor.view.updateState(newEditorState);
+        
     }
 
     private readonly updateCallbacks = new Set<() => void>();
@@ -414,6 +408,10 @@ export class TextEditorService extends Service {
             .chain()
             .setMeta("addToHistory",false)
             .insertContentAt(position, loadingNode, { updateSelection: true })
+            .command(({tr})=>{
+                console.debug("addToHistory",tr.getMeta('addToHistory'))
+                return true;
+            })
             .run();
         return () => this.deleteAtPosition(position);
     }
@@ -469,7 +467,6 @@ export class TextEditorService extends Service {
             })
             .run();
 
-        return () => this.deleteAtPosition(position);
     }
 
     insertGeneratedTextInline(text: string, position: SerializedCursor) {
@@ -481,7 +478,6 @@ export class TextEditorService extends Service {
           })
           .run();
 
-      return () => this.deleteAtPosition(position);
   }
 
   insertSelectionMark(position:SerializedCursor){
