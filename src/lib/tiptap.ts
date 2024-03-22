@@ -195,12 +195,12 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
                 heading: {
                     levels: [1, 2, 3],
                 },
-                history:false,
+                // history:false,
             }),
             HighlightMark.configure({
                 class: "marked",
             }),
-            CustomHistory,
+            // CustomHistory,
             ListKeymap,
             LoadingAtom,
             ChoiceAtom,

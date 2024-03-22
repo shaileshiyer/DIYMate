@@ -209,6 +209,8 @@ export class TextEditorService extends Service {
 
         const allLists = [...ulNodes, ...olNodes];
         const allListItems: NodePos[] = [];
+        const listNodes = ulNodes[0].querySelectorAll("listItem");
+        console.debug('listNodes',listNodes);
         // console.debug(allListItems.map((val)=>{ return{pos:val.pos,val}}));
         allLists.forEach((list) => {
             list.node.descendants((item, pos, parent) => {
@@ -408,8 +410,8 @@ export class TextEditorService extends Service {
             .chain()
             .setMeta("addToHistory",false)
             .insertContentAt(position, loadingNode, { updateSelection: true })
-            .command(({tr})=>{
-                console.debug("addToHistory",tr.getMeta('addToHistory'))
+            .command(({state,tr})=>{
+                console.debug("addToHistory",tr.getMeta('addToHistory'),state.tr.getMeta('addToHistory'))
                 return true;
             })
             .run();
