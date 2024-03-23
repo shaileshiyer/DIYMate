@@ -62,13 +62,7 @@ export class TextEditorService extends Service {
         return this.editor;
     }
 
-    private editorListeners: (() => void)[] = [];
-
-    private updateHandler: ((props: EditorEvents["update"]) => void) | null =
-        null;
-    private selectionUpdateHandler:
-        | ((props: EditorEvents["selectionUpdate"]) => void)
-        | null = null;
+  
 
     initiliaze(element: Element | undefined) {
         /**
@@ -96,53 +90,54 @@ export class TextEditorService extends Service {
 
         /**Setup listeners here. */
         this.editorListeners = [];
-        this.editor.commands.command(({editor,tr})=>{
-          this.onTextUpdate(editor,tr);
-          return false;
-        })
+        // this.editor.commands.command(({editor,tr,dispatch})=>{
+        //     if (dispatch){
+        //         this.onTextUpdate({editor,transaction:tr});
+        //     }
+        //   return true;
+        // })
 
-        this.updateHandler = ({ editor, transaction }): void => {
-            console.debug('docChanged',transaction.docChanged,transaction.steps);
-            const checkSteps = transaction.steps.filter((step)=> console.debug(step));
-            if (!this.operationsService.isInOperation){
-              this.onTextUpdate(editor, transaction);
-            }
-        };
+        
 
-        this.selectionUpdateHandler = ({ editor, transaction }) => {
-            console.debug("selection");
-            // console.debug(editor.getHTML());
-            console.debug('docChanged',transaction.docChanged,transaction.steps);
-            // console.debug('extensionStorage',editor.extensionStorage.operationKeyEvents);
-            if (!this.operationsService.isInOperation){
-              this.cursorService.cursorUpdate(editor, transaction);
-              if (!transaction.docChanged) {
-                  this.sentencesService.highlightCurrentSentence(
-                      editor,
-                      transaction
-                  );
-              }
-            }
-        };
-
-        this.editor.on("update", this.updateHandler);
-        this.editor.on("selectionUpdate", this.selectionUpdateHandler);
+        this.editor.on("update", this.onTextUpdate);
+        this.editor.on("selectionUpdate", this.onSelectionUpdate);
         this.editor.on('focus',this.onFocus);
         this.editor.on('blur',this.onBlur);
 
         this.editor.commands.focus("start");
     }
 
-    onTextUpdate(editor: Editor, transaction: Transaction) {
-        console.debug("onRead");
-        // if (!this.operationsService.isInOperation){
-        console.debug("processtext");
-        this.updatePlainText(editor, transaction);
-        // }
-    }
+    onTextUpdate = (params:EditorEvents["update"]) => {
+        const {editor, transaction} = params;
+        console.debug('docChanged',transaction.docChanged,transaction.steps);
 
-    onFocus(params:EditorEvents["focus"]) {
+        if (!this.operationsService.isInOperation){
+            console.debug("onRead");
+            console.debug("processtext");
+            this.updatePlainText(editor, transaction);
+        }
+    };
+
+    onSelectionUpdate = (params:EditorEvents["selectionUpdate"]) =>{
+        const {editor, transaction} = params;
+        console.debug("selection");
+        console.debug('docChanged',transaction.docChanged,transaction.steps);
+        if (!this.operationsService.isInOperation){
+            this.cursorService.cursorUpdate(editor, transaction);
+            if (!transaction.docChanged) {
+                this.sentencesService.highlightCurrentSentence(
+                    editor,
+                    transaction
+                );
+            }
+        }
+    };
+
+    onFocus = (params:EditorEvents["focus"]) => {
         const {editor,event,transaction} = params;
+
+        console.debug('focus',event);
+
         editor
         .chain()
         .command(({tr,dispatch})=>{
@@ -156,11 +151,14 @@ export class TextEditorService extends Service {
             return true
         })
         .run()
+    
         // editor.commands.unsetAllMarks();
-    }
+    };
 
-    onBlur(params:EditorEvents["blur"]){
+    onBlur = (params:EditorEvents["blur"]) => {
         const {editor,event,transaction} = params;
+        console.debug('blur',event);
+
         editor
         .chain()
         .command(({tr,dispatch})=>{
@@ -174,14 +172,11 @@ export class TextEditorService extends Service {
             return true
         })
         .run()
-        // editor.commands.setMark('selection-mark');
-    }
+    };
 
     onDisconnect() {
-        if (this.updateHandler !== null && this.selectionUpdateHandler) {
-            this.editor.off("update", this.updateHandler);
-            this.editor.off("selectionUpdate", this.selectionUpdateHandler);
-        }
+        this.editor.off("update", this.onTextUpdate);
+        this.editor.off("selectionUpdate", this.onSelectionUpdate);
         this.editor.off('focus',this.onFocus)
         this.editor.off('blur',this.onBlur)
         this.editor.destroy();
@@ -240,28 +235,7 @@ export class TextEditorService extends Service {
 
         const headingNodes = editor.$doc.querySelectorAll("heading");
         const paragraphNodes = editor.$doc.querySelectorAll("paragraph");
-        // const ulNodes = editor.$doc
-        //     .querySelectorAll("bulletList")
-        //     .flatMap((listcontainer) => listcontainer);
-        // const olNodes = editor.$doc
-        //     .querySelectorAll("orderedList")
-        //     .flatMap((listcontainer) => listcontainer);
-
-        // const allLists = [...ulNodes, ...olNodes];
-        // const allListItems: NodePos[] = [];
-        // const listNodes = ulNodes[0].querySelectorAll("paragraph");
-        // console.debug('listNodes',listNodes);
-        // // console.debug(allListItems.map((val)=>{ return{pos:val.pos,val}}));
-        // allLists.forEach((list) => {
-        //     list.node.descendants((item, pos, parent) => {
-        //         if (item.isText) {
-        //             // console.debug(item.toString(),list.pos+pos+1,parent?.nodeSize)
-        //             allListItems.push(editor.$pos(list.pos + pos + 1));
-        //         }
-        //     });
-        // });
-
-        // const nodesList = [...headingNodes, ...paragraphNodes, ...allListItems];
+        
         const nodesList = [...headingNodes, ...paragraphNodes];
 
         nodesList.sort((a, b) => a.pos - b.pos);
@@ -292,7 +266,6 @@ export class TextEditorService extends Service {
         runInAction(()=>{
             this.isEnabled = false;
         })
-        // this.editor.commands.blur();
     }
 
     enableEditor() {
@@ -303,7 +276,6 @@ export class TextEditorService extends Service {
         })
         this.editor
             .chain()
-            // .focus('start')
             .command(({ editor, tr }) => {
                 this.cursorService.cursorUpdate(editor, tr);
                 return true;
@@ -465,7 +437,8 @@ export class TextEditorService extends Service {
         this.editor
             .chain()
             .setMeta("addToHistory",false)
-            .insertContentAt(position, loadingNode, { updateSelection: true })
+            .setMeta("preventUpdate",true)
+            .insertContentAt(position, loadingNode, { updateSelection: true})
             .run();
         return () => this.deleteAtPosition(position);
     }
@@ -479,6 +452,7 @@ export class TextEditorService extends Service {
         this.editor
             .chain()
             .setMeta("addToHistory",false)
+            .setMeta("preventUpdate",true)
             .insertContentAt(position, choiceNode.toJSON(), {
                 parseOptions: {
                     preserveWhitespace: "full",
@@ -499,6 +473,7 @@ export class TextEditorService extends Service {
       this.editor
           .chain()
           .setMeta("addToHistory",false)
+          .setMeta("preventUpdate",true)
           .insertContentAt(position, choiceNode.toJSON(), {
               parseOptions: {
                   preserveWhitespace: "full",
@@ -542,6 +517,7 @@ export class TextEditorService extends Service {
         this.editor
             .chain()
             .setMeta('addToHistory',false)
+            .setMeta("preventUpdate",true)
             .setMark('selection-mark')
             .run();
     }
