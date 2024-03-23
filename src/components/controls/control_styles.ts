@@ -17,6 +17,19 @@ const styles = css`
         border: 1px solid #ccc;
         border-radius: 2px;
         padding: 0.4em;
+        background-color: var(--md-sys-color-surface-container-highest);
+        color: var(--md-sys-color-on-surface);
+        border-bottom: 1px solid var(--md-sys-color-scrim);
+    }
+
+    .text-input-control:focus{
+        outline: none;
+        border-bottom: 3px solid var(--md-sys-color-primary);
+    }
+
+    .text-area-control:focus{
+        outline: none;
+        border-bottom: 3px solid var(--md-sys-color-primary);
     }
 
     .text-input-control[type="text"] {

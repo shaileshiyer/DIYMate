@@ -41,8 +41,7 @@ export class TextareaControlComponent extends MobxLitElement {
                     ${control.getPrefix()} :
                 </div>
                 <div class="operation-control-input">
-                    <md-filled-text-field
-                        type="textarea"
+                    <textarea
                         placeholder=${control.placeholder}
                         class="textarea-control"
                         @keydown=${(e: KeyboardEvent) => {
@@ -62,12 +61,12 @@ export class TextareaControlComponent extends MobxLitElement {
                                 }) ;
                             }
                         }
-                        value=${control.value}
+                        .value=${control.value}
                         @mouseenter=${() => void this.onHover(hoverTooltip)}
                         @mouseleave=${() => void this.onHover("")}
                         @copy=${(e: ClipboardEvent) => {
                             this.onCopy(e);
-                        }}></md-filled-text-field>
+                        }}></textarea>
                     ${this.renderHelperOperationButton()}
                 </div>
             </div>
