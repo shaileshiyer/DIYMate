@@ -55,7 +55,8 @@ export class DIYMateEditor extends MobxLitElement {
             }
 
             #diymate-editor .tap-editor.disabled {
-                opacity: 0.38;
+                /* opacity: 0.38; */
+                cursor: not-allowed;
             }
         `;
         return [tipTapStyles,styles];

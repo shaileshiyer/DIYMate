@@ -37,19 +37,8 @@ export class TextInputControlComponent extends MobxLitElement {
 
     override firstUpdated() {
         const input = this.renderRoot.querySelector(".autofocus");
-        console.debug("text-field-update", input);
         if (this.tofocus && input instanceof HTMLInputElement) {
-            input.addEventListener("focus", () => {
-                console.debug("isfocusing");
-            });
-            console.debug("input", input);
-            // this.inputElement.value?.focus();
             input.focus();
-            console.debug(
-                "text-fieldfocus",
-                input.autofocus,
-                document.activeElement
-            );
             // Reset the value to the current value in order to make the cursor appear
             // at the end of the input
             const val = input.value;

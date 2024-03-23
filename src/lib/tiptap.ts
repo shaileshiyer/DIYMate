@@ -230,9 +230,6 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
                 },
                 // history:false,
             }),
-            // StarterKit.configure({
-
-            // }),
             HighlightMark.configure({
                 class: "marked",
             }),

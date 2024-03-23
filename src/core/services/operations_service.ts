@@ -318,12 +318,17 @@ export class OperationsService extends Service {
             } else {
                 this.finalizeOperation();
             }
+
+            if(!wasSuccess){
+                this.textEditorService.restoreFocusAfterCancel({from:operationData.cursorStart,to:operationData.cursorEnd});
+            }
         });
         operation.onRun(() => {
             for (const callback of this.onRunCallbacks) {
                 callback(operation);
             }
         });
+
 
         this.operationStack.push(operation);
         const currentOperation = this.currentOperation!;
@@ -339,7 +344,7 @@ export class OperationsService extends Service {
             // Reset all pending state in the TextEditor
             currentOperation.resetTextEditor();
             currentOperation.finish();
-
+            
             if (err instanceof CancelOperationError) {
                 return;
             }

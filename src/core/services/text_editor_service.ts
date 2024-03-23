@@ -272,6 +272,14 @@ export class TextEditorService extends Service {
             .run();
     }
 
+    restoreFocusAfterCancel(serializedCursor:SerializedCursor){
+        this.editor
+            .chain()
+            .focus()
+            .setTextSelection(serializedCursor)
+            .run()
+    }
+
     get isEmpty(): boolean {
         // const text = this.plainText;
         return this.editor.isEmpty;
@@ -438,6 +446,7 @@ export class TextEditorService extends Service {
                 },
                 updateSelection: true,
             })
+            .focus()
             .run();
         return () => this.deleteAtPosition(position);
     }
@@ -457,6 +466,7 @@ export class TextEditorService extends Service {
               },
               updateSelection: true,
           })
+          .focus()
           .run();
       return () => this.deleteAtPosition(position);
   }
