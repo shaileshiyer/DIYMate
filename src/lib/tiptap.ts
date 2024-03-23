@@ -17,11 +17,17 @@ export const tipTapStyles = css`
         color:var(--md-sys-color-on-primary);
     }
     .choice-atom {
-        background-color:var(--md-sys-color-inverse-primary);
-        color:var(--md-sys-color-on-primary-fixed);
+        background-color:var(--md-sys-color-secondary-fixed-dim);
+        color:var(--md-sys-color-on-secondary-fixed);
     }
     .selection-mark{
-        
+        /* background-color:var(--text-selection);    
+        color:var(--text-color); */
+        /* background-color:var(--md-sys-color-tertiary-fixed);    
+        color:var(--md-sys-color-on-tertiary-fixed); */
+        background-color:var(--md-sys-color-primary-fixed-dim);    
+        color:var(--md-sys-color-on-primary-fixed);
+  
     }
     h1::before{
         content:'# ';
@@ -32,6 +38,15 @@ export const tipTapStyles = css`
     }
     h3::before{
         content:'### ';
+    }
+
+    ::selection{
+        background-color:var(--md-sys-color-primary-fixed-dim);    
+        color:var(--md-sys-color-on-primary-fixed);
+    }
+    ::-moz-selection{
+        background-color:var(--md-sys-color-primary-fixed-dim);    
+        color:var(--md-sys-color-on-primary-fixed);
     }
 `;
 

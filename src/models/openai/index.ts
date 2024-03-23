@@ -1,6 +1,6 @@
 import { ModelMessage, ModelResults } from 'types';
 import { Model } from '../model';
-import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteSelectionPromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
 import {
     createModelResults,
@@ -9,6 +9,7 @@ import {
     textContainsSpecialCharacters,
 } from '../utils';
 
+import { ModelResult } from '@core/shared/types';
 import { ContextService, SessionService } from "@services/services";
 import { makePromptHandler as outline } from './prompts/outline';
 import { makePromptHandler as continuation } from './prompts/continue';
@@ -16,6 +17,7 @@ import { makePromptHandler as nextSentence } from './prompts/next_sentence';
 import { makePromptHandler as elaborate } from './prompts/elaborate';
 import { makePromptHandler as freeform } from './prompts/freeform';
 import { makePromptHandler as replace } from './prompts/replace';
+import { makePromptHandler as rewriteSelection } from './prompts/rewrite_selection';
 
 
 const D0 = '{';
@@ -65,7 +67,7 @@ export class OpenAIModel extends Model {
         useDelimiters = true
     ): ModelResults {
         const parsed = results
-            .map((result) => {
+            .map((result:ModelResult) => {
                 if (modelInputText) {
                     result.content = result.content.replace(modelInputText, '');
                 }
@@ -83,7 +85,7 @@ export class OpenAIModel extends Model {
                     return { ...result, text: trimmedText };
                 }
             })
-            .filter((result) => {
+            .filter((result:ModelResult) => {
                 // We want to ensure that text is present, and make sure there
                 // aren't any special delimiters present in the text (usually a
                 // sign of a bug)
@@ -133,4 +135,7 @@ export class OpenAIModel extends Model {
     override freeform:(params:FreeformPromptParams)=> Promise<ModelResults> = this.makePromptHandler(freeform);
     
     override replace:(params:ReplacePromptParams)=> Promise<ModelResults> = this.makePromptHandler(replace);
+
+    override rewriteSelection:(params:RewriteSelectionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(rewriteSelection);
+
 }

@@ -43,7 +43,7 @@ export class ChoicesComponent extends MobxLitElement {
                 /* padding-bottom: 150px; */
                 padding-right: 10px;
                 width: 100%;
-                height:32em;
+                height:36em;
                 margin-bottom: 1em;
             }
 
@@ -103,11 +103,12 @@ export class ChoicesComponent extends MobxLitElement {
             }
 
             .choice-buttons {
-                transform: scale(0.7);
+                transform: scale(0.8);
                 position: absolute;
                 /* right: -25px; */
                 right: 0px;
                 bottom: -25px;
+                z-index:2;
             }
 
             .choice-buttons md-fab.choose {
@@ -330,20 +331,22 @@ export class ChoicesComponent extends MobxLitElement {
                 return html`
                     <div class="choice-buttons">
                         <md-fab
+                            class="choose"
+                            title="select"
+                            size="small"
+                            variant="primary"
+                            @click=${choose}>
+                            <md-icon  slot="icon">check</md-icon>
+                        </md-fab>
+                        <md-fab
                             class="add-remove"
                             size="small"
+                            variant="secondary"
                             @click=${remove}
                             title="remove">
                             <md-icon slot="icon">close</md-icon>
                         </md-fab>
                         
-                        <md-fab
-                            class="choose"
-                            title="select"
-                            size="small"
-                            @click=${choose}>
-                            <md-icon slot="icon">done</md-icon>
-                        </md-fab>
                     </div>
                 `;
                 // clang-format on

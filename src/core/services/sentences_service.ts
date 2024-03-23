@@ -234,6 +234,7 @@ export class SentencesService extends Service {
             .command(({ editor, tr }) => {
                 const docRange = editor.$doc.range;
                 tr.setMeta("addToHistory",false);
+                tr.setMeta("preventUpdate",true);
                 tr.removeMark(
                     docRange.from + 1,
                     docRange.to - 2,

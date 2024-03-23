@@ -2,11 +2,12 @@ import { ModelResult, OperationSite, OperationTrigger, OperationType } from "@co
 import { ChoiceOperation } from "./choice_operation";
 import { TemplateResult, html } from "lit";
 import { SerializedCursor } from "@core/services/cursor_service";
-import { ElaboratePromptParams, FreeformPromptParams, OperationControls, OperationData } from "@core/shared/interfaces";
+import { ElaboratePromptParams, FreeformPromptParams, OperationControls, OperationData, RewriteSelectionPromptParams } from "@core/shared/interfaces";
 import { TextInputControl } from "./operation_controls";
 import { ServiceProvider } from "./operation";
 import { ControlsStep } from "./steps";
 import { computed, makeObservable } from "mobx";
+import { createModelResult } from "@models/utils";
 
 // class FreeformMetaPromptOperation extends MetaPromptOperation {
 //     async onSelectChoice(choice: ModelResult) {
@@ -30,42 +31,42 @@ import { computed, makeObservable } from "mobx";
 /**
  * Custom prompt from the user.
  */
-export class FreeFormOperation extends ChoiceOperation {
+export class RewriteSelectionOperation extends ChoiceOperation {
     
     static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
-            operationSite === OperationSite.EMPTY_SECTION || operationSite === OperationSite.END_OF_SECTION
+             operationSite === OperationSite.SELECTION
         );
     }
 
-    static override id = OperationType.FREEFORM;
-    static operationType = OperationType.FREEFORM;
+    static override id = OperationType.REWRITE_SELECTION;
+    static operationType = OperationType.REWRITE_SELECTION;
 
-    instantiatedWithPromptText = false;
+    instantiatedWithHowToRewrite = false;
 
     constructor(
         serviceProvider:ServiceProvider,
         trigger: OperationTrigger,
-        instancePrompt:string='',
+        howToRewrite:string='',
     ){
         super(serviceProvider,trigger);
-        makeObservable(this,{instruction:computed});
-        if(instancePrompt){
-         this.instantiatedWithPromptText = true;
-         this.instanceControls.instruction.value = instancePrompt;   
+        makeObservable(this,{howToRewrite:computed});
+        if(howToRewrite){
+         this.instantiatedWithHowToRewrite = true;
+         this.instanceControls.howToRewrite.value = howToRewrite;   
         }
     }
 
     protected getLoadingMessage(): string | TemplateResult {
-        return html`Using the prompt: ${this.instruction}`;
+        return html`Rewriting selection: ${this.howToRewrite}`;
     }
 
     static override getButtonLabel(...params: any[]): string | TemplateResult {
-        return 'make your own prompt';    
+        return 'rewrite selection';    
     }
 
     static override getDescription(...params: any[]): string | TemplateResult {
-        return 'Generate Text with your own Prompt';    
+        return 'rewrites selection';    
     }
 
     private getOperatingPosition():SerializedCursor{
@@ -73,23 +74,25 @@ export class FreeFormOperation extends ChoiceOperation {
         return {from:operationData.cursorStart,to:operationData.cursorEnd};
     }
 
-    get instruction(){
+    get howToRewrite():string{
         // return this.instantiatedWithPromptText? this.instanceControls.instruction.value: FreeFormOperation.controls.instruction.value;
-        return this.instanceControls.instruction.value;
+        return this.instanceControls.howToRewrite.value;
     }
 
-    private getParams(operationData:OperationData):FreeformPromptParams{
-        const markdownText = this.textEditorService.getMarkdownText();
+    private getParams(operationData:OperationData):RewriteSelectionPromptParams{
+        // const markdownText = this.textEditorService.getMarkdownText();
         return{
-            text:markdownText,
-            instruction:this.instruction,
+            pre:operationData.preText,
+            post:operationData.postText,
+            toRewrite:operationData.selectedPlainText,
+            howToRewrite:this.howToRewrite,
         }
     }
 
     override async beforeStart() {
         // If the operation was instantiated with a prompt, then there's no need to
         // move into the text input step;
-        if (this.instantiatedWithPromptText) {
+        if (this.instantiatedWithHowToRewrite) {
           return;
         }
     
@@ -100,7 +103,7 @@ export class FreeFormOperation extends ChoiceOperation {
         const controlsStep = new ControlsStep(
           this.serviceProvider,
           this.instanceControls,
-          'Use a Custom prompt'
+          'Rewrite the text'
         );
         this.setCurrentStep(controlsStep);
         return controlsStep.getPromise();
@@ -111,37 +114,39 @@ export class FreeFormOperation extends ChoiceOperation {
         const operationData = this.getOperationData();
         const operatingPosition = this.getOperatingPosition();
 
-        this.textEditorService.insertLoadingNode(operatingPosition);
+        // this.textEditorService.insertLoadingNode(operatingPosition);
+        this.textEditorService.insertSelectionMark(operatingPosition);
         const params = this.getParams(operationData);
-        const choices = await this.getModel().freeform(params);
-        this.setChoices(choices);
+        const choices = await this.getModel().rewriteSelection(params);
+        const originalText = createModelResult(params.toRewrite);
+        this.setChoices(choices,originalText);
     }
 
     onPendingChoice(choice: ModelResult, index: number): void {
         const operatingPosition = this.getOperatingPosition();
-        const choiceContent = this.textEditorService.converter.makeHtml(choice.content);
-        this.textEditorService.insertChoiceNode(choiceContent,operatingPosition);
+        // const choiceContent = this.textEditorService.converter.makeHtml(choice.content);
+        this.textEditorService.insertChoiceInline(choice.content,operatingPosition);
     }
 
     onSelectChoice(choice: ModelResult, index: number): void {
         const operatingPosition = this.getOperatingPosition();
-        const choiceContent = this.textEditorService.converter.makeHtml(choice.content);
-        this.textEditorService.insertGeneratedText(choiceContent,operatingPosition);
+        // const choiceContent = this.textEditorService.converter.makeHtml(choice.content);
+        this.textEditorService.insertGeneratedTextInline(choice.content,operatingPosition);
     }
     
     override instanceControls = {
-        instruction: new TextInputControl({
-            prefix:'prompt',
-            description:'A custom prompt to generate custom text.',
-            value: FreeFormOperation.controls.instruction.value,
+        howToRewrite: new TextInputControl({
+            prefix:'rewrite the text',
+            description:'Instructions for how to rewrite the text',
+            value: RewriteSelectionOperation.controls.howToRewrite.value,
         })
     };
 
     static override controls = {
-        instruction: new TextInputControl({
-            prefix:'prompt',
-            description:'A custom prompt to generate custom text.',
-            value:'Continue the DIY.',
+        howToRewrite: new TextInputControl({
+            prefix:'rewrite the text',
+            description:'Instructions for how to rewrite the text',
+            value:'to be more descriptive',
         })
     };
 }

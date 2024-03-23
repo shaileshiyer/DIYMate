@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable, runInAction, transaction } from "mobx";
 import { Editor, JSONContent, EditorEvents, NodePos } from "@tiptap/core";
 import { EditorState, TextSelection, Transaction } from "@tiptap/pm/state";
 import {
@@ -127,6 +127,8 @@ export class TextEditorService extends Service {
 
         this.editor.on("update", this.updateHandler);
         this.editor.on("selectionUpdate", this.selectionUpdateHandler);
+        this.editor.on('focus',this.onFocus);
+        this.editor.on('blur',this.onBlur);
 
         this.editor.commands.focus("start");
     }
@@ -139,12 +141,49 @@ export class TextEditorService extends Service {
         // }
     }
 
+    onFocus(params:EditorEvents["focus"]) {
+        const {editor,event,transaction} = params;
+        editor
+        .chain()
+        .command(({tr,dispatch})=>{
+            if (dispatch){
+                const selection = tr.selection;
+                const selectionMark = editor.schema.mark('selection-mark');
+                tr.setMeta("addToHistory",false)
+                tr.setMeta("preventUpdate",true)
+                tr.removeMark(selection.from,selection.to,selectionMark);
+            }
+            return true
+        })
+        .run()
+        // editor.commands.unsetAllMarks();
+    }
+
+    onBlur(params:EditorEvents["blur"]){
+        const {editor,event,transaction} = params;
+        editor
+        .chain()
+        .command(({tr,dispatch})=>{
+            if (dispatch){
+                const selection = tr.selection;
+                const selectionMark = editor.schema.mark('selection-mark');
+                tr.setMeta("addToHistory",false)
+                tr.setMeta("preventUpdate",true)
+                tr.addMark(selection.from,selection.to,selectionMark);
+            }
+            return true
+        })
+        .run()
+        // editor.commands.setMark('selection-mark');
+    }
+
     onDisconnect() {
         if (this.updateHandler !== null && this.selectionUpdateHandler) {
             this.editor.off("update", this.updateHandler);
             this.editor.off("selectionUpdate", this.selectionUpdateHandler);
         }
-
+        this.editor.off('focus',this.onFocus)
+        this.editor.off('blur',this.onBlur)
         this.editor.destroy();
     }
 
@@ -298,7 +337,7 @@ export class TextEditorService extends Service {
         return this.editor.$doc.lastChild;
     }
 
-    getEndOfCurrentSection(cursorPosition:SerializedCursor):SerializedCursor{
+    getEndOfCurrentNode(cursorPosition:SerializedCursor):SerializedCursor{
       const $nodePos = this.editor.$pos(cursorPosition.to);
       return {
         from:$nodePos.to-1,
@@ -469,7 +508,7 @@ export class TextEditorService extends Service {
           .focus()
           .run();
       return () => this.deleteAtPosition(position);
-  }
+    }
 
     lastGeneratedText: string = "";
     insertGeneratedText(text: string, position: SerializedCursor) {
@@ -497,15 +536,15 @@ export class TextEditorService extends Service {
           .focus()
           .run();
 
-  }
+    }
 
-  insertSelectionMark(position:SerializedCursor){
-    this.editor
-        .chain()
-        .setMeta('addToHistory',false)
-        .setMark('selection-mark')
-        .run();
-  }
+    insertSelectionMark(position:SerializedCursor){
+        this.editor
+            .chain()
+            .setMeta('addToHistory',false)
+            .setMark('selection-mark')
+            .run();
+    }
 
     deleteAtPosition(position: SerializedCursor) {
         // const nodePos = this.editor.$pos(position.from);

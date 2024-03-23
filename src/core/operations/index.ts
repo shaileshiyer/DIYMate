@@ -5,6 +5,7 @@ import { NextSentenceOperation } from "./next_sentence_operation";
 import { ElaborationOperation } from "./elaboration_operation";
 import { FreeFormOperation } from "./freeform_operation";
 import { ReplaceOperation } from "./replace_operation";
+import { RewriteSelectionOperation } from "./rewrite_selection";
 
 export {ChoiceOperation,Operation};
 export {
@@ -13,5 +14,5 @@ export {
     ElaborationOperation,
     FreeFormOperation,
     ReplaceOperation,
-
+    RewriteSelectionOperation,
 };

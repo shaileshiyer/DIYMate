@@ -32,7 +32,7 @@ export class ElaborationOperation extends ChoiceOperation {
 
     private getOperatingPosition():SerializedCursor{
         const operationData = this.getOperationData();
-        const endOfSection = this.textEditorService.getEndOfCurrentSection({from:operationData.cursorStart,to:operationData.cursorEnd});
+        const endOfSection = this.textEditorService.getEndOfCurrentNode({from:operationData.cursorStart,to:operationData.cursorEnd});
         return endOfSection;
     }
 
