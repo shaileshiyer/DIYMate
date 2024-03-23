@@ -11,7 +11,7 @@ import {
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { Service } from "./service";
-import { TextEditorService } from "./text_editor_service";
+import { TextEditorService, commandKeys } from "./text_editor_service";
 import {
     ModelResult,
     OperationSite,
@@ -146,6 +146,7 @@ export class OperationsService extends Service {
     get availableOperations(): OperationClass[] {
         const operationSite = this.getOperationsSite();
         const documentSite = this.getLocationInDocumentStructure();
+        this.removeAllKeyTriggerOperations();
         return this.allOperations.filter((operationClass) => {
             return operationClass.isAvailable(operationSite, documentSite);
         });
@@ -204,6 +205,18 @@ export class OperationsService extends Service {
 
     registerOperations(...operationClasses: OperationClass[]) {
         this.allOperations.push(...operationClasses);
+    }
+
+    setKeyTriggerOperation(key:string,operationClass:OperationClass){
+        const operationKeyEventsStorage = this.textEditorService.getEditor.extensionStorage.operationKeyEvents;
+        operationKeyEventsStorage[key] = () => this.triggerOperation(operationClass,OperationTrigger.KEY_COMMAND);
+    }
+
+    removeAllKeyTriggerOperations(){
+        commandKeys.map((key)=>{
+            const operationKeyEventsStorage = this.textEditorService.getEditor.extensionStorage.operationKeyEvents;
+            operationKeyEventsStorage[key] = () => {};
+        });
     }
 
     triggerOperation(

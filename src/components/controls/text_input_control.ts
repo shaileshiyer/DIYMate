@@ -9,6 +9,8 @@ import {classMap} from 'lit/directives/class-map.js';
 import {TextInputControl} from '@core/operations/operation_controls';
 import controlStyles from './control_styles';
 import { runInAction } from 'mobx';
+import { MdFilledTextField } from '@material/web/textfield/filled-text-field';
+import { createRef,ref } from 'lit/directives/ref.js';
 /**
  * A component that displays an input text control for an operation
  */
@@ -20,17 +22,21 @@ export class TextInputControlComponent extends MobxLitElement {
   @property({type: Object}) onHover = (
     isHovered: string | TemplateResult
   ) => {};
-  @property({type: Boolean}) override autofocus = false;
+  @property({type: Boolean}) tofocus = false;
 
   static override get styles(){
     return [controlStyles]
 }
 
   override firstUpdated() {
-    const input = this.shadowRoot!.querySelector('md-filled-text-field.autofocus');
-    if (input instanceof HTMLInputElement) {
+    const input = this.renderRoot.querySelector('.autofocus');
+    console.debug('text-field-update',input);
+    if (this.tofocus && input instanceof MdFilledTextField) {
+      input.addEventListener('focus',()=>{console.debug('isfocusing');})
+      console.debug('input',input)
+      // this.inputElement.value?.focus();
       input.focus();
-
+      console.debug('text-fieldfocus',input.autofocus,document.activeElement);
       // Reset the value to the current value in order to make the cursor appear
       // at the end of the input
       const val = input.value;
@@ -41,7 +47,7 @@ export class TextInputControlComponent extends MobxLitElement {
 
   override render() {
     const inputClasses = classMap({
-      autofocus: this.autofocus,
+      autofocus: this.tofocus,
       'text-input-control': true,
     });
 

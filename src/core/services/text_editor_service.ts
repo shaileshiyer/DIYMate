@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import { Editor, JSONContent, EditorEvents, NodePos } from "@tiptap/core";
 import { EditorState, TextSelection, Transaction } from "@tiptap/pm/state";
 import {
@@ -113,6 +113,7 @@ export class TextEditorService extends Service {
             console.debug("selection");
             // console.debug(editor.getHTML());
             console.debug('docChanged',transaction.docChanged,transaction.steps);
+            // console.debug('extensionStorage',editor.extensionStorage.operationKeyEvents);
             if (!this.operationsService.isInOperation){
               this.cursorService.cursorUpdate(editor, transaction);
               if (!transaction.docChanged) {
@@ -200,28 +201,29 @@ export class TextEditorService extends Service {
 
         const headingNodes = editor.$doc.querySelectorAll("heading");
         const paragraphNodes = editor.$doc.querySelectorAll("paragraph");
-        const ulNodes = editor.$doc
-            .querySelectorAll("bulletList")
-            .flatMap((listcontainer) => listcontainer);
-        const olNodes = editor.$doc
-            .querySelectorAll("orderedList")
-            .flatMap((listcontainer) => listcontainer);
+        // const ulNodes = editor.$doc
+        //     .querySelectorAll("bulletList")
+        //     .flatMap((listcontainer) => listcontainer);
+        // const olNodes = editor.$doc
+        //     .querySelectorAll("orderedList")
+        //     .flatMap((listcontainer) => listcontainer);
 
-        const allLists = [...ulNodes, ...olNodes];
-        const allListItems: NodePos[] = [];
-        const listNodes = ulNodes[0].querySelectorAll("listItem");
-        console.debug('listNodes',listNodes);
-        // console.debug(allListItems.map((val)=>{ return{pos:val.pos,val}}));
-        allLists.forEach((list) => {
-            list.node.descendants((item, pos, parent) => {
-                if (item.isText) {
-                    // console.debug(item.toString(),list.pos+pos+1,parent?.nodeSize)
-                    allListItems.push(editor.$pos(list.pos + pos + 1));
-                }
-            });
-        });
+        // const allLists = [...ulNodes, ...olNodes];
+        // const allListItems: NodePos[] = [];
+        // const listNodes = ulNodes[0].querySelectorAll("paragraph");
+        // console.debug('listNodes',listNodes);
+        // // console.debug(allListItems.map((val)=>{ return{pos:val.pos,val}}));
+        // allLists.forEach((list) => {
+        //     list.node.descendants((item, pos, parent) => {
+        //         if (item.isText) {
+        //             // console.debug(item.toString(),list.pos+pos+1,parent?.nodeSize)
+        //             allListItems.push(editor.$pos(list.pos + pos + 1));
+        //         }
+        //     });
+        // });
 
-        const nodesList = [...headingNodes, ...paragraphNodes, ...allListItems];
+        // const nodesList = [...headingNodes, ...paragraphNodes, ...allListItems];
+        const nodesList = [...headingNodes, ...paragraphNodes];
 
         nodesList.sort((a, b) => a.pos - b.pos);
         this.paragraphs = nodesList.map((node) => {
@@ -247,12 +249,19 @@ export class TextEditorService extends Service {
     isEnabled = true;
     disableEditor() {
         this.editor.setEditable(false);
-        this.isEnabled = false;
+        this.editor.setOptions({editorProps:{attributes:{class:"tap-editor disabled"}}})
+        runInAction(()=>{
+            this.isEnabled = false;
+        })
+        // this.editor.commands.blur();
     }
 
     enableEditor() {
         this.editor.setEditable(true);
-        this.isEnabled = true;
+        this.editor.setOptions({editorProps:{attributes:{class:"tap-editor"}}})
+        runInAction(()=>{
+            this.isEnabled = true;
+        })
         this.editor
             .chain()
             // .focus('start')
@@ -410,10 +419,6 @@ export class TextEditorService extends Service {
             .chain()
             .setMeta("addToHistory",false)
             .insertContentAt(position, loadingNode, { updateSelection: true })
-            .command(({state,tr})=>{
-                console.debug("addToHistory",tr.getMeta('addToHistory'),state.tr.getMeta('addToHistory'))
-                return true;
-            })
             .run();
         return () => this.deleteAtPosition(position);
     }
@@ -467,6 +472,7 @@ export class TextEditorService extends Service {
             .insertContentAt(position, content.toJSON(), {
                 updateSelection: true,
             })
+            .focus()
             .run();
 
     }
@@ -478,6 +484,7 @@ export class TextEditorService extends Service {
           .insertContentAt(position, text, {
               updateSelection: true,
           })
+          .focus()
           .run();
 
   }

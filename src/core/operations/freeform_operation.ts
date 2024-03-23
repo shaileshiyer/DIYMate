@@ -7,6 +7,25 @@ import { TextInputControl } from "./operation_controls";
 import { ServiceProvider } from "./operation";
 import { ControlsStep } from "./steps";
 
+// class FreeformMetaPromptOperation extends MetaPromptOperation {
+//     async onSelectChoice(choice: ModelResult) {
+//       // When the user selects a prompt, we're going to trigger a new freeform
+//       // prompt operation using the selected prompt. We'll do this by running
+//       // a new operation on the resolution of this operation's promise.
+//       this.onFinish(() => {
+//         this.operationsService.startOperation(
+//           () =>
+//             new FreeformOperation(
+//               this.serviceProvider,
+//               OperationTrigger.OPERATION,
+//               choice.text
+//             ),
+//           OperationTrigger.OPERATION
+//         );
+//       });
+//     }
+//   }
+
 /**
  * Custom prompt from the user.
  */
@@ -78,8 +97,8 @@ export class FreeFormOperation extends ChoiceOperation {
     
         const controlsStep = new ControlsStep(
           this.serviceProvider,
-          FreeFormOperation.controls,
-          'Use your own prompt'
+          this.instanceControls,
+          'Use a Custom prompt'
         );
         this.setCurrentStep(controlsStep);
         return controlsStep.getPromise();

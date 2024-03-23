@@ -54,7 +54,7 @@ export class DIYMateEditor extends MobxLitElement {
                 border-bottom: 3px solid var(--md-sys-color-primary);
             }
 
-            .disabled {
+            #diymate-editor .tap-editor.disabled {
                 opacity: 0.38;
             }
         `;
@@ -76,8 +76,10 @@ export class DIYMateEditor extends MobxLitElement {
     ): void {
         if (this.disabled) {
             this.textEditorService.disableEditor();
+            // this.textEditorService.getEditor.options.element.classList.add('disabled');
         } else {
             this.textEditorService.enableEditor();
+            // this.textEditorService.getEditor.options.element.classList.remove('disabled');
         }
     }
 
@@ -92,7 +94,7 @@ export class DIYMateEditor extends MobxLitElement {
         this.textEditorService.onDisconnect();
     }
 
-    protected render(): TemplateResult {
+    override render(): TemplateResult {
         return html`
             <div id="diymate-editor-container">
                 <div

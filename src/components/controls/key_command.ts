@@ -53,12 +53,20 @@ export class KeyCommandComponent extends MobxLitElement {
             keyCommand.metaKey
                 ? html`<span class="key-command">${modifier}</span>${' + '}`
                 : "";
+        const renderShift = () =>
+        keyCommand.shiftKey
+            ? html`<span class="key-command">Shift</span>${' + '}`
+            : "";
+        const renderAlt = () =>
+            keyCommand.altKey
+                ? html`<span class="key-command">Alt</span>${' + '}`
+                : "";
         const key = keylabel ? keylabel : keyCommand.key;
 
         return html`
             <div class="row">
                 <div class="key-command-container">
-                    ${renderModifier()}
+                    ${renderModifier()}${renderShift()}${renderAlt()}
                     <span class="key-command">${key}</span>
                 </div>
                 <md-outlined-button

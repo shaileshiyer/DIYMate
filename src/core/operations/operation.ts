@@ -10,7 +10,7 @@ import { Model } from "@models/model";
 import { SerializedEditorState } from "lexical";
 import { TemplateResult } from "lit";
 import { OperationControls } from "@core/shared/interfaces";
-import { makeObservable, observable } from "mobx";
+import { makeObservable, observable, runInAction } from "mobx";
 import { FinishedStep, NotStartedStep, Step } from "./steps/step";
 import { LoadingStep } from "./steps/loading_step";
 import { CancelOperationError, CancelStepError } from "@lib/errors";
@@ -110,7 +110,9 @@ export abstract class Operation {
         if (this.currentStep) {
             this.currentStep.finish();
         }
-        this.currentStep = step;
+        runInAction(()=>{
+            this.currentStep = step;
+        })
         step.start();
     }
 

@@ -31,13 +31,13 @@ const style = css`
     }
 
     .key-command-container-small {
-        padding: 0px 0 3px 8px;
+        /* padding: 0px 0 3px 8px; */
     }
 
     span.key-command-small {
         color: black;
         padding: 4px;
-        font-size: 70%;
+        /* font-size: 70%; */
     }
 `;
 

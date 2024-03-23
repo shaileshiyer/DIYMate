@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+    </head>
+    <body>
+        <div>
+            <button class="history">Add heading</button>
+            <button class="non-history">Add heading without history</button>
+        </div>
+        <div class="element"></div>
+        
+    </body>
+    <script type="module">
+        import { Editor } from "https://cdn.jsdelivr.net/npm/@tiptap/core@2.2.0/+esm";
+
+        import StarterKit from "https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@2.2.0/+esm";
+        
+        const editor = new Editor({
+            element: document.querySelector(".element"),
+            extensions: [StarterKit],
+            content: "<p>Hello World!</p><ul><li>One</li><li>Two</li><li>Three</li></ul>",
+            onUpdate({ editor, transaction }) {
+                console.debug("onEditor Upate");
+            },
+            onSelectionUpdate({ editor, transaction }) {
+                console.debug("onSelection Upate",transaction.selection.from,transaction.selection.to);
+                const bulletList = editor.$doc.querySelector("bulletList");
+                if (bulletList) {
+                    console.debug(bulletList.element);
+                    const listItems = editor.$doc.querySelectorAll("listItem");
+                    console.debug("listItems", listItems);
+                }
+            },
+        });
+
+        function historyHeading(){
+            console.debug('history')
+            editor.chain().insertContentAt(1,'<h2>Heading with history</h2>').run();
+        }
+
+        function nonHistoryHeading(){
+            console.debug('non-history')
+            editor.chain().setMeta('addToHistory',false).insertContentAt(1,'<h2>Heading without history</h2>').run()
+            editor.chain().setMeta('addToHistory',false).deleteRange({from:1,to:24}).run()
+        }
+
+        console.debug(document.querySelector('button.history'),document.querySelector('button.non-history'));
+        document.querySelector('button.history').addEventListener('click',historyHeading);
+        document.querySelector('button.non-history').addEventListener('click',nonHistoryHeading);
+    </script>
+</html>

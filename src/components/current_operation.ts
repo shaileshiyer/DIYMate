@@ -20,9 +20,9 @@ export class CurrentOperationComponent extends MobxLitElement {
         const style = css`
             .controls-step-title {
                 font-weight: 700;
-                color: var(--blue);
+                color: var(--md-sys-color-primary);
                 margin-bottom: 20px;
-                border-bottom: 2px solid var(--blue);
+                border-bottom: 2px solid var(--md-sys-color-primary);
                 padding: 10px 0;
             }
 
@@ -135,20 +135,12 @@ export class CurrentOperationComponent extends MobxLitElement {
                 .onEnter=${() => {
                     currentStep.finish();
                 }}
-                autofocus></dm-operation-controls>
+                tofocus></dm-operation-controls>
         `;
     }
 
     renderButtons(operation: Operation) {
         const actions = {
-            go: {
-                message: "go",
-                keyCommand: new KeyCommand("Enter"),
-                keyLabel: "enter",
-                action: () => {
-                    operation.currentStep.finish();
-                },
-            },
             cancel: {
                 message: "cancel",
                 keyCommand: new KeyCommand("Escape"),
@@ -157,11 +149,19 @@ export class CurrentOperationComponent extends MobxLitElement {
                     operation.cancel();
                 },
             },
+            go: {
+                message: "go",
+                keyCommand: new KeyCommand("Enter"),
+                keyLabel: "enter",
+                action: () => {
+                    operation.currentStep.finish();
+                },
+            },
         };
 
         return [
-            this.renderKeyCommand(actions.go),
             this.renderKeyCommand(actions.cancel),
+            this.renderKeyCommand(actions.go),
         ];
     }
 

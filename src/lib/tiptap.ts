@@ -1,4 +1,4 @@
-import { EditorOptions, Mark, Node, mergeAttributes } from "@tiptap/core";
+import { EditorOptions, Extension, Mark, Node, mergeAttributes } from "@tiptap/core";
 import ListKeymap from "@tiptap/extension-list-keymap";
 import StarterKit from "@tiptap/starter-kit";
 
@@ -26,6 +26,7 @@ export const tipTapStyles = css`
     h1::before{
         content:'# ';
     }
+
     h2::before{
         content:'## ';
     }
@@ -169,7 +170,7 @@ export const SelectionTextMark = Mark.create({
             },
         ];
     },
-    renderHTML({HTMLAttributes,node}){
+    renderHTML({HTMLAttributes}){
         return[
             'mark',
             mergeAttributes({
@@ -184,6 +185,38 @@ export const SelectionTextMark = Mark.create({
 });
 
 
+export const OperationKeyEvents = Extension.create({
+    name:'operationKeyEvents',
+    addStorage(){
+        return{
+            j:()=>{console.warn('default')},
+            k:()=>{console.warn('default')},
+            l:()=>{console.warn('default')},
+            u:()=>{console.warn('default')},
+            i:()=>{console.warn('default')},
+            o:()=>{console.warn('default')},
+            p:()=>{console.warn('default')},
+            h:()=>{console.warn('default')},
+            n:()=>{console.warn('default')},
+            m:()=>{console.warn('default')},
+        }
+    },
+    addKeyboardShortcuts() {
+        return{
+            'Alt-j': ()=> this.storage.j(),
+            'Alt-k': ()=> this.storage.k(),
+            'Alt-l': ()=> this.storage.l(),
+            'Alt-u': ()=> this.storage.u(),
+            'Alt-i': ()=> this.storage.i(),
+            'Alt-o': ()=> this.storage.o(),
+            'Alt-p': ()=> this.storage.p(),
+            'Alt-h': ()=> this.storage.h(),
+            'Alt-n': ()=> this.storage.n(),
+            'Alt-m': ()=> this.storage.m(),
+        };
+    },
+
+});
 
 
 
@@ -197,6 +230,9 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
                 },
                 // history:false,
             }),
+            // StarterKit.configure({
+
+            // }),
             HighlightMark.configure({
                 class: "marked",
             }),
@@ -206,6 +242,7 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
             ChoiceAtom,
             ChoiceTextAtom,
             SelectionTextMark,
+            OperationKeyEvents,
         ],
         content: "<p> Start writing your DIY...</p>",
         injectCSS: false,
