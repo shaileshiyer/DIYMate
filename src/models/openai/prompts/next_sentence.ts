@@ -29,7 +29,7 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
         }
 
         return [
-            { role: 'system', content: 'You are a DIY Tutorial sentence generator helping the user generate the next sentence.' },
+            { role: 'system', content: 'You are a DIY Tutorial sentence generator helping the user generate the next sentence.Just repond with next sentence ONLY.' },
             { role: 'user', content: content },
         ];
     }

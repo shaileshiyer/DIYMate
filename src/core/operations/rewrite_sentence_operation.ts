@@ -2,7 +2,7 @@ import { ModelResult, OperationSite, OperationTrigger, OperationType } from "@co
 import { ChoiceOperation } from "./choice_operation";
 import { TemplateResult, html } from "lit";
 import { SerializedCursor } from "@core/services/cursor_service";
-import { ElaboratePromptParams, FreeformPromptParams, OperationControls, OperationData, RewriteSelectionPromptParams } from "@core/shared/interfaces";
+import { ElaboratePromptParams, FreeformPromptParams, OperationControls, OperationData, RewriteSelectionPromptParams, RewriteSentencePromptParams } from "@core/shared/interfaces";
 import { TextInputControl } from "./operation_controls";
 import { ServiceProvider } from "./operation";
 import { ControlsStep } from "./steps";
@@ -31,16 +31,16 @@ import { createModelResult } from "@models/utils";
 /**
  * Custom prompt from the user.
  */
-export class RewriteSelectionOperation extends ChoiceOperation {
+export class RewriteSentenceOperation extends ChoiceOperation {
     
     static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
-             operationSite === OperationSite.SELECTION
+             operationSite === OperationSite.WITHIN_SENTENCE
         );
     }
 
-    static override id = OperationType.REWRITE_SELECTION;
-    static operationType = OperationType.REWRITE_SELECTION;
+    static override id = OperationType.REWRITE_SENTENCE;
+    static operationType = OperationType.REWRITE_SENTENCE;
 
     instantiatedWithHowToRewrite = false;
 
@@ -58,20 +58,24 @@ export class RewriteSelectionOperation extends ChoiceOperation {
     }
 
     protected getLoadingMessage(): string | TemplateResult {
-        return html`Rewriting selection: ${this.howToRewrite}`;
+        return html`Rewriting sentence: ${this.howToRewrite}`;
     }
 
     static override getButtonLabel(...params: any[]): string | TemplateResult {
-        return 'rewrite selection';    
+        return 'rewrite the sentence';    
     }
 
     static override getDescription(...params: any[]): string | TemplateResult {
-        return 'rewrites selection';    
+        return 'rewrites current sentence';    
     }
 
     private getOperatingPosition():SerializedCursor{
         const operationData = this.getOperationData();
-        return {from:operationData.cursorStart,to:operationData.cursorEnd};
+        const currentSentenceRange = this.sentencesService.currentSentenceSerializedRange;
+        if (currentSentenceRange===null){
+            return {from:operationData.cursorStart,to:operationData.cursorEnd} 
+        }
+        return currentSentenceRange;
     }
 
     get howToRewrite():string{
@@ -79,12 +83,23 @@ export class RewriteSelectionOperation extends ChoiceOperation {
         return this.instanceControls.howToRewrite.value;
     }
 
-    private getParams(operationData:OperationData):RewriteSelectionPromptParams{
+    private getParams(operationData:OperationData):RewriteSentencePromptParams{
         // const markdownText = this.textEditorService.getMarkdownText();
+        const currentSentenceRange = this.sentencesService.currentSentenceSerializedRange;
+        if (currentSentenceRange===null ){
+            return {
+                pre:'',
+                post:'',
+                toRewrite:'',
+                howToRewrite:'',
+            }
+        }
+        const currentSentence = this.sentencesService.currentSentence;
+        const [pre,post] = this.textEditorService.getPreandPostMarkdown(currentSentenceRange);
         return{
-            pre:operationData.preText,
-            post:operationData.postText,
-            toRewrite:operationData.selectedPlainText,
+            pre:pre,
+            post:post,
+            toRewrite: currentSentence,
             howToRewrite:this.howToRewrite,
         }
     }
@@ -117,7 +132,7 @@ export class RewriteSelectionOperation extends ChoiceOperation {
         // this.textEditorService.insertLoadingNode(operatingPosition);
         this.textEditorService.insertSelectionMark(operatingPosition);
         const params = this.getParams(operationData);
-        const choices = await this.getModel().rewriteSelection(params);
+        const choices = await this.getModel().rewriteSentence(params);
         const originalText = createModelResult(params.toRewrite);
         this.setChoices(choices,originalText);
     }
@@ -136,17 +151,17 @@ export class RewriteSelectionOperation extends ChoiceOperation {
     
     override instanceControls = {
         howToRewrite: new TextInputControl({
-            prefix:'rewrite the text',
-            description:'Instructions for how to rewrite the text',
-            value: RewriteSelectionOperation.controls.howToRewrite.value,
+            prefix:'rewrite sentence',
+            description:'Instructions for how to rewrite the sentence',
+            value: RewriteSentenceOperation.controls.howToRewrite.value,
         })
     };
 
     static override controls = {
         howToRewrite: new TextInputControl({
-            prefix:'rewrite the text',
-            description:'Instructions for how to rewrite the text',
-            value:'to be more descriptive',
+            prefix:'rewrite sentence',
+            description:'Instructions for how to rewrite the sentence',
+            value:'to be concise',
         })
     };
 }

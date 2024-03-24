@@ -19,6 +19,9 @@ operationService.registerOperations(
   Operations.FreeFormOperation,
   Operations.ReplaceOperation,
   Operations.RewriteSelectionOperation,
+  Operations.RewriteSentenceOperation,
+  Operations.GenerateIntroductionOperation,
+  Operations.GenerateConclusionOperation,
 )
 
 

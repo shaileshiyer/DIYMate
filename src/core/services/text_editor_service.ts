@@ -137,16 +137,16 @@ export class TextEditorService extends Service {
         const {editor,event,transaction} = params;
 
         console.debug('focus',event);
-
         editor
         .chain()
-        .command(({tr,dispatch})=>{
+        .command(({editor,tr,dispatch})=>{
             if (dispatch){
                 const selection = tr.selection;
                 const selectionMark = editor.schema.mark('selection-mark');
                 tr.setMeta("addToHistory",false)
                 tr.setMeta("preventUpdate",true)
-                tr.removeMark(selection.from,selection.to,selectionMark);
+                const range = editor.$doc.range;
+                tr.removeMark(range.from+1,range.to -2,selectionMark);
             }
             return true
         })
@@ -432,6 +432,16 @@ export class TextEditorService extends Service {
         return markdownString;
     }
 
+    getPreandPostMarkdown(range:SerializedCursor):[string,string]{
+        const docRange = this.editor.$doc.range;
+        const preText = this.getMarkdownFromRange({from:docRange.from+1,to:range.from});
+        let postText = '';
+        if (range.to !== docRange.to -2){
+            postText = this.getMarkdownFromRange({from:range.to,to:docRange.to-2});
+        }
+        return [preText,postText];
+    }
+
     insertLoadingNode(position: SerializedCursor) {
         const loadingNode = this.editor.schema.node("loading-atom").toJSON();
         this.editor
@@ -440,7 +450,7 @@ export class TextEditorService extends Service {
             .setMeta("preventUpdate",true)
             .insertContentAt(position, loadingNode, { updateSelection: true})
             .run();
-        return () => this.deleteAtPosition(position);
+
     }
 
     insertChoiceNode(text: string, position: SerializedCursor) {
@@ -461,7 +471,7 @@ export class TextEditorService extends Service {
             })
             .focus()
             .run();
-        return () => this.deleteAtPosition(position);
+
     }
 
     insertChoiceInline(text: string, position: SerializedCursor) {
@@ -482,7 +492,7 @@ export class TextEditorService extends Service {
           })
           .focus()
           .run();
-      return () => this.deleteAtPosition(position);
+
     }
 
     lastGeneratedText: string = "";
@@ -516,10 +526,32 @@ export class TextEditorService extends Service {
     insertSelectionMark(position:SerializedCursor){
         this.editor
             .chain()
-            .setMeta('addToHistory',false)
-            .setMeta("preventUpdate",true)
-            .setMark('selection-mark')
-            .run();
+            .command(({editor,tr,dispatch})=>{
+                if (dispatch){
+                    const selection = tr.selection;
+                    const selectionMark = editor.schema.mark('selection-mark');
+                    tr.setMeta("addToHistory",false)
+                    tr.setMeta("preventUpdate",true)
+                    tr.addMark(selection.from,selection.to,selectionMark);
+                }
+                return true
+            })
+            .run()
+    }
+
+    insertSelectionMarkAtPosition(position:SerializedCursor){
+        this.editor
+        .chain()
+        .command(({editor,tr,dispatch})=>{
+            if (dispatch){
+                const selectionMark = editor.schema.mark('selection-mark');
+                tr.setMeta("addToHistory",false)
+                tr.setMeta("preventUpdate",true)
+                tr.addMark(position.from,position.to,selectionMark);
+            }
+            return true
+        })
+        .run()
     }
 
     deleteAtPosition(position: SerializedCursor) {

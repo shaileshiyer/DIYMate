@@ -44,7 +44,6 @@ export class ContinueOperation extends ChoiceOperation {
         const params:ContinuePromptParams = {text:operationData.preText};
         const choices = await this.getModel().continue(params);
         this.setChoices(choices);
-        console.debug(this.currentStep,this.operationsService);
     }
 
     onSelectChoice(choice: ModelResult, index: number): void {

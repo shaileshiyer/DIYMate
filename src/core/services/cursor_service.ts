@@ -76,6 +76,7 @@ export class CursorService extends Service {
             this.nextHeadingSiblings = headernodes.filter(
                 (npos) => npos.to > to
             );
+            // console.debug(this.previousHeadingSiblings,this.nextHeadingSiblings);
         }
         // const doc = editor.state.doc;
         // this.selectedPlainText = doc.textBetween(from, to,'\n');
@@ -130,7 +131,7 @@ export class CursorService extends Service {
             const range = new TextSelection($from, $to);
             return range;
         } catch (err: unknown) {
-            console.error(err);
+            console.error(err,serializedRange);
         }
         return this.blankRange();
     }
@@ -151,6 +152,23 @@ export class CursorService extends Service {
         const start = this.serializedRange.from;
         const end = this.serializedRange.to;
         return { start, end };
+    }
+
+    getCurrentSectionRange():SerializedCursor{
+        let from = this.textEditorService.getEditor.$doc.range.from + 1;
+        let to = this.textEditorService.getEditor.$doc.range.to -2;
+        if (this.previousHeadingSiblings.length > 0){
+            const previousHeadingNodePos = this.previousHeadingSiblings[this.previousHeadingSiblings.length -1];
+            from = previousHeadingNodePos.to+1;
+        }
+
+        if (this.nextHeadingSiblings.length > 0){
+            const previousHeadingNodePos = this.nextHeadingSiblings[0];
+            to = previousHeadingNodePos.from-2;
+        }
+        
+        
+        return {from,to};
     }
 
     get isCursorCollapsed() {
@@ -251,7 +269,7 @@ export class CursorService extends Service {
         return (
             !this.isCursorAtTitle &&
             this.previousHeadingSiblings.length <= 1 &&
-            !this.isCursorAtStepTitle
+            !this.isCursorAtSectionTitle
         );
     }
 
@@ -268,10 +286,16 @@ export class CursorService extends Service {
             this.previousHeadingSiblings.length === 3 &&
             !this.isCursorAtTitle &&
             !this.isCursorInIntroduction &&
+            !this.isCursorAtSectionTitle &&
             !this.isCursorAtStepTitle &&
-            !this.isCursorInConclusion &&
-            !this.isCursorAtConclusionTitle
+            !this.isCursorInConclusion
         );
+    }
+
+    get isCursorInStepsSection(){
+        return (
+            this.previousHeadingSiblings.length === 3
+        )
     }
 
     get isCursorAtConclusionTitle() {

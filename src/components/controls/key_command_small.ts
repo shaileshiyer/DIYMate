@@ -55,11 +55,19 @@ export class KeyCommandSmallComponent extends MobxLitElement {
                           >${modifier}</span
                       >${" + "}`
                 : "";
+        const renderShift = () =>
+        keyCommand.shiftKey
+            ? html`<span class="key-command">Shift</span>${' + '}`
+            : "";
+        const renderAlt = () =>
+            keyCommand.altKey
+                ? html`<span class="key-command">Alt</span>${' + '}`
+                : "";
         const key = keylabel ? keylabel : keyCommand.key;
 
         return html`
             <div class="key-command-container-small">
-                ${renderModifier()}
+                ${renderModifier()}${renderShift()}${renderAlt()}
                 <span class="key-command key-command-small">${key}</span>
             </div>
         `;

@@ -74,6 +74,16 @@ export interface SuggestRewritePromptParams {
     textType: TextType;
 }
 
+export interface GenerateIntroductionPromptParams {
+    pre:string;
+    post:string;
+}
+
+export interface GenerateConclusionPromptParams {
+    pre:string;
+    post:string;
+}
+
 type UUID = string;
 
 /**

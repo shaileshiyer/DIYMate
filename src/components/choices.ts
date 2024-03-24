@@ -238,7 +238,7 @@ export class ChoicesComponent extends MobxLitElement {
             },
             rewrite: {
                 message: "rewrite",
-                keyCommand: new KeyCommand("e", true),
+                keyCommand: new KeyCommand("e", false,false,true),
                 keyLabel: "e",
                 action: () => {
                     this.operationsService.rewriteCurrentChoice();

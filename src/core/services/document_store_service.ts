@@ -103,6 +103,7 @@ export class DocumentStoreService extends Service {
         // this.textEditorService.initializeFromLocalStorage(editorState);
         this.localStorageService.setCurrentDIY(document.currentDIY);
         this.localStorageService.setCurrentSession(document.sessionInfo);
+        this.sessionService.restoreSession(document.sessionInfo);
         this.documentId = document.id;
         this.lastSavedText = document.plainText;
 
@@ -153,9 +154,9 @@ export class DocumentStoreService extends Service {
 
     private createDocumentToSave():Omit<SavedDocument,'id'>{
         const text = this.textEditorService.getPlainText();
-
+        const sessionInfo = this.sessionService.sessionInfo;
         return {
-            sessionInfo: this.sessionService.sessionInfo, 
+            sessionInfo: sessionInfo , 
             editorState: JSON.stringify(this.textEditorService.getStateSnapshot()),
             plainText: text,
             timestamp: Date.now(),

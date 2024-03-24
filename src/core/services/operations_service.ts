@@ -125,15 +125,22 @@ export class OperationsService extends Service {
     getLocationInDocumentStructure(): OperationSite {
         const {
             isCursorAtTitle,
+            isCursorAtSectionTitle,
             isCursorInIntroduction,
+            isCursorAtStepTitle,
             isCursorInStep,
+            isCursorAtConclusionTitle,
             isCursorInConclusion,
         } = this.cursorService;
 
         if (isCursorAtTitle) {
             return OperationSite.DIY_TITLE;
+        }else if (isCursorAtSectionTitle) {
+            return OperationSite.DIY_SECTION_TITLE
         } else if (isCursorInIntroduction) {
             return OperationSite.DIY_INTRODUCTION;
+        } else if(isCursorAtStepTitle){
+            return OperationSite.DIY_STEP_TITLE
         } else if (isCursorInStep) {
             return OperationSite.DIY_STEP;
         } else if (isCursorInConclusion) {

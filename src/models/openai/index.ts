@@ -1,6 +1,6 @@
 import { ModelMessage, ModelResults } from 'types';
 import { Model } from '../model';
-import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteSelectionPromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
 import {
     createModelResults,
@@ -18,6 +18,9 @@ import { makePromptHandler as elaborate } from './prompts/elaborate';
 import { makePromptHandler as freeform } from './prompts/freeform';
 import { makePromptHandler as replace } from './prompts/replace';
 import { makePromptHandler as rewriteSelection } from './prompts/rewrite_selection';
+import { makePromptHandler as rewriteSentence } from './prompts/rewrite_sentence';
+import { makePromptHandler as generateIntroduction } from './prompts/generate_introduction';
+import { makePromptHandler as generateConclusion } from './prompts/generate_conclusion';
 
 
 const D0 = '{';
@@ -137,5 +140,11 @@ export class OpenAIModel extends Model {
     override replace:(params:ReplacePromptParams)=> Promise<ModelResults> = this.makePromptHandler(replace);
 
     override rewriteSelection:(params:RewriteSelectionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(rewriteSelection);
+
+    override rewriteSentence:(params:RewriteSentencePromptParams)=> Promise<ModelResults> = this.makePromptHandler(rewriteSentence);
+    
+    override generateIntroduction:(params:GenerateIntroductionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(generateIntroduction);
+    
+    override generateConclusion:(params:GenerateConclusionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(generateConclusion);
 
 }

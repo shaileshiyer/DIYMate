@@ -1,6 +1,6 @@
 import { DIYMateContext } from "@context/index";
 import { OpenAIModel } from "..";
-import { FreeformPromptParams, RewriteSelectionPromptParams } from "@core/shared/interfaces";
+import { FreeformPromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams } from "@core/shared/interfaces";
 import { ModelMessage } from "@core/shared/types";
 import { ModelParams } from "../api";
 
@@ -18,11 +18,11 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
         
         const prefix = model.getPrefix();
         const getDIYWithBlank = insertBlank(textBeforeSelection,textAfterSelection);
-        const promptText = "The text to be rewritten that fills in the blank:"
-        const toRewriteText = `Rewritten to be ${howToRewrite}: `
+        const promptText = "The sentence to be rewritten that fills in the blank:"
+        const toRewriteText = `Rewrite this sentence to be ${howToRewrite}, only rewrite this specific sentence and nothing more: `
 
 
-        const content = `${prefix}${model.wrap(getDIYWithBlank)}\n ${promptText}\n ${selectionToRewrite}\n ${howToRewrite} ${toRewriteText}`;
+        const content = `${prefix}${model.wrap(getDIYWithBlank)}\n ${promptText}\n ${model.wrap(selectionToRewrite)}\n ${howToRewrite} ${toRewriteText}`;
 
         
         return [
@@ -32,7 +32,7 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
     }
 
 
-    return async function rewriteSelection(params:RewriteSelectionPromptParams) {
+    return async function rewriteSentence(params:RewriteSentencePromptParams) {
         const {pre,post,howToRewrite,toRewrite} = params;
         const userMessages: ModelMessage[] = generatePrompt(pre,post,toRewrite,howToRewrite);
 
