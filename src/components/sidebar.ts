@@ -21,6 +21,7 @@ import { DocumentStoreService } from "@core/services/document_store_service";
 import { InitializationService } from "@core/services/initialization_service";
 import "./operations";
 import "./current_operation";
+import "./reviews";
 
 @customElement("diymate-editor-sidebar")
 export class DIYMateEditorSidebar extends MobxLitElement {
@@ -330,6 +331,8 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             case 1:
                 return html`<diymate-chat></diymate-chat>`;
             case 2:
+                return html`<dm-review-tab></dm-review-tab>`
+            case 3:
                 return html`${this.renderDebug()}`;
         }
 
@@ -346,6 +349,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                             this.setActiveIndex(event.target.activeTabIndex)}>
                         <md-secondary-tab> Controls</md-secondary-tab>
                         <md-secondary-tab> Chat </md-secondary-tab>
+                        <md-secondary-tab> Reviews </md-secondary-tab>
                         <md-secondary-tab> Debug </md-secondary-tab>
                     </md-tabs>
                     <div id="sidebar-content">

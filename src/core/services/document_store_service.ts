@@ -6,6 +6,10 @@ import { TextEditorService } from "./text_editor_service";
 import { makeObservable, observable, runInAction } from "mobx";
 import { delay } from "@lib/utils";
 import { JSONContent } from "@tiptap/core";
+import { Reviews, ReviewsService } from "./reviews_service";
+import { DialogMessage } from "@models/dialog_model";
+import { ChatService } from "./chat_service";
+import { OperationsService } from "./operations_service";
 
 export interface SavedDocument {
     id:string;
@@ -14,6 +18,8 @@ export interface SavedDocument {
     editorState: string;
     plainText: string;
     currentDIY: CurrentDIY;
+    reviews?:Reviews;
+    conversation?:DialogMessage[];
 };
 
 interface ServiceProvider {
@@ -21,6 +27,9 @@ interface ServiceProvider {
     localStorageService: LocalStorageService;
     textEditorService: TextEditorService;
     sessionService: SessionService;
+    reviewsService: ReviewsService;
+    chatService:ChatService;
+    operationsService:OperationsService;
 }
 
 /**
@@ -61,6 +70,18 @@ export class DocumentStoreService extends Service {
         return this.serviceProvider.sessionService;
     }
 
+    get operationsService(){
+        return this.serviceProvider.operationsService;
+    }
+    
+    get reviewsService(){
+        return this.serviceProvider.reviewsService;
+    }
+
+    get chatService(){
+        return this.serviceProvider.chatService;
+    }
+
 
     setDocumentId(documentId: string|null){
         this.documentId = documentId;
@@ -76,6 +97,7 @@ export class DocumentStoreService extends Service {
             let userDocuments = rawUserDocuments.map((document)=>{
                 return {
                     conversation:[],
+                    reviews:[],
                     ...(document as any),
                 };
             }) as SavedDocument[];
@@ -104,6 +126,9 @@ export class DocumentStoreService extends Service {
         this.localStorageService.setCurrentDIY(document.currentDIY);
         this.localStorageService.setCurrentSession(document.sessionInfo);
         this.sessionService.restoreSession(document.sessionInfo);
+        this.reviewsService.initializeFromStorage(document.reviews||[]);
+        this.chatService.initializeFromStorage(document.conversation||[]);
+
         this.documentId = document.id;
         this.lastSavedText = document.plainText;
 
@@ -155,12 +180,16 @@ export class DocumentStoreService extends Service {
     private createDocumentToSave():Omit<SavedDocument,'id'>{
         const text = this.textEditorService.getPlainText();
         const sessionInfo = this.sessionService.sessionInfo;
+        const reviews = this.reviewsService.reviews;
+        const messages = this.chatService.messages;
         return {
             sessionInfo: sessionInfo , 
             editorState: JSON.stringify(this.textEditorService.getStateSnapshot()),
             plainText: text,
             timestamp: Date.now(),
             currentDIY: this.localStorageService.getCurrentDIY()?? {description:'',outlinePrompt:'',generatedOutline:''},
+            reviews,
+            conversation:messages,
         }
     }
     
@@ -187,8 +216,8 @@ export class DocumentStoreService extends Service {
     startAutoSave(){
         this.autoSaveIntervalId = window.setInterval(()=>{
             const text = this.textEditorService.getPlainText();
-            
-            if (text !== this.lastSavedText){
+            const isInOperation = this.operationsService.isInOperation;
+            if (text !== this.lastSavedText && !isInOperation){
                 this.saveDocument();
             }
         },10000);

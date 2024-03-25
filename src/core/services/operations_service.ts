@@ -28,6 +28,8 @@ import { uuid } from "@lib/uuid";
 import { SessionService } from "./session_service";
 import { CancelOperationError } from "@lib/errors";
 import { RewriteChoiceOperation } from "@core/operations/rewrite_choice_operation";
+import { ReviewOperation } from "@core/operations";
+import { ReviewStep } from "@core/operations/steps";
 
 export interface ServiceProvider {
     cursorService: CursorService;
@@ -58,6 +60,7 @@ export class OperationsService extends Service {
             operationStack: observable,
             currentOperation: computed,
             isChoosing: computed,
+            isInReview: computed,
             isError: observable,
             isInOperation: computed,
             hoverTooltip: observable,
@@ -174,6 +177,15 @@ export class OperationsService extends Service {
             this.currentOperation instanceof ChoiceOperation &&
             this.currentOperation?.currentStep instanceof ChoiceStep &&
             this.currentOperation.currentStep.choices.getNEntries() > 0
+        );
+    }
+
+    get isInReview() {
+        return (
+            this.isInOperation &&
+            this.currentOperation instanceof ReviewOperation &&
+            this.currentOperation?.currentStep instanceof ReviewStep &&
+            this.currentOperation.currentStep.review
         );
     }
 
@@ -311,7 +323,8 @@ export class OperationsService extends Service {
             cursorEnd: cursorOffset.end,
             preText:this.cursorService.preText,
             postText:this.cursorService.postText,
-            selectedPlainText:this.cursorService.selectedText,
+            selectedText:this.cursorService.selectedText,
+            mdText:this.textEditorService.getMarkdownText(),
         };
 
         operation.setOperationData(operationData);

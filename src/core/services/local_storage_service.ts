@@ -4,6 +4,7 @@ import { SessionInformation } from "./session_service";
 import { SavedDocument } from "./document_store_service";
 import { uuid } from "@lib/uuid";
 import { JSONContent } from "@tiptap/core";
+import { Reviews } from "./reviews_service";
 
 
 export interface CurrentDIY {
@@ -22,6 +23,7 @@ interface LocalStorageState {
     currentDIY: CurrentDIY | null;
     editorState: JSONContent | null;
     savedDocuments: SavedDocuments;
+    reviews:Reviews;
 }
 
 const STATE_PREFIX = 'diymate'
@@ -32,6 +34,7 @@ const EDITOR_STATE_KEY = STATE_PREFIX + '@editor-state';
 const DOCUMENT_ID_KEY = STATE_PREFIX + '@document-id';
 const SAVED_DOCUMENTS_KEY = STATE_PREFIX + '@saved-documents';
 const LOG_KEY = STATE_PREFIX + '@log';
+const REVIEWS_KEY = STATE_PREFIX + '@reviews';
 
 
 /**
@@ -58,7 +61,7 @@ export class LocalStorageService extends Service {
     }
 
     clearDocumentState(){
-        const keysToRemove = [DOCUMENT_ID_KEY,CURRENT_DIY_KEY,EDITOR_STATE_KEY,CURRENT_SESSSION_KEY];
+        const keysToRemove = [DOCUMENT_ID_KEY,CURRENT_DIY_KEY,EDITOR_STATE_KEY,CURRENT_SESSSION_KEY,REVIEWS_KEY];
         for (const key of keysToRemove){
             window.localStorage.removeItem(key);
         }
@@ -111,6 +114,10 @@ export class LocalStorageService extends Service {
         return this.getData<JSONContent|null>(EDITOR_STATE_KEY,null);
     }
 
+    setReviews(reviews:Reviews){
+        this.setState(REVIEWS_KEY,reviews);
+    }
+
     setDocumentId(documentId: string){
         this.setState(DOCUMENT_ID_KEY,documentId);
     }
@@ -147,14 +154,6 @@ export class LocalStorageService extends Service {
         this.setState(LOG_KEY, log);
     }
 
-    // test count
-    setCount(count:number){
-        this.setState('count',count);
-    }
-
-    getCount(): number{
-        return this.getData<number>('count',0);
-    }
 
     getState(): LocalStorageState {
         return {
@@ -163,6 +162,7 @@ export class LocalStorageService extends Service {
             currentDIY: this.getData<CurrentDIY | null>(CURRENT_DIY_KEY, null),
             editorState: this.getData<JSONContent | null>(EDITOR_STATE_KEY, null),
             savedDocuments: this.getData<SavedDocuments>(SAVED_DOCUMENTS_KEY, {}),
+            reviews:this.getData<Reviews>(REVIEWS_KEY,[]),
         }
     }
 }

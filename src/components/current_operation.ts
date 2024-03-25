@@ -1,7 +1,7 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { diymateCore } from "@core/diymate_core";
 import { Operation } from "@core/operations";
-import { ChoiceStep, ControlsStep, LoadingStep } from "@core/operations/steps";
+import { ChoiceStep, ControlsStep, LoadingStep, ReviewStep } from "@core/operations/steps";
 import { OperationsService } from "@core/services/operations_service";
 import { PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
@@ -10,6 +10,7 @@ import "@material/web/progress/circular-progress";
 import { KeyCommand } from "@core/shared/keyboard";
 import "./choices";
 import "./controls/key_command_small";
+import "./review_step";
 
 /**
  * A component that displays the current Operation in the sidebar
@@ -88,6 +89,10 @@ export class CurrentOperationComponent extends MobxLitElement {
 
         if (currentStep instanceof ControlsStep) {
             return this.renderControlsStep(currentStep);
+        }
+
+        if (currentStep instanceof ReviewStep) {
+            return html`<dm-review-step .reviewStep=${currentStep}></dm-review-step>`;
         }
 
         return html``;

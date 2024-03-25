@@ -11,6 +11,7 @@ import { OperationsService } from "./operations_service";
 import { KeyboardService } from "./keyboard_service";
 import { InitializationService } from "./initialization_service";
 import { DocumentStoreService } from "./document_store_service";
+import { ReviewsService } from "./reviews_service";
 
 export {
     RouterService,
@@ -26,4 +27,5 @@ export {
     KeyboardService,
     InitializationService,
     DocumentStoreService,
+    ReviewsService,
 };

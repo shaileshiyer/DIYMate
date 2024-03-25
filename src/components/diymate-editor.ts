@@ -1,5 +1,6 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { diymateCore } from "@core/diymate_core";
+import { DocumentStoreService } from "@core/services/document_store_service";
 import { LocalStorageService } from "@core/services/local_storage_service";
 import {
     TextEditorService,
@@ -14,7 +15,7 @@ import { classMap } from "lit/directives/class-map.js";
 export class DIYMateEditor extends MobxLitElement {
     private localStorageService = diymateCore.getService(LocalStorageService);
     private textEditorService = diymateCore.getService(TextEditorService);
-
+    private documentStoreService = diymateCore.getService(DocumentStoreService);
     @property({ type: Boolean })
     public disabled: boolean = false;
 
@@ -88,11 +89,13 @@ export class DIYMateEditor extends MobxLitElement {
         super.connectedCallback();
         const savedEditorState = this.localStorageService.getEditorState();
         this.textEditorService.initializeFromLocalStorage(savedEditorState);
+        this.documentStoreService.startAutoSave();
     }
     override disconnectedCallback(): void {
         super.disconnectedCallback();
         // this.textEditorService.saveEditorSnapshot();
         this.textEditorService.onDisconnect();
+        this.documentStoreService.endAutoSave();
     }
 
     override render(): TemplateResult {

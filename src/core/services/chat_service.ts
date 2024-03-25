@@ -4,12 +4,14 @@ import { ModelService } from "./model_service";
 import { TextEditorService } from "./text_editor_service";
 import { DialogMessage, DialogParams } from "@models/dialog_model";
 import { LocalStorageService } from "./local_storage_service";
+import { DocumentStoreService } from "./document_store_service";
 
 
 interface ServiceProvider{
     modelService: ModelService;
     textEditorService: TextEditorService;
     localStorageService: LocalStorageService;
+    documentStoreService: DocumentStoreService;
 }
 
 export class ChatService extends Service {
@@ -32,6 +34,7 @@ export class ChatService extends Service {
             sendCurrentDIYTutorial:flow,
             sendMessage:flow,
             setCurrentMessage:action,
+            initializeFromStorage:action,
         });
     }
 
@@ -47,6 +50,10 @@ export class ChatService extends Service {
         return this.serviceProvider.localStorageService;
     }
 
+    get documentStoreService(){
+        return this.serviceProvider.documentStoreService;
+    }
+
 
     private getInitialMessage():DialogMessage{
         return {role:'assistant',content:"Hello, I am DIYMate, your tutorial writing assistant. What would you like me to help with?"};
@@ -56,20 +63,25 @@ export class ChatService extends Service {
         return [this.getInitialMessage(),...this.messages];
     }
 
+    initializeFromStorage(messages:DialogMessage[]){
+        this.messages = messages;
+    }
+
     setCurrentMessage(currentMessage:string){
         this.currentMessage = currentMessage;
     }
 
     *sendCurrentDIYTutorial(){
         const currentDIY = this.localStorageService.getCurrentDIY();
-        const diyPlainText = this.textEditorService.getPlainText();
-        const message = `Here is the description of the DIY Tutorial:\n ${currentDIY?.description}\n Here is the DIY Tutorial so far:\n ${diyPlainText}`
+        const diyMdText = this.textEditorService.getMarkdownText();
+        const message = `Here is the description of the DIY Tutorial:\n ${currentDIY?.description}\n Here is the DIY Tutorial so far:\n ${diyMdText}`
         const dialogMessage:DialogMessage = {role:'user',content:message};
         this.messages.push(dialogMessage);
         try {
             this.isLoading = true;
             const response:DialogMessage[] = yield this.modelService.getDialogModel().query({messages:[dialogMessage]});
             this.isLoading = false;
+            this.documentStoreService.saveDocument();
         } catch (error) {
             console.error(error);
             this.isLoading = false;
@@ -95,6 +107,7 @@ export class ChatService extends Service {
             this.messages.push(...response);
             this.currentMessage = '';
             this.isLoading = false;
+            this.documentStoreService.saveDocument();
         } catch(error){
             console.error(error);
             this.isLoading = false;

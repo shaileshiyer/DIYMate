@@ -40,7 +40,7 @@ export class ElaborationOperation extends ChoiceOperation {
     private getParams(operationData:OperationData):ElaboratePromptParams{
         return{
             text:operationData.text,
-            toElaborate: operationData.selectedPlainText,
+            toElaborate: operationData.selectedText,
         }
     }
 

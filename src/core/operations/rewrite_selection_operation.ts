@@ -84,7 +84,7 @@ export class RewriteSelectionOperation extends ChoiceOperation {
         return{
             pre:operationData.preText,
             post:operationData.postText,
-            toRewrite:operationData.selectedPlainText,
+            toRewrite:operationData.selectedText,
             howToRewrite:this.howToRewrite,
         }
     }

@@ -84,6 +84,16 @@ export interface GenerateConclusionPromptParams {
     post:string;
 }
 
+export interface ReviewDIYPromptParams{
+    text:string;
+}
+
+export interface ReviewDIYSelectionPromptParams{
+    pre:string;
+    toReview:string;
+    post:string;
+}
+
 type UUID = string;
 
 /**
@@ -100,7 +110,8 @@ export interface OperationData {
     cursorEnd: number;
     preText:string;
     postText:string;
-    selectedPlainText:string;
+    selectedText:string;
+    mdText:string;
 }
 
 export interface OperationControl {

@@ -15,6 +15,7 @@ import "@material/web/icon/icon";
 import { OperationClass, OperationControls } from "@core/shared/interfaces";
 import "./operation_controls";
 import { ref } from "lit/directives/ref.js";
+import keyCommandStyles from "./controls/key_command_styles";
 
 @customElement("dm-choices")
 export class ChoicesComponent extends MobxLitElement {
@@ -130,7 +131,7 @@ export class ChoicesComponent extends MobxLitElement {
                 margin-bottom: 0;
             }
         `;
-        return [style];
+        return [keyCommandStyles,style];
     }
 
     private readonly keyboardService = diymateCore.getService(KeyboardService);
@@ -282,8 +283,8 @@ export class ChoicesComponent extends MobxLitElement {
         const choiceIndex = this.choiceStep.choices.getIndex();
         return html`
             <div class="choices-instructions">
-                <span class="key-command key-command-small">⬆</span>
-                <span class="key-command key-command-small">⬇</span>
+                <span class="key-command">⬆</span>
+                <span class="key-command">⬇</span>
                 to cycle through choices (${choiceIndex + 1}/${nChoices})
             </div>
         `;

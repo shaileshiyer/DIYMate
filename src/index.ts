@@ -22,6 +22,8 @@ operationService.registerOperations(
   Operations.RewriteSentenceOperation,
   Operations.GenerateIntroductionOperation,
   Operations.GenerateConclusionOperation,
+  Operations.ReviewDIYOperation,
+  Operations.ReviewDIYSelectionOperation,
 )
 
 

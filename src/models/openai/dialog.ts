@@ -1,11 +1,13 @@
-import { DialogMessage, DialogParams } from '../dialog_model';
+import { DialogMessage, DialogMessages, DialogParams } from '../dialog_model';
 import {DialogModel} from '../dialog_model';
 import { callDialogModel,AssistantParams } from './api';
-
-import {createModelResults} from '../utils';
-
 import {ContextService, SessionService} from '@services/services';
 import { ModelResults } from '@core/shared/types';
+
+import { makePromptHandler as reviewDIY } from './prompts/review_diy';
+import { makePromptHandler as reviewDIYSelection } from './prompts/review_diy_selection';
+import { ReviewDIYPromptParams, ReviewDIYSelectionPromptParams } from '@core/shared/interfaces';
+
 
 interface ServiceProvider {
   contextService: ContextService;
@@ -20,7 +22,7 @@ export class OpenAIDialogModel extends DialogModel {
 
     override async query(
         params: DialogParams,
-        ): Promise<DialogMessage[]> {
+        ): Promise<DialogMessages> {
             const [assitantInstruction] = params.messages.filter((val)=> val.role === 'instruction');
             const [userMessage] = params.messages.filter((val)=>val.role === 'user');
 
@@ -49,4 +51,9 @@ export class OpenAIDialogModel extends DialogModel {
     
             return responseMessages;
     }
+
+    override reviewDIY:(params:ReviewDIYPromptParams)=>Promise<DialogMessages> = this.makePromptHandler(reviewDIY);
+    
+    override reviewDIYSelection:(params:ReviewDIYSelectionPromptParams)=>Promise<DialogMessages> = this.makePromptHandler(reviewDIYSelection);
+
 }

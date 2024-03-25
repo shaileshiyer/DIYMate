@@ -98,7 +98,7 @@ export class ReplaceOperation extends ChoiceOperation {
         this.textEditorService.insertLoadingNode(operatingPosition);
         const params = this.getParams(operationData);
         const choices = await this.getModel().replace(params);
-        const original = createModelResult(operationData.selectedPlainText);
+        const original = createModelResult(operationData.selectedText);
         this.setChoices(choices,original);
     }
 
