@@ -5,6 +5,7 @@ import { TextEditorService } from "./text_editor_service";
 import { SentencesService } from "./sentences_service";
 import { Editor, NodePos } from "@tiptap/core";
 import {
+    NodeSelection,
     Selection,
     SelectionRange,
     TextSelection,
@@ -27,6 +28,7 @@ export interface SerializedCursor {
 }
 
 export class CursorService extends Service {
+    selectedPlainText:string = "";
     selectedText: string = "";
     preText: string = "";
     postText: string = "";
@@ -37,6 +39,7 @@ export class CursorService extends Service {
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
+            selectedPlainText:observable,
             selectedText: observable,
             serializedRange: observable,
             preText: observable,
@@ -79,11 +82,8 @@ export class CursorService extends Service {
             // console.debug(this.previousHeadingSiblings,this.nextHeadingSiblings);
         }
         // const doc = editor.state.doc;
-        // this.selectedPlainText = doc.textBetween(from, to,'\n');
-        this.selectedText = this.textEditorService.getMarkdownFromRange({
-            from,
-            to,
-        });
+        this.selectedPlainText = editor.state.doc.textBetween(from, to,'\n');
+        this.selectedText = this.textEditorService.getMarkdownFromRange({ from,to});
         // this.preText = doc.textBetween(1,from,'\n');
         this.preText = this.textEditorService.getMarkdownFromRange({
             from: 1,
@@ -98,6 +98,13 @@ export class CursorService extends Service {
                 to: range.to,
             });
         }
+        // Get current head type and attrs
+        if (editor.state.selection.from === editor.state.selection.to){
+            // const nodeSelection = new NodeSelection();
+            const head = editor.state.selection.$head.parent;
+            console.debug(head,head.type.name,head.attrs);
+        }
+
     }
 
     serializedRange: SerializedCursor = makeEmptySerializedRange();

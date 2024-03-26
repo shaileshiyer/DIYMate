@@ -89,7 +89,7 @@ export class TextEditorService extends Service {
         }
 
         /**Setup listeners here. */
-        this.editorListeners = [];
+        // this.editorListeners = [];
         // this.editor.commands.command(({editor,tr,dispatch})=>{
         //     if (dispatch){
         //         this.onTextUpdate({editor,transaction:tr});
@@ -299,6 +299,10 @@ export class TextEditorService extends Service {
     get wordCount(): number {
         return this.plainText.split(" ").filter((word) => word.length > 0)
             .length;
+    }
+
+    get selectedWordCount():number{
+        return this.cursorService.selectedPlainText.split(" ").filter((word)=> word.length > 0).length;
     }
 
     getStartOfDocument(): NodePos | null {

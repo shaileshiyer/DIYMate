@@ -22,6 +22,7 @@ import { InitializationService } from "@core/services/initialization_service";
 import "./operations";
 import "./current_operation";
 import "./reviews";
+import {tooltip} from './simple_tooltip';
 
 @customElement("diymate-editor-sidebar")
 export class DIYMateEditorSidebar extends MobxLitElement {
@@ -240,6 +241,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
 
     renderLinkButton(
         text: string,
+        tooltipHint:string,
         onClick: (e: Event) => void | Promise<void>,
         disabled = false
     ) {
@@ -249,7 +251,9 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         });
         return html`<div
             class=${buttonClasses}
-            @click=${onClick}>
+            @click=${onClick}
+            ${tooltip(tooltipHint)}
+            >
             ${text}
         </div>`;
     }
@@ -258,18 +262,18 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         const onClick = () => {
             this.initializationService.reset();
         };
-        return this.renderLinkButton("Main Menu", onClick);
+        return this.renderLinkButton("Main Menu","go to the main menu",onClick);
     }
 
     renderSaveButton(): TemplateResult {
         if (this.documentStoreService.isSaving) {
-            return this.renderLinkButton("saving...", () => {}, true);
+            return this.renderLinkButton("saving...","",() => {}, true);
         }
 
         const onClick = () => {
             this.documentStoreService.saveDocument();
         };
-        return this.renderLinkButton("Save DIY", onClick);
+        return this.renderLinkButton("Save DIY","Saving DIY", onClick);
     }
 
     private getTopAndBottomContents() {
