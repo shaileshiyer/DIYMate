@@ -29,3 +29,5 @@ logs/*
 .venv/*
 *.pyc
 .env
+uploads
+uploads/*

@@ -1,8 +1,9 @@
+import { css } from "lit";
 import { EditorOptions, Extension, Mark, Node, mergeAttributes } from "@tiptap/core";
 import ListKeymap from "@tiptap/extension-list-keymap";
 import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
 
-import { css } from "lit";
 import { CustomHistory } from "./customHistory";
 
 export const tipTapStyles = css`
@@ -248,6 +249,7 @@ export function getEditorConfig(element:Element|undefined):Partial<EditorOptions
             HighlightMark.configure({
                 class: "marked",
             }),
+            Image,
             // CustomHistory,
             ListKeymap,
             LoadingAtom,
