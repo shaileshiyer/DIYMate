@@ -56,9 +56,23 @@ export class DialogService extends Service {
     }
 
     closeWelcomeDialog() {
-        const welcomeDialog = this.dialogs.get("welcome-dialog");
-        if (welcomeDialog) {
-            welcomeDialog.close();
+        const dialog = this.dialogs.get("welcome-dialog");
+        if (dialog) {
+            dialog.close();
+        }
+    }
+
+    closeImageDialog() {
+        const dialog = this.dialogs.get("image-dialog");
+        if (dialog) {
+            dialog.close();
+        }
+    }
+
+    openImageDialog() {
+        const dialog = this.dialogs.get("image-dialog");
+        if (dialog instanceof Dialog) {
+            this.openDialog(dialog);
         }
     }
 

@@ -14,6 +14,7 @@ import '@material/mwc-dialog/mwc-dialog';
 import "@components/snackbar/index";
 import { SnackbarComponent } from "@components/snackbar";
 import { Dialog } from "@material/mwc-dialog/mwc-dialog";
+import "./components/image_upload_dialog";
 
 @customElement('diymate-app')
 export class DIYMateApp extends MobxLitElement {
@@ -52,6 +53,7 @@ export class DIYMateApp extends MobxLitElement {
         this.registerDialog('welcome-dialog');
         this.registerDialog('message-dialog');
         this.registerDialog('confirm');
+        this.registerDialog('image-dialog');
 
         this.registerSnackbar('bot-warning-snackbar');
         this.registerSnackbar('message-snackbar');
@@ -62,7 +64,7 @@ export class DIYMateApp extends MobxLitElement {
 
     renderDialogs(){
         return html`
-            <mwc-dialog id="welcome-dialog">
+            <mwc-dialog id="welcome-dialog" hideActions>
                 <dm-welcome-dialog .close=${()=> void this.dialogService.closeWelcomeDialog()}></dm-welcome-dialog>
             </mwc-dialog>
             <mwc-dialog
@@ -82,7 +84,9 @@ export class DIYMateApp extends MobxLitElement {
                 </button>
                 <button slot="secondaryAction" dialogAction="cancel">Cancel</button>
             </mwc-dialog>
-
+            <mwc-dialog id="image-dialog">
+                <dm-image-dialog .close=${()=> void this.dialogService.closeImageDialog()}></dm-image-dialog>
+            </mwc-dialog>
         `
     }
 

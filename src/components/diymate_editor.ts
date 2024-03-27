@@ -14,6 +14,7 @@ import "@material/web/select/select-option";
 import { CursorService } from "@core/services/cursor_service";
 import "./simple_tooltip";
 import { tooltip } from "./simple_tooltip";
+import { DialogService } from "@core/services/dialog_service";
 
 @customElement("diymate-editor")
 export class DIYMateEditor extends MobxLitElement {
@@ -21,6 +22,8 @@ export class DIYMateEditor extends MobxLitElement {
     private readonly textEditorService = diymateCore.getService(TextEditorService);
     private readonly documentStoreService = diymateCore.getService(DocumentStoreService);
     private readonly cursorService = diymateCore.getService(CursorService);
+    private readonly dialogService = diymateCore.getService(DialogService);
+
     @property({ type: Boolean })
     public disabled: boolean = false;
 
@@ -218,6 +221,11 @@ export class DIYMateEditor extends MobxLitElement {
                     <md-icon>format_list_numbered</md-icon>
                 </md-outlined-icon-button>
                 <div class="divider"></div>
+                <md-outlined-icon-button
+                    ${tooltip("Insert an Image")}
+                    @click=${() => this.dialogService.openImageDialog() }>
+                    <md-icon>image</md-icon>
+                </md-outlined-icon-button>
             </div>
         `;
     }

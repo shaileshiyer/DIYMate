@@ -6,7 +6,7 @@ import os
 import gc
 from time import sleep,time
 from argparse import ArgumentParser
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
 from openai import NotFoundError, OpenAI
@@ -26,7 +26,7 @@ load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 SESSIONS = dict()
-UPLOAD_FOLDER = '/uploads'
+UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
@@ -256,7 +256,7 @@ def delete_threads():
 def upload_file():
     if request.method == "POST":
         response= {}
-        content = request.json
+        content = request.form
         session_id = content["session_id"]
         if 'file' not in request.files:
             response["status"] = FAILURE
@@ -279,7 +279,14 @@ def upload_file():
             response["filepath"] = file_path
             return jsonify(response)
 
-            
+
+@app.route('/uploads/<dirname>/<name>')
+@cross_origin(origin="*")
+def download_file(dirname,name):
+    rootdir = os.getcwd()
+    dir_path = os.path.join(rootdir,app.config["UPLOAD_FOLDER"],dirname)
+    print(dir_path,name)
+    return send_from_directory(dir_path, name)
                 
 
 if __name__ == "__main__":
