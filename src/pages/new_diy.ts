@@ -17,7 +17,7 @@ import {
 import { Task } from "@lit/task";
 import { ModelService } from "@core/services/model_service";
 import { defaultOutlineDescription } from "@models/openai/prompts/outline";
-import "../components/outline-editor.ts";
+import "../components/outline_editor.ts";
 import { TextEditorService } from "@core/services/text_editor_service.ts";
 import { InitializationService } from "@core/services/initialization_service.ts";
 

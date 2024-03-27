@@ -24,7 +24,7 @@ export class TooltipComponent extends LitElement {
                 position: fixed;
                 padding: 4px;
                 border: 1px solid var(--md-sys-outline);
-                border-radius: 4px;
+                border-radius: 15px;
                 background: var(--md-sys-color-secondary-container);
                 color: var(--md-sys-color-on-secondary-container);
                 width:fit-content;

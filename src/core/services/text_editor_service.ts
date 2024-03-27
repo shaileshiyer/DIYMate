@@ -90,12 +90,12 @@ export class TextEditorService extends Service {
 
         /**Setup listeners here. */
         // this.editorListeners = [];
-        // this.editor.commands.command(({editor,tr,dispatch})=>{
-        //     if (dispatch){
-        //         this.onTextUpdate({editor,transaction:tr});
-        //     }
-        //   return true;
-        // })
+        this.editor.commands.command(({editor,tr,dispatch})=>{
+            if (dispatch){
+                this.onTextUpdate({editor,transaction:tr});
+            }
+          return true;
+        })
 
         
 

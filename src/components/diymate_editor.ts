@@ -7,7 +7,6 @@ import { tipTapStyles } from "@lib/tiptap";
 
 import { PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
 import "@material/web/iconbutton/outlined-icon-button";
 import "@material/web/icon/icon";
 import "@material/web/select/outlined-select";
@@ -18,10 +17,10 @@ import { tooltip } from "./simple_tooltip";
 
 @customElement("diymate-editor")
 export class DIYMateEditor extends MobxLitElement {
-    private localStorageService = diymateCore.getService(LocalStorageService);
-    private textEditorService = diymateCore.getService(TextEditorService);
-    private documentStoreService = diymateCore.getService(DocumentStoreService);
-    private cursorService = diymateCore.getService(CursorService);
+    private readonly localStorageService = diymateCore.getService(LocalStorageService);
+    private readonly textEditorService = diymateCore.getService(TextEditorService);
+    private readonly documentStoreService = diymateCore.getService(DocumentStoreService);
+    private readonly cursorService = diymateCore.getService(CursorService);
     @property({ type: Boolean })
     public disabled: boolean = false;
 
@@ -107,13 +106,12 @@ export class DIYMateEditor extends MobxLitElement {
     protected updated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        if (this.disabled) {
-            this.textEditorService.disableEditor();
-            // this.textEditorService.getEditor.options.element.classList.add('disabled');
-        } else {
-            this.textEditorService.enableEditor();
-            // this.textEditorService.getEditor.options.element.classList.remove('disabled');
-        }
+
+        // if (this.disabled) {
+        //     this.textEditorService.disableEditor();
+        // } else {
+        //     this.textEditorService.enableEditor();
+        // }
     }
 
     override connectedCallback(): void {
@@ -124,14 +122,11 @@ export class DIYMateEditor extends MobxLitElement {
     }
     override disconnectedCallback(): void {
         super.disconnectedCallback();
-        // this.textEditorService.saveEditorSnapshot();
         this.textEditorService.onDisconnect();
         this.documentStoreService.endAutoSave();
     }
 
     renderToolbar(): TemplateResult {
-
-
         return html`
             <div class="editor-toolbar">
                 <md-outlined-icon-button
@@ -246,7 +241,6 @@ export class DIYMateEditor extends MobxLitElement {
                 ${this.renderToolbar()}
                 <div
                     id="diymate-editor"
-                    class=${classMap({ disabled: this.disabled })}
                     spellcheck="false"></div>
                 ${this.renderBottomBar()}
             </div>
