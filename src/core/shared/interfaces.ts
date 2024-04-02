@@ -4,7 +4,7 @@ import { TemplateResult } from "lit";
 
 export interface OutlinePromptParams {
     description: string;
-    outlinePrompt?: string;
+    outlineDescription?: string;
 }
 
 export interface ContinuePromptParams {
@@ -74,6 +74,26 @@ export interface SuggestRewritePromptParams {
     textType: TextType;
 }
 
+export interface GenerateIntroductionPromptParams {
+    pre:string;
+    post:string;
+}
+
+export interface GenerateConclusionPromptParams {
+    pre:string;
+    post:string;
+}
+
+export interface ReviewDIYPromptParams{
+    text:string;
+}
+
+export interface ReviewDIYSelectionPromptParams{
+    pre:string;
+    toReview:string;
+    post:string;
+}
+
 type UUID = string;
 
 /**
@@ -90,9 +110,8 @@ export interface OperationData {
     cursorEnd: number;
     preText:string;
     postText:string;
-    selectedPlainText:string;
-    selectedMdText:string;
-    selectedNodesKeys:string[];
+    selectedText:string;
+    mdText:string;
 }
 
 export interface OperationControl {

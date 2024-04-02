@@ -14,6 +14,8 @@ import "@material/web/fab/fab"
 import "@material/web/icon/icon";
 import { OperationClass, OperationControls } from "@core/shared/interfaces";
 import "./operation_controls";
+import { ref } from "lit/directives/ref.js";
+import keyCommandStyles from "./controls/key_command_styles";
 
 @customElement("dm-choices")
 export class ChoicesComponent extends MobxLitElement {
@@ -23,12 +25,13 @@ export class ChoicesComponent extends MobxLitElement {
                 display: flex;
                 flex-direction: column;
                 width: 100%;
-                height: 100vh;
+                height: 100%;
             }
 
             .choices-controls-container {
                 flex-grow: 0;
             }
+
 
             .choices-controls-container .operation-message {
                 line-height: 1.5;
@@ -38,10 +41,15 @@ export class ChoicesComponent extends MobxLitElement {
             .choices-container {
                 flex-grow: 1;
                 overflow: auto;
-                padding-bottom: 150px;
+                /* padding-bottom: 150px; */
                 padding-right: 10px;
                 width: 100%;
-                margin-bottom: 140px;
+                height:36em;
+                margin-bottom: 1em;
+            }
+
+            .choices-container::-webkit-scrollbar {
+                display: none;
             }
 
             .actions-container {
@@ -96,10 +104,12 @@ export class ChoicesComponent extends MobxLitElement {
             }
 
             .choice-buttons {
-                transform: scale(0.7);
+                transform: scale(0.8);
                 position: absolute;
-                right: -25px;
+                /* right: -25px; */
+                right: 0px;
                 bottom: -25px;
+                z-index:2;
             }
 
             .choice-buttons md-fab.choose {
@@ -121,13 +131,19 @@ export class ChoicesComponent extends MobxLitElement {
                 margin-bottom: 0;
             }
         `;
-        return [style];
+        return [keyCommandStyles,style];
     }
 
     private readonly keyboardService = diymateCore.getService(KeyboardService);
     private readonly operationsService = diymateCore.getService(OperationsService);
 
     @property({ type: Object }) choiceStep!: ChoiceStep;
+
+    // selectedChoiceRef:Ref<HTMLElement> = createRef();
+
+    choiceSelectedCallback= (selectedChoiceElement:Element|undefined)=>{
+        selectedChoiceElement?.scrollIntoView()
+    };
 
     private readonly keyboardServiceHelper =
         this.keyboardService.makeHelper("choiceStep");
@@ -223,7 +239,7 @@ export class ChoicesComponent extends MobxLitElement {
             },
             rewrite: {
                 message: "rewrite",
-                keyCommand: new KeyCommand("e", true),
+                keyCommand: new KeyCommand("e", false,false,true),
                 keyLabel: "e",
                 action: () => {
                     this.operationsService.rewriteCurrentChoice();
@@ -267,8 +283,8 @@ export class ChoicesComponent extends MobxLitElement {
         const choiceIndex = this.choiceStep.choices.getIndex();
         return html`
             <div class="choices-instructions">
-                <span class="key-command key-command-small">⬆</span>
-                <span class="key-command key-command-small">⬇</span>
+                <span class="key-command">⬆</span>
+                <span class="key-command">⬇</span>
                 to cycle through choices (${choiceIndex + 1}/${nChoices})
             </div>
         `;
@@ -316,20 +332,22 @@ export class ChoicesComponent extends MobxLitElement {
                 return html`
                     <div class="choice-buttons">
                         <md-fab
+                            class="choose"
+                            title="select"
+                            size="small"
+                            variant="primary"
+                            @click=${choose}>
+                            <md-icon  slot="icon">check</md-icon>
+                        </md-fab>
+                        <md-fab
                             class="add-remove"
                             size="small"
+                            variant="secondary"
                             @click=${remove}
                             title="remove">
                             <md-icon slot="icon">close</md-icon>
                         </md-fab>
                         
-                        <md-fab
-                            class="choose"
-                            title="select"
-                            size="small"
-                            @click=${choose}>
-                            <md-icon slot="icon">done</md-icon>
-                        </md-fab>
                     </div>
                 `;
                 // clang-format on
@@ -338,9 +356,12 @@ export class ChoicesComponent extends MobxLitElement {
             // clang-format off
             return html`
                 <div
+                    tabindex=${index}
                     class=${choiceClasses}
                     @click=${selectIndex(index)}
-                    @dblclick=${choose}>
+                    @dblclick=${choose}
+                    ${isSelected?ref(this.choiceSelectedCallback):""}
+                    >
                     ${isOrigText ? origTextLabel : ""}
                     ${this.renderText(choice.content)}
                     ${isSelected ? renderChoiceButtons() : ""}

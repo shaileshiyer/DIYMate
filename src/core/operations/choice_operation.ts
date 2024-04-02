@@ -37,6 +37,7 @@ export abstract class ChoiceOperation extends Operation {
             firstChoiceIsOriginal
         );
         this.setCurrentStep(choiceStep);
+        // this.textEditorService.getEditor.setOptions({editorProps:{attributes:{class:"tap-editor"}}})
 
         choiceStep.onPendingChoice((choice, index) => {
             if (this.shouldReset) {

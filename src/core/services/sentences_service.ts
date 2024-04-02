@@ -1,5 +1,5 @@
 import { action, computed, makeObservable, observable } from "mobx";
-import { CursorService, SerializedLexicalRange } from "./cursor_service";
+import { CursorService, SerializedCursor } from "./cursor_service";
 import { Service } from "./service";
 import { TextEditorService } from "./text_editor_service";
 import {
@@ -8,16 +8,8 @@ import {
     getSpanForOffset,
     SentenceSpan,
 } from "@lib/sentence_boundaries";
-import { $addUpdateTag, $getCharacterOffsets, $getNodeByKey, $getPreviousSelection, $getSelection, $isRangeSelection, $isTextNode, $normalizeSelection__EXPERIMENTAL, $setSelection, $splitNode, LexicalNode, RangeSelection, TextNode } from "lexical";
-import { parseSentences } from "@lib/parse_sentences";
-import { $addNodeStyle, $getSelectionStyleValueForProperty, $patchStyleText, $sliceSelectedTextNodeContent } from "@lexical/selection";
-import {
-    $createMarkNode,
-    $unwrapMarkNode,
-    $wrapSelectionInMarkNode,
-    MarkNode,
-} from "@lexical/mark";
-import { $normalizeSelection } from "lexical/LexicalNormalization";
+import { TextSelection, Transaction } from "@tiptap/pm/state";
+import { Editor } from "@tiptap/core";
 
 interface ServiceProvider {
     cursorService: CursorService;
@@ -48,21 +40,23 @@ export class SentencesService extends Service {
 
     paragraphData: ParagraphData[] = [];
     initialized = false;
+    startOffset=0;
 
     get currentSentence(): string {
         if (!this.cursorSpan) return "";
         return this.isCursorWithinSentence ? this.cursorSpan.span.text : "";
     }
 
-    get currentSentenceSerializedRange(): SerializedLexicalRange | null {
+    get currentSentenceSerializedRange(): SerializedCursor | null {
         if (!this.isCursorWithinSentence) return null;
-        const key = this.cursorService.cursorOffset.key;
+        const paragraphData = this.getParagraphDataAtCursor();
+        if (paragraphData === null) return null;
         if (!this.cursorSpan) return null;
         const { start, end } = this.cursorSpan.span;
+
         return {
-            anchor: { key, offset: start, type: "element" },
-            focus: { key, offset: end, type: "element" },
-            isBackward: false,
+            from: paragraphData.startOffset + start,
+            to: paragraphData.startOffset + end,
         };
     }
 
@@ -103,10 +97,13 @@ export class SentencesService extends Service {
     get cursorSpan() {
         const paragraph = this.getParagraphDataAtCursor();
         if (!paragraph) return null;
-        const cursorOffset = this.cursorService.cursorOffset.offset;
+        const cursorOffset = this.cursorService.cursorOffset;
         const { sentenceSpans } = paragraph;
 
-        return getSpanForOffset(sentenceSpans, cursorOffset);
+        return getSpanForOffset(
+            sentenceSpans,
+            cursorOffset - paragraph.startOffset
+        );
     }
 
     get isLastCursorSpan() {
@@ -154,164 +151,118 @@ export class SentencesService extends Service {
      * between or at the start/end) of a sentence.
      */
     get nextSentenceOffset() {
-        const { serializedRange } = this.cursorService;
+        const { serializedRange,cursorOffset } = this.cursorService;
+        const nodePos = this.textEditorService.getEditor.$pos(cursorOffset);
+        const paragraphOffset = nodePos.from;
         if (this.isCursorWithinSentence && this.cursorSpan != null) {
             const { span } = this.cursorSpan;
-            return span.end;
+            return paragraphOffset+span.end;
         } else {
-            return serializedRange.anchor.offset;
+            return serializedRange.from;
         }
     }
 
-    getNextSentenceRange(): RangeSelection {
+    getNextSentenceRange(): SerializedCursor {
         const offset = this.nextSentenceOffset;
-        const key = this.cursorService.cursorOffset.key;
-        const serialized: SerializedLexicalRange = {
-            anchor: { key, offset, type: "element" },
-            focus: { key, offset, type: "element" },
-            isBackward: false,
+
+        const serialized: SerializedCursor = {
+            from: offset,
+            to: offset,
         };
-        return this.cursorService.makeSelectionFromSerializedLexicalRange(
-            serialized
-        );
+        return serialized;
     }
 
-    getCurrentSentenceRange(): RangeSelection {
+    getCurrentSentenceRange(): SerializedCursor {
         const { currentSentenceSerializedRange } = this;
-        const selection =
-            this.cursorService.makeSelectionFromSerializedLexicalRange(
-                currentSentenceSerializedRange
-            );
-        return selection;
+        // const selection =
+        //     this.cursorService.makeSelectionFromSerializedCursorRange(
+        //         currentSentenceSerializedRange
+        //     );
+        return currentSentenceSerializedRange?? {from:0,to:0};
     }
 
-    private getParagraphDataAtKey(key: string) {
-        return this.paragraphData.find((pdata) => pdata.key === key);
+    private getParagraphDataAtStartOffset(offset: number) {
+        return this.paragraphData.find((pdata) => pdata.startOffset === offset);
     }
 
     private stringEquals(a: string, b: string) {
         return a.length === b.length && a === b;
     }
 
-    private getParagraphDataAtCursor() {
+    getParagraphDataAtCursor() {
         const { isCursorCollapsed, cursorOffset } = this.cursorService;
         if (!cursorOffset) return null;
         if (!isCursorCollapsed) return null;
-        const paragraphKey = cursorOffset.key;
-        const paragraph = this.getParagraphDataAtKey(paragraphKey);
+        const nodePos = this.textEditorService.getEditor.$pos(cursorOffset);
+        const paragraphOffset = nodePos.from;
+        const paragraph = this.getParagraphDataAtStartOffset(paragraphOffset);
+        // console.debug(paragraph);
         return paragraph || null;
-    }
-
-    getSentencesForElement(key: string): string[] {
-        const paragraphs = this.textEditorService.getParagraphs();
-        const paragraphText = paragraphs.find((value) => value.key === key);
-        if (!paragraphText) {
-            return [];
-        }
-        return parseSentences(paragraphText.text);
     }
 
     processText() {
         const textParagraphs = this.textEditorService.getParagraphs();
         this.paragraphData = textParagraphs.map((nodeText) => {
-            const existing = this.getParagraphDataAtKey(nodeText.key);
-            if (!existing || !this.stringEquals(nodeText.text, existing.text)) {
+            const existing = this.getParagraphDataAtStartOffset(
+                nodeText.offset
+            );
+            if (
+                !existing ||
+                !this.stringEquals(nodeText.text, existing.text) ||
+                existing.startOffset !== nodeText.offset
+            ) {
                 const sentenceSpans = getSentenceBoundaries(nodeText.text);
-                return {
-                    key: nodeText.key,
+                const data = {
+                    startOffset: nodeText.offset,
                     text: nodeText.text,
                     sentenceSpans,
                 };
+                // console.debug(data);
+                return data;
             }
             return existing;
         });
+        // console.debug(this.paragraphData);
     }
 
-    previousSelection: SerializedLexicalRange | null = null;
-    cachedNodes: LexicalNode[] = [];
-
-    /**Forget about this for now The current solution works and is good enough for most cases */
-    // Turns out it is getting a stale value from the computed stuff. 
-    highlightCurrentSentence() {
-        const { isCursorCollapsed, serializedRange } = this.cursorService;
+    /**It works easily now */
+    highlightCurrentSentence(editor: Editor, tr: Transaction) {
+        const { isCursorCollapsed } = this.cursorService;
         const { isCursorWithinSentence } = this;
-
-
-
-
-        const selection = $getSelection();
-        let prevSel = null;
-        if ($isRangeSelection(selection)){
-            prevSel = selection.clone();
-        }
-
-        const DEFAULT_VALUE = 'not-set'
-        const previousMarkupRange =this.cursorService.makeSelectionFromSerializedLexicalRange(this.previousSelection);
-        const previousStyleValue = $getSelectionStyleValueForProperty(previousMarkupRange,'color',DEFAULT_VALUE);
-        
-        if (previousMarkupRange !== null && !isCursorCollapsed || this.currentSentenceSerializedRange === null){
-            const nodes = previousMarkupRange.getNodes();
-            for (let node of nodes ){
-                if ($isTextNode(node)){
-                    node.setStyle('');
-                }
-            }
-            this.previousSelection = null;
-        }
-        
-        
-        if (isCursorCollapsed && isCursorWithinSentence ) {
+        editor
+            .chain()
+            .command(({ editor, tr }) => {
+                const docRange = editor.$doc.range;
+                tr.setMeta("addToHistory",false);
+                tr.setMeta("preventUpdate",true);
+                tr.removeMark(
+                    docRange.from + 1,
+                    docRange.to - 2,
+                    editor.schema.mark("highlight-mark")
+                );
+                return true;
+            })
+            .run();
+        if (isCursorCollapsed && isCursorWithinSentence) {
             if (!this.currentSentenceSerializedRange) return;
-            const currentSentenceRange = this.currentSentenceSerializedRange;
-
-            const style = "color:var(--md-sys-color-primary);font-weight:600;"
-            const markupRange = this.cursorService.makeSelectionFromSerializedLexicalRange(currentSentenceRange);
-            const currentStyleValue = $getSelectionStyleValueForProperty(markupRange,'color',DEFAULT_VALUE);
-            // console.debug('previousValue',previousStyleValue,previousMarkupRange.getTextContent());
-            // console.debug('currentValue',currentStyleValue, markupRange.getTextContent());
-            const previousMarkupRangeAnchorNode = previousMarkupRange.anchor.getNode();
-            const markupRangeAnchorNode = markupRange.anchor.getNode();
-            if (previousMarkupRange !== null && !markupRange.is(previousMarkupRange) ){
-                const nodes = previousMarkupRange.getNodes();
-                for (let node of nodes ){
-                    if ($isTextNode(node)){
-                        node.setStyle('');
+            editor
+                .chain()
+                .command(({ editor, tr }) => {
+                    if (this.currentSentenceSerializedRange !== null) {
+                        const { from, to } =
+                            this.currentSentenceSerializedRange;
+                        tr.setMeta("addToHistory",false);
+                        tr.setMeta("preventUpdate",true);
+                        tr.addMark(
+                            from,
+                            to,
+                            editor.schema.mark("highlight-mark")
+                        );
                     }
-                }
-            }
-
-            if (currentStyleValue === '' || currentStyleValue === DEFAULT_VALUE){
-                // const slicedNode = $sliceSelectedTextNodeContent(markupRange,markupRange.anchor.getNode());
-                // if ($isTextNode(slicedNode)){
-                $patchStyleText(markupRange,{'color':'var(--md-sys-color-primary)','font-weight':'600'});
-                //     slicedNode.setStyle('color:blue');
-                    // this.previousSelection = currentSentenceRange;
-    
-                // }
-                if (prevSel!== null){
-                    // Get the split node key and offset.
-                    let node = $getNodeByKey(prevSel.anchor.key);
-                    let key = prevSel.anchor.key;
-                    let offset = prevSel.anchor.offset;
-                    while(node!== null){
-                        if (offset> node.getTextContentSize()){
-                            key = node.getKey();  
-                            offset -= node.getTextContentSize();
-                        } else {
-                            break;
-                        }
-                        node = node.getNextSibling();
-                    }
-                    if ($isTextNode(node)){
-                        prevSel.setTextNodeRange(node,offset,node,offset);
-                    }
-                }
-                $setSelection(prevSel);
-            }
-            this.previousSelection = currentSentenceRange;
-
+                    return true;
+                })
+                .run();
 
         }
-
     }
 }

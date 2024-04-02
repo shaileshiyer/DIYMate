@@ -1,6 +1,6 @@
 import { ModelMessage, ModelResults } from 'types';
 import { Model } from '../model';
-import { ContinuePromptParams, OutlinePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
 import {
     createModelResults,
@@ -9,14 +9,23 @@ import {
     textContainsSpecialCharacters,
 } from '../utils';
 
+import { ModelResult } from '@core/shared/types';
 import { ContextService, SessionService } from "@services/services";
 import { makePromptHandler as outline } from './prompts/outline';
 import { makePromptHandler as continuation } from './prompts/continue';
+import { makePromptHandler as nextSentence } from './prompts/next_sentence';
+import { makePromptHandler as elaborate } from './prompts/elaborate';
+import { makePromptHandler as freeform } from './prompts/freeform';
+import { makePromptHandler as replace } from './prompts/replace';
+import { makePromptHandler as rewriteSelection } from './prompts/rewrite_selection';
+import { makePromptHandler as rewriteSentence } from './prompts/rewrite_sentence';
+import { makePromptHandler as generateIntroduction } from './prompts/generate_introduction';
+import { makePromptHandler as generateConclusion } from './prompts/generate_conclusion';
 
 
 const D0 = '{';
 const D1 = '}';
-const BLANK = '____';
+const BLANK = '{__BLANK__}';
 
 interface ServiceProvider {
     contextService: ContextService,
@@ -61,7 +70,7 @@ export class OpenAIModel extends Model {
         useDelimiters = true
     ): ModelResults {
         const parsed = results
-            .map((result) => {
+            .map((result:ModelResult) => {
                 if (modelInputText) {
                     result.content = result.content.replace(modelInputText, '');
                 }
@@ -79,7 +88,7 @@ export class OpenAIModel extends Model {
                     return { ...result, text: trimmedText };
                 }
             })
-            .filter((result) => {
+            .filter((result:ModelResult) => {
                 // We want to ensure that text is present, and make sure there
                 // aren't any special delimiters present in the text (usually a
                 // sign of a bug)
@@ -103,16 +112,17 @@ export class OpenAIModel extends Model {
         }
 
         const res= await callTextModel(userPrompt,params);
-
+        
         const response = await res.json();
         const responseJson = JSON.parse(response.response);
         const choices:string[] = responseJson.choices.map((choice:any) => choice.message.content);
-
+        
         const results = createModelResults(choices);
-
+        
         // console.log(results)
         // const output = shouldParse ? this.parseResults(results, promptText) : results;
         const output = results;
+        console.debug(userPrompt,output);
         // console.log(output)
         return output;
     }
@@ -120,5 +130,21 @@ export class OpenAIModel extends Model {
     override outline:(params:OutlinePromptParams)=>Promise<ModelResults> = this.makePromptHandler(outline);
 
     override continue:(params:ContinuePromptParams)=>Promise<ModelResults> = this.makePromptHandler(continuation);
+
+    override nextSentence:(params:NextSentencePromptParams)=>Promise<ModelResults> = this.makePromptHandler(nextSentence);
+    
+    override elaborate:(params:ElaboratePromptParams)=>Promise<ModelResults> = this.makePromptHandler(elaborate);
+
+    override freeform:(params:FreeformPromptParams)=> Promise<ModelResults> = this.makePromptHandler(freeform);
+    
+    override replace:(params:ReplacePromptParams)=> Promise<ModelResults> = this.makePromptHandler(replace);
+
+    override rewriteSelection:(params:RewriteSelectionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(rewriteSelection);
+
+    override rewriteSentence:(params:RewriteSentencePromptParams)=> Promise<ModelResults> = this.makePromptHandler(rewriteSentence);
+    
+    override generateIntroduction:(params:GenerateIntroductionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(generateIntroduction);
+    
+    override generateConclusion:(params:GenerateConclusionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(generateConclusion);
 
 }

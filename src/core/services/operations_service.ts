@@ -11,7 +11,7 @@ import {
 import { CursorService } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { Service } from "./service";
-import { TextEditorService } from "./text_editor_service";
+import { TextEditorService, commandKeys } from "./text_editor_service";
 import {
     ModelResult,
     OperationSite,
@@ -28,6 +28,8 @@ import { uuid } from "@lib/uuid";
 import { SessionService } from "./session_service";
 import { CancelOperationError } from "@lib/errors";
 import { RewriteChoiceOperation } from "@core/operations/rewrite_choice_operation";
+import { ReviewOperation } from "@core/operations";
+import { ReviewStep } from "@core/operations/steps";
 
 export interface ServiceProvider {
     cursorService: CursorService;
@@ -58,6 +60,7 @@ export class OperationsService extends Service {
             operationStack: observable,
             currentOperation: computed,
             isChoosing: computed,
+            isInReview: computed,
             isError: observable,
             isInOperation: computed,
             hoverTooltip: observable,
@@ -125,15 +128,22 @@ export class OperationsService extends Service {
     getLocationInDocumentStructure(): OperationSite {
         const {
             isCursorAtTitle,
+            isCursorAtSectionTitle,
             isCursorInIntroduction,
+            isCursorAtStepTitle,
             isCursorInStep,
+            isCursorAtConclusionTitle,
             isCursorInConclusion,
         } = this.cursorService;
 
         if (isCursorAtTitle) {
             return OperationSite.DIY_TITLE;
+        }else if (isCursorAtSectionTitle) {
+            return OperationSite.DIY_SECTION_TITLE
         } else if (isCursorInIntroduction) {
             return OperationSite.DIY_INTRODUCTION;
+        } else if(isCursorAtStepTitle){
+            return OperationSite.DIY_STEP_TITLE
         } else if (isCursorInStep) {
             return OperationSite.DIY_STEP;
         } else if (isCursorInConclusion) {
@@ -146,6 +156,7 @@ export class OperationsService extends Service {
     get availableOperations(): OperationClass[] {
         const operationSite = this.getOperationsSite();
         const documentSite = this.getLocationInDocumentStructure();
+        this.removeAllKeyTriggerOperations();
         return this.allOperations.filter((operationClass) => {
             return operationClass.isAvailable(operationSite, documentSite);
         });
@@ -166,6 +177,15 @@ export class OperationsService extends Service {
             this.currentOperation instanceof ChoiceOperation &&
             this.currentOperation?.currentStep instanceof ChoiceStep &&
             this.currentOperation.currentStep.choices.getNEntries() > 0
+        );
+    }
+
+    get isInReview() {
+        return (
+            this.isInOperation &&
+            this.currentOperation instanceof ReviewOperation &&
+            this.currentOperation?.currentStep instanceof ReviewStep &&
+            this.currentOperation.currentStep.review
         );
     }
 
@@ -204,6 +224,18 @@ export class OperationsService extends Service {
 
     registerOperations(...operationClasses: OperationClass[]) {
         this.allOperations.push(...operationClasses);
+    }
+
+    setKeyTriggerOperation(key:string,operationClass:OperationClass){
+        const operationKeyEventsStorage = this.textEditorService.getEditor.extensionStorage.operationKeyEvents;
+        operationKeyEventsStorage[key] = () => this.triggerOperation(operationClass,OperationTrigger.KEY_COMMAND);
+    }
+
+    removeAllKeyTriggerOperations(){
+        commandKeys.map((key)=>{
+            const operationKeyEventsStorage = this.textEditorService.getEditor.extensionStorage.operationKeyEvents;
+            operationKeyEventsStorage[key] = () => {};
+        });
     }
 
     triggerOperation(
@@ -291,9 +323,8 @@ export class OperationsService extends Service {
             cursorEnd: cursorOffset.end,
             preText:this.cursorService.preText,
             postText:this.cursorService.postText,
-            selectedPlainText:this.cursorService.selectedPlainText,
-            selectedMdText:this.cursorService.selectedMdText,
-            selectedNodesKeys:this.cursorService.selectedNodeKeys,
+            selectedText:this.cursorService.selectedText,
+            mdText:this.textEditorService.getMarkdownText(),
         };
 
         operation.setOperationData(operationData);
@@ -307,12 +338,17 @@ export class OperationsService extends Service {
             } else {
                 this.finalizeOperation();
             }
+
+            if(!wasSuccess){
+                this.textEditorService.restoreFocusAfterCancel({from:operationData.cursorStart,to:operationData.cursorEnd});
+            }
         });
         operation.onRun(() => {
             for (const callback of this.onRunCallbacks) {
                 callback(operation);
             }
         });
+
 
         this.operationStack.push(operation);
         const currentOperation = this.currentOperation!;
@@ -328,7 +364,7 @@ export class OperationsService extends Service {
             // Reset all pending state in the TextEditor
             currentOperation.resetTextEditor();
             currentOperation.finish();
-
+            
             if (err instanceof CancelOperationError) {
                 return;
             }

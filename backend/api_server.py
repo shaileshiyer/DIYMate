@@ -6,10 +6,11 @@ import os
 import gc
 from time import sleep,time
 from argparse import ArgumentParser
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
 from openai import NotFoundError, OpenAI
+from werkzeug.utils import secure_filename
 
 from helper import (
     append_session_to_file,
@@ -23,10 +24,15 @@ from reader import update_metadata
 
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPEN_AI_MODEL = "gpt-3.5-turbo-1106"
 
 SESSIONS = dict()
+UPLOAD_FOLDER = './uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
 app = Flask(__name__)
 CORS(app)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 client = OpenAI()
 assistant_id = "asst_N49231tQuA5jB1Eh4zrh6u9d"
@@ -44,6 +50,9 @@ def wait_on_run(run,thread):
         
         sleep(0.5)
     return run
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/api/start_session", methods=["POST","OPTIONS"])
 @cross_origin(origin="*")
@@ -195,7 +204,7 @@ def query():
     
     # Add chat completion api here 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo-1106",
+        model=OPEN_AI_MODEL,
         messages=messages,
         response_format=response_format,
         temperature=temperature,
@@ -242,6 +251,62 @@ def delete_threads():
 
         
     return "Threads deleted\n"+response
+
+@app.route("/api/upload",methods=["POST"])
+@cross_origin(origin="*")
+def upload_file():
+    """Upload image file
+
+    Returns:
+        _type_: json
+        {
+            status: boolean,
+            error: string
+            filepath: string,
+        }
+    """
+    if request.method == "POST":
+        response= {}
+        content = request.form
+        session_id = content["session_id"]
+        if 'file' not in request.files:
+            response["status"] = FAILURE
+            response["error"] = "no file found"
+            return jsonify(response)
+        file = request.files['file']
+        if file.filename == '':
+            response["status"] = FAILURE
+            response["error"] = "no file selected"
+            return jsonify(response)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            session_path = os.path.join(app.config["UPLOAD_FOLDER"],session_id)
+            if not os.path.exists(session_path):
+                os.mkdir(session_path)
+  
+            file_path = os.path.join(session_path,filename)
+            file.save(file_path)
+            response["status"] = SUCCESS
+            response["filepath"] = file_path
+            return jsonify(response)
+
+
+@app.route('/uploads/<dirname>/<name>')
+@cross_origin(origin="*")
+def download_file(dirname,name):
+    """Get the image files.
+    Args:
+        dirname (_type_): directory name
+        name (_type_): image file name
+
+    Returns:
+        _type_: binary_blob
+    """
+    rootdir = os.getcwd()
+    dir_path = os.path.join(rootdir,app.config["UPLOAD_FOLDER"],dirname)
+    print(dir_path,name)
+    return send_from_directory(dir_path, name)
+                
 
 if __name__ == "__main__":
     app.logger.debug("Server is started")

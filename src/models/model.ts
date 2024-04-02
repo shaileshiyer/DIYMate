@@ -3,7 +3,7 @@ import { SessionService } from "@core/services/session_service";
 import { DIYMateContext } from "context";
 import { ModelMessage, ModelResults } from "@core/shared/types";
 import { dedupeResults } from "./utils";
-import { ContinuePromptParams, ElaboratePromptParams, FirstSentencePromptParams, FreeformPromptParams, GenerateWithinSentencePromptParams, MetaPromptPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteEndOfSentencePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams, SuggestRewritePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, ElaboratePromptParams, FirstSentencePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, GenerateWithinSentencePromptParams, MetaPromptPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteEndOfSentencePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams, SuggestRewritePromptParams } from "@core/shared/interfaces";
 
 interface ServiceProvider {
     sessionService: SessionService;
@@ -112,6 +112,14 @@ export abstract class Model {
     }
     
     async suggestRewrite(params:SuggestRewritePromptParams):Promise<ModelResults>{
+        throw new Error('Not yet Implemented');
+    }
+
+    async generateIntroduction(params:GenerateIntroductionPromptParams):Promise<ModelResults>{
+        throw new Error('Not yet Implemented');
+    }
+
+    async generateConclusion(params:GenerateConclusionPromptParams):Promise<ModelResults>{
         throw new Error('Not yet Implemented');
     }
     

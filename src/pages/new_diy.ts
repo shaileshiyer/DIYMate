@@ -10,11 +10,14 @@ import "@material/web/button/outlined-button";
 import "@material/web/button/filled-tonal-button";
 import { diymateCore } from "@core/diymate_core";
 import { SessionService } from "@core/services/session_service";
-import { CurrentDIY, LocalStorageService } from "@core/services/local_storage_service";
+import {
+    CurrentDIY,
+    LocalStorageService,
+} from "@core/services/local_storage_service";
 import { Task } from "@lit/task";
 import { ModelService } from "@core/services/model_service";
-import { defaultOutlinePrompt } from "@models/openai/prompts/outline";
-import "../components/outline-editor.ts";
+import { defaultOutlineDescription } from "@models/openai/prompts/outline";
+import "../components/outline_editor.ts";
 import { TextEditorService } from "@core/services/text_editor_service.ts";
 import { InitializationService } from "@core/services/initialization_service.ts";
 
@@ -33,7 +36,6 @@ export class NewDIYPage extends MobxLitElement {
                 min-height: 100vh;
             }
 
-
             h1 {
                 font-size: 3rem;
             }
@@ -44,6 +46,16 @@ export class NewDIYPage extends MobxLitElement {
                 resize: vertical;
                 min-height: 5rem;
                 height: fit-content;
+            }
+
+            .input-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: start;
+                max-width: 700px;
+                width: 100%;
+                margin: 2em auto;
+                padding: 2em auto;
             }
 
             .bottom-bar {
@@ -59,7 +71,7 @@ export class NewDIYPage extends MobxLitElement {
     private description = "";
 
     @property({ type: String })
-    private outlinePrompt = defaultOutlinePrompt;
+    private outlinePrompt = defaultOutlineDescription;
 
     @property({ type: Boolean })
     private isLoading = false;
@@ -75,7 +87,9 @@ export class NewDIYPage extends MobxLitElement {
 
     private localStorageService = diymateCore.getService(LocalStorageService);
     private modelService = diymateCore.getService(ModelService);
-    private initializationService = diymateCore.getService(InitializationService);
+    private initializationService = diymateCore.getService(
+        InitializationService
+    );
 
     constructor() {
         super();
@@ -93,7 +107,7 @@ export class NewDIYPage extends MobxLitElement {
 
     resetValues() {
         this.description = "";
-        this.outlinePrompt = defaultOutlinePrompt;
+        this.outlinePrompt = defaultOutlineDescription;
     }
 
     private _generateOutlineTask = new Task(this, {
@@ -105,7 +119,7 @@ export class NewDIYPage extends MobxLitElement {
             // return sessionInfo
             const response = await this.modelService.getModel().outline({
                 description: this.description,
-                outlinePrompt: this.outlinePrompt,
+                outlineDescription: this.outlinePrompt,
             });
             return response;
         },
@@ -120,8 +134,6 @@ export class NewDIYPage extends MobxLitElement {
         args: () => [],
     });
 
-
-
     protected generateOutline(): void {
         this.isLoading = true;
         const currentDIY = {
@@ -134,7 +146,7 @@ export class NewDIYPage extends MobxLitElement {
 
     protected renderDescriptionAndPrompt(): TemplateResult {
         return html`
-            <div>
+            <div class="input-container">
                 <p>Write a short description of your DIY tutorial:</p>
                 <md-filled-text-field
                     type="textarea"
@@ -145,18 +157,29 @@ export class NewDIYPage extends MobxLitElement {
                     @input=${(e: HTMLElementEvent<HTMLTextAreaElement>) =>
                         (this.description = e.target.value)}
                     .value=${this.description}
-                    ?disabled=${this.isLoading}
-                    ></md-filled-text-field>
-                <p>Prompt to create a basic outline for the DIY Tutorial:</p>
+                    ?disabled=${this.isLoading}></md-filled-text-field>
+                <p>Give a description of your outline.</p>
+                <p>
+                    Example: It should be brief and have short sentences. It
+                    should be divided into 5 steps. In the introduction
+                    emphasise on the cuteness of the animal shapes.
+                </p>
+                <ul>
+                    <li>Talk about the tone of the outline.</li>
+                    <li>How many steps it should have?</li>
+                    <li>What to emphasize and not emphasize.</li>
+                    <li>...</li>
+                </ul>
+
                 <md-filled-text-field
                     type="textarea"
                     class="diy-textarea"
                     name="diy-outline-prompt"
-                    placeholder="Outline"
+                    placeholder="It should be brief and have short sentences. It should be divided into 5 steps. In the introduction emphasise on the cuteness of the animal shapes."
                     @input=${(e: HTMLElementEvent<HTMLTextAreaElement>) =>
                         (this.outlinePrompt = e.target.value)}
                     .value=${this.outlinePrompt}
-                    rows="20"
+                    rows="5"
                     ?disabled=${this.isLoading}
                     spellcheck="false"></md-filled-text-field>
             </div>
@@ -187,8 +210,8 @@ export class NewDIYPage extends MobxLitElement {
         });
     }
 
-    private saveNewDIYInfo(){
-        const currentDIY:CurrentDIY = {
+    private saveNewDIYInfo() {
+        const currentDIY: CurrentDIY = {
             description: this.description,
             outlinePrompt: this.outlinePrompt,
             generatedOutline: this.textEditorService.getPlainText(),
@@ -208,7 +231,10 @@ export class NewDIYPage extends MobxLitElement {
                       ?disabled=${this.isLoading}>
                       Regenerate Outline
                   </md-filled-tonal-button>
-                  <md-filled-button ?disabled=${this.isLoading} @click=${this.saveNewDIYInfo} href="/loading">
+                  <md-filled-button
+                      ?disabled=${this.isLoading}
+                      @click=${this.saveNewDIYInfo}
+                      href="/loading">
                       Confirm Outline
                   </md-filled-button>`;
     }
@@ -218,12 +244,16 @@ export class NewDIYPage extends MobxLitElement {
     }
 
     protected renderBackButton(): TemplateResult {
-        const onBackClick = ()=>{
+        const onBackClick = () => {
             this.initializationService.reset(false);
-        }
+        };
 
         return !this.showOutline
-            ? html` <md-text-button @click=${onBackClick} href="/">Back</md-text-button>`
+            ? html` <md-text-button
+                  @click=${onBackClick}
+                  href="/"
+                  >Back</md-text-button
+              >`
             : html`<md-text-button @click=${this.hideOutlineEditor}>
                   Back
               </md-text-button>`;
@@ -232,7 +262,7 @@ export class NewDIYPage extends MobxLitElement {
     protected renderButtonBar(): TemplateResult {
         return html`
             <div class="bottom-bar">
-              ${this.renderBackButton()}
+                ${this.renderBackButton()}
                 <div>
                     ${this.renderResetOrLoader()} ${this.renderActionButtons()}
                 </div>
@@ -243,7 +273,9 @@ export class NewDIYPage extends MobxLitElement {
     protected renderOutlineEditor() {
         return !this.showOutline
             ? html``
-            : html`<outline-editor .outline=${this.generatedOutline} ?disabled=${this.isLoading}></outline-editor>`;
+            : html`<outline-editor
+                  .outline=${this.generatedOutline}
+                  ?disabled=${this.isLoading}></outline-editor>`;
     }
     protected render(): TemplateResult {
         return html`
@@ -251,8 +283,7 @@ export class NewDIYPage extends MobxLitElement {
                 <div class="new-diy">
                     <h1>Start a new DIY Tutorial</h1>
                     ${this.renderDescriptionAndPrompt()}
-                    ${this.renderOutlineEditor()}
-                    ${this.outlineTask()}
+                    ${this.renderOutlineEditor()} ${this.outlineTask()}
                     ${this.renderButtonBar()}
                 </div>
             </div>

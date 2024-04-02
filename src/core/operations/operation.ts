@@ -7,14 +7,17 @@ import { TextEditorService } from "@core/services/text_editor_service";
 import { OperationData } from "@core/shared/interfaces";
 import { OperationSite, OperationTrigger, OperationType } from "@core/shared/types";
 import { Model } from "@models/model";
-import { SerializedEditorState } from "lexical";
+// import { SerializedEditorState } from "lexical";
+import { JSONContent } from "@tiptap/core";
 import { TemplateResult } from "lit";
 import { OperationControls } from "@core/shared/interfaces";
-import { makeObservable, observable } from "mobx";
+import { makeObservable, observable, runInAction } from "mobx";
 import { FinishedStep, NotStartedStep, Step } from "./steps/step";
 import { LoadingStep } from "./steps/loading_step";
 import { CancelOperationError, CancelStepError } from "@lib/errors";
 import { KeyboardService } from "@core/services/keyboard_service";
+import { ReviewsService } from "@core/services/reviews_service";
+import { DialogModel } from "@models/dialog_model";
 
 export interface ServiceProvider {
     routerService: RouterService;
@@ -24,6 +27,7 @@ export interface ServiceProvider {
     textEditorService: TextEditorService;
     keyboardService: KeyboardService;
     modelService: ModelService;
+    reviewsService:ReviewsService;
 }
 
 export abstract class Operation {
@@ -59,8 +63,13 @@ export abstract class Operation {
     protected get textEditorService() {
         return this.serviceProvider.textEditorService;
     }
+
     protected get keyboardService() {
         return this.serviceProvider.keyboardService;
+    }
+
+    protected get reviewService() {
+        return this.serviceProvider.reviewsService;
     }
 
     private operationData!: OperationData;
@@ -80,7 +89,7 @@ export abstract class Operation {
 
     isStandaloneOperation = false;
 
-    protected initialState!: SerializedEditorState;
+    protected initialState!: JSONContent;
 
     abstract run(): Promise<void>;
     async onCancel() {}
@@ -99,6 +108,10 @@ export abstract class Operation {
         return this.modelService.getModel();
     }
 
+    getDialogModel():DialogModel{
+        return this.modelService.getDialogModel();
+    }
+
     instanceControls: OperationControls = {};
     hasInstanceControls() {
         return Object.keys(this.instanceControls).length > 0;
@@ -110,7 +123,9 @@ export abstract class Operation {
         if (this.currentStep) {
             this.currentStep.finish();
         }
-        this.currentStep = step;
+        runInAction(()=>{
+            this.currentStep = step;
+        })
         step.start();
     }
 
@@ -122,7 +137,7 @@ export abstract class Operation {
         this.textEditorService.setStateFromSnapshot(this.initialState);
     }
 
-    setInitialState(initialState: SerializedEditorState) {
+    setInitialState(initialState: JSONContent) {
         this.initialState = initialState;
     }
 

@@ -21,6 +21,8 @@ import { DocumentStoreService } from "@core/services/document_store_service";
 import { InitializationService } from "@core/services/initialization_service";
 import "./operations";
 import "./current_operation";
+import "./reviews";
+import {tooltip} from './simple_tooltip';
 
 @customElement("diymate-editor-sidebar")
 export class DIYMateEditorSidebar extends MobxLitElement {
@@ -51,80 +53,34 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         const availableOps = this.operationsService.availableOperations.map((val)=> val.name)
         return html`<div id="debug-wrappper">
             <h1>Sidebar Wrapper</h1>
-
-            <!-- Operation Site and Document Site -->
-            <p>OperationSite: ${this.operationsService.getOperationsSite()}</p>
-            <p>
-                OperationSite:
-                ${this.operationsService.getLocationInDocumentStructure()}
-            </p>
-            <p> AvailableOps: ${availableOps}</p>
-            <p>Selected Text: ${this.cursorService.selectedPlainText}</p>
-            <p>Selected Node Md Text: ${this.cursorService.selectedMdText}</p>
+            <p>Selected Text: ${this.cursorService.selectedText}</p>
             
-            <p>Pre Text: ${this.cursorService.preText}</p>
-            <p>Post Text: ${this.cursorService.postText}</p>
-            <p>
-                Current Node: ${JSON.stringify(this.cursorService.currentNode)}
-            </p>
             <p>
                 serializedRange:
                 ${JSON.stringify(this.cursorService.serializedRange)}
             </p>
-            <p>
-                cursorOffset:${JSON.stringify(this.cursorService.cursorOffset)}
-            </p>
-
             <p>currentSentence: ${this.sentencesService.currentSentence}</p>
-            <p>
-                cursorSpan: ${JSON.stringify(this.sentencesService.cursorSpan)}
-            </p>
-            <p>
-                currentSentenceIndex:
-                ${this.sentencesService.currentSentenceIndex}
-            </p>
-            <p>
-                currentSentenceSerializedRange:
-                ${JSON.stringify(
-                    this.sentencesService.currentSentenceSerializedRange
-                )}
-            </p>
-            <p>
-                currentSentenceRange:
-                ${this.sentencesService.getCurrentSentenceRange()}
-            </p>
-            <p>
-                nextSentenceOffset: ${this.sentencesService.nextSentenceOffset}
-            </p>
+            <p>currentSentenceSerializedRange:${JSON.stringify(this.sentencesService.currentSentenceSerializedRange)}</p>
+            <p>nextSentenceOffset:${JSON.stringify(this.sentencesService.getNextSentenceRange())}</p>
+            <p>currentSentenceIndex:${this.sentencesService.currentSentenceIndex}</p>
+            
+            <p><strong>CursorOffset: ${this.cursorService.cursorOffset} </strong></p>
+            <p>isCursorAtStartOfNode: ${this.cursorService.isCursorAtStartOfNode}</p>
+            <p>isCursorAtEndOfNode: ${this.cursorService.isCursorAtEndOfNode}</p>
+            <p>isCurrentNodeEmpty: ${this.cursorService.isCurrentNodeEmpty}</p>
+            <p>isCollapsed: ${this.cursorService.isCursorCollapsed}</p>
+            <p>isAtStart: ${this.cursorService.isCursorAtStartOfText}</p>
+            <p>isAtEnd: ${this.cursorService.isCursorAtEndOfText}</p>
 
-            <!-- Cursor Checks -->
-            <p>
-                CursorOffsetRange:
-                ${JSON.stringify(this.cursorService.getOffsetRange())}
-            </p>
-            <!-- <p>isCursorBetweenSentences: ${this.sentencesService
-                .isCursorBetweenSentences} </p>
-        <p>isCursorinMiddleOfSentence: ${this.sentencesService
-                .isCursorWithinSentence} </p>
-        <p>isCursorAtParagraphStart: ${this.cursorService
-                .isCursorAtStartOfNode} </p>
-        <p>isCursorAtParagraphEnd: ${this.cursorService
-                .isCursorAtEndOfNode} </p>
-        <p>isCursorCollapsed: ${this.cursorService.isCursorCollapsed}</p>
-        <p>isCursorSelection: ${this.cursorService.isCursorSelection}</p>
-        <p>isCursorinSameNode: ${this.cursorService.isCursorInSingleNode}</p>
-        <p>isCursorinMiddle: ${this.cursorService.isCursorinMiddle}</p>
-        <p>isCursorAtStartOfDocument: ${this.cursorService
-                .isCursorAtStartOfText}</p>
-        <p>isCursorAtEndOfDocument: ${this.cursorService
-                .isCursorAtEndOfText}</p>
-        <p>isCursorAtTitle: ${this.cursorService.isCursorAtTitle}</p>
-        <p>isCursorInIntroduction: ${this.cursorService
-                .isCursorInIntroduction}</p>
-        <p>isCursorInStep: ${this.cursorService.isCursorInStep}</p>
-        <p>isCursorInConclusion: ${this.cursorService
-                .isCursorInConclusion}</p> -->
-
+            <p>InSingleNode: ${this.cursorService.isCursorInSingleNode}</p>
+            <p>InTitle: ${this.cursorService.isCursorAtTitle}</p>
+            <p>SectionTitle: ${this.cursorService.isCursorAtSectionTitle}</p>
+            <p>InIntro: ${this.cursorService.isCursorInIntroduction}</p>
+            
+            <p>InStepTitle: ${this.cursorService.isCursorAtStepTitle}</p>
+            <p>InStep: ${this.cursorService.isCursorInStep}</p>
+            <p>InConclusionTitle: ${this.cursorService.isCursorAtConclusionTitle}</p>
+            <p>InConclusion: ${this.cursorService.isCursorInConclusion}</p>
             <p>Plain Text:</p>
             <md-filled-text-field
                 style="width:100%;"
@@ -132,7 +88,25 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                 name="plain-text"
                 placeholder="PlainText"
                 .value=${this.textEditorService.plainText}
-                rows="20"
+                rows="5"
+                spellcheck="false"></md-filled-text-field>
+                <p>Pre Text:</p>
+            <md-filled-text-field
+                style="width:100%;"
+                type="textarea"
+                name="plain-text"
+                placeholder="PlainText"
+                .value=${this.cursorService.preText}
+                rows="10"
+                spellcheck="false"></md-filled-text-field>
+                <p>Post Text:</p>
+            <md-filled-text-field
+                style="width:100%;"
+                type="textarea"
+                name="plain-text"
+                placeholder="PlainText"
+                .value=${this.cursorService.postText}
+                rows="10"
                 spellcheck="false"></md-filled-text-field>
         </div> `;
     }
@@ -267,6 +241,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
 
     renderLinkButton(
         text: string,
+        tooltipHint:string,
         onClick: (e: Event) => void | Promise<void>,
         disabled = false
     ) {
@@ -276,7 +251,9 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         });
         return html`<div
             class=${buttonClasses}
-            @click=${onClick}>
+            @click=${onClick}
+            ${tooltip(tooltipHint)}
+            >
             ${text}
         </div>`;
     }
@@ -285,18 +262,18 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         const onClick = () => {
             this.initializationService.reset();
         };
-        return this.renderLinkButton("Main Menu", onClick);
+        return this.renderLinkButton("Main Menu","go to the main menu",onClick);
     }
 
     renderSaveButton(): TemplateResult {
         if (this.documentStoreService.isSaving) {
-            return this.renderLinkButton("saving...", () => {}, true);
+            return this.renderLinkButton("saving...","",() => {}, true);
         }
 
         const onClick = () => {
             this.documentStoreService.saveDocument();
         };
-        return this.renderLinkButton("Save DIY", onClick);
+        return this.renderLinkButton("Save DIY","Saving DIY", onClick);
     }
 
     private getTopAndBottomContents() {
@@ -358,6 +335,8 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             case 1:
                 return html`<diymate-chat></diymate-chat>`;
             case 2:
+                return html`<dm-review-tab></dm-review-tab>`
+            case 3:
                 return html`${this.renderDebug()}`;
         }
 
@@ -374,6 +353,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                             this.setActiveIndex(event.target.activeTabIndex)}>
                         <md-secondary-tab> Controls</md-secondary-tab>
                         <md-secondary-tab> Chat </md-secondary-tab>
+                        <md-secondary-tab> Reviews </md-secondary-tab>
                         <md-secondary-tab> Debug </md-secondary-tab>
                     </md-tabs>
                     <div id="sidebar-content">

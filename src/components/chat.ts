@@ -10,6 +10,7 @@ import { HTMLElementEvent } from "@core/shared/types";
 import { classMap } from "lit/directives/class-map.js";
 import { diymateCore } from "@core/diymate_core";
 import { ChatService } from "@core/services/chat_service";
+import { tooltip } from "./simple_tooltip";
 
 @customElement("diymate-chat")
 export class Chat extends MobxLitElement {
@@ -284,6 +285,7 @@ export class Chat extends MobxLitElement {
                         placeholder="Say something to DIYMate..."></md-outlined-text-field>
                     <div class="buttons-container">
                         <md-filled-tonal-icon-button
+                        ${tooltip("Send Message")}
                         @click=${()=>{this.chatService.sendMessage()}}
                         ?disabled=${isSendButtonDisabled}
                         >
@@ -294,6 +296,7 @@ export class Chat extends MobxLitElement {
                             </md-icon>
                         </md-filled-tonal-icon-button>
                         <md-filled-tonal-icon-button
+                        ${tooltip("Send current DIY Tutorial")}
                         ?disabled=${isLoading}
                         @click=${()=>{this.chatService.sendCurrentDIYTutorial()}}
                         >

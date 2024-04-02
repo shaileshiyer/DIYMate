@@ -1,11 +1,13 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
-import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
+import { PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import "../components/diymate-editor";
+import "../components/diymate_editor";
 import "../components/sidebar";
+import { diymateCore } from "@core/diymate_core";
+import { DialogService } from "@core/services/dialog_service";
 
 @customElement("editor-page")
-export class EditorPage extends LitElement {
+export class EditorPage extends MobxLitElement {
     static override get styles() {
         const styles = css`
             #editor-page-wrapper {
@@ -30,9 +32,14 @@ export class EditorPage extends LitElement {
         return [styles];
     }
 
+    private readonly dialogService = diymateCore.getService(DialogService);
+
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-    ): void {}
+    ): void {
+        // this.dialogService.openWelcomeDialog();
+
+    }
     connectedCallback(): void {
         super.connectedCallback();
     }

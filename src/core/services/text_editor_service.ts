@@ -1,72 +1,45 @@
+import { action, computed, makeObservable, observable, runInAction, transaction } from "mobx";
+import { Editor, JSONContent, EditorEvents, NodePos } from "@tiptap/core";
+import { EditorState, TextSelection, Transaction } from "@tiptap/pm/state";
 import {
-    $createParagraphNode,
-    $createTextNode,
-    $getRoot,
-    $getSelection,
-    $isElementNode,
-    $isRangeSelection,
-    $isTextNode,
-    $setSelection,
-    EditorState,
-    ElementNode,
-    LexicalEditor,
-    LexicalNode,
-    ParagraphNode,
-    PointType,
-    RangeSelection,
-    SerializedEditorState,
-    TextNode,
-    createEditor,
-} from "lexical";
-import { Service } from "./service";
-import {
-    HistoryState,
-    createEmptyHistoryState,
-    registerHistory,
-} from "@lexical/history";
-import { action, computed, makeObservable, observable } from "mobx";
-import { $isHeadingNode, HeadingNode, registerRichText } from "@lexical/rich-text";
-import {
-    $convertFromMarkdownString,
-    $convertToMarkdownString,
-    registerMarkdownShortcuts,
-    TRANSFORMERS,
-} from "@lexical/markdown";
-import { DIYStructureJSON } from "@core/shared/types";
+    Fragment,
+    DOMParser as TiptapParser,
+    DOMSerializer as TiptapSerializer,
+} from "@tiptap/pm/model";
 
-import { $generateNodesFromDOM } from "@lexical/html";
-import {
-    $isListItemNode,
-    $isListNode,
-    ListItemNode,
-    ListNode,
-} from "@lexical/list";
+import { Service } from "./service";
+
+import { DIYStructureJSON } from "@core/shared/types";
+import { Converter } from "showdown";
+
 import { LocalStorageService } from "./local_storage_service";
-import { CursorService, SerializedLexicalRange } from "./cursor_service";
+import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
-import { $createChoiceNode, $createLoadingNode, LexicalConfig } from "@lib/lexical";
+import { getEditorConfig } from "@lib/tiptap";
+import { OperationsService } from "./operations_service";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
     cursorService: CursorService;
-    sentencesService:SentencesService;
+    sentencesService: SentencesService;
+    operationsService: OperationsService;
 }
 
-interface NodeText {
-    key:string;
-    text:string;
+interface Paragraphs {
+    offset: number;
+    text: string;
 }
 
 export class TextEditorService extends Service {
-    private editor!: LexicalEditor;
-    private historyState!: HistoryState;
+    private editor!: Editor;
+    converter = new Converter();
 
     constructor(private readonly serviceProvider: ServiceProvider) {
         super();
         makeObservable(this, {
             isEnabled: observable,
             plainText: observable,
-            onRead:action,
+            onTextUpdate: action,
         });
     }
 
@@ -81,114 +54,135 @@ export class TextEditorService extends Service {
         return this.serviceProvider.sentencesService;
     }
 
-    get getEditor(){
+    private get operationsService() {
+        return this.serviceProvider.operationsService;
+    }
+
+    get getEditor() {
         return this.editor;
     }
 
-    private richtextCallback!: () => void;
-    private historyCallback!: () => void;
-    private markdownCallback!: () => void;
+  
 
-    private editorListeners: (() => void)[] = [];
+    initiliaze(element: Element | undefined) {
+        /**
+         * Setup the editor here.
+         */
 
-    initiliaze(config: LexicalConfig) {
-        this.editor = createEditor(config.editorConfig);
-        this.historyState = createEmptyHistoryState();
-
-        this.editor.setRootElement(config.root);
-
-        // Patch the selection to make sure that we can still use this beyond the shadow DOM.
-        patchGetSelection();
-
-        this.editor.update(() => {
-            const root = $getRoot();
-            root.clear();
-        });
-
-        /**Register all plugins */
-        this.richtextCallback = registerRichText(this.editor);
-        this.historyCallback = registerHistory(
-            this.editor,
-            this.historyState,
-            1000
-        );
-        this.markdownCallback = registerMarkdownShortcuts(
-            this.editor,
-            TRANSFORMERS
-        );
-
+        const editorConf = getEditorConfig(element);
+        this.editor = new Editor(editorConf);
         /** Can set content to an empty editor here */
 
         if (this.editorStateForInitialization !== null) {
-            const parsedEditorState = this.editor.parseEditorState(
-                this.editorStateForInitialization
-            );
-            this.editor.setEditorState(parsedEditorState);
-            this.editor.getEditorState().read(()=>{
-                this.plainText = $convertToMarkdownString(TRANSFORMERS);
-            })
+            /**
+             * Set parsed editor content.
+             */
+            this.editor.commands.setContent(this.editorStateForInitialization);
             this.editorStateForInitialization = null;
+            // To prevent completely removing all content on undo.
+            const newEditorState = EditorState.create({
+                doc:this.editor.state.doc,
+                plugins:this.editor.state.plugins,
+                schema:this.editor.state.schema,
+            });
+            this.editor.view.updateState(newEditorState);
         }
 
-        
-
-        this.editorListeners = [
-            this.editor.registerUpdateListener(({ editorState }) => {
-                editorState.read(() => {
-                    // this.cursorService.cursorUpdate();                    
-                    this.onRead(editorState);
-                    this.sentencesService.processText();
-
-                });
-            }),
-            ...this.cursorService.registerCursorListeners(),
-        ];
+        /**Setup listeners here. */
+        // this.editorListeners = [];
+        this.editor.commands.command(({editor,tr,dispatch})=>{
+            if (dispatch){
+                this.onTextUpdate({editor,transaction:tr});
+            }
+          return true;
+        })
 
         
+
+        this.editor.on("update", this.onTextUpdate);
+        this.editor.on("selectionUpdate", this.onSelectionUpdate);
+        this.editor.on('focus',this.onFocus);
+        this.editor.on('blur',this.onBlur);
+
+        this.editor.commands.focus("start");
     }
 
-    paragraphs:NodeText[] = [];
+    onTextUpdate = (params:EditorEvents["update"]) => {
+        const {editor, transaction} = params;
+        console.debug('docChanged',transaction.docChanged,transaction.steps);
 
-    onRead(editorState:EditorState){
-        const root = $getRoot();
-        // let markdownText = '';
-        // for (let child of root.getChildren()){
-        //     if ($isElementNode(child)||$isHeadingNode(child)){
-        //         const nodeText = $convertToMarkdownString(TRANSFORMERS,child);
-        //         markdownText+=`${nodeText}\n`;
-        //     }
-        // }
-        // this.plainText = markdownText;
-        this.plainText = $convertToMarkdownString(TRANSFORMERS);
+        if (!this.operationsService.isInOperation){
+            console.debug("onRead");
+            console.debug("processtext");
+            this.updatePlainText(editor, transaction);
+        }
+    };
 
-        this.paragraphs = []
-        for (let child of root.getChildren()){
-            if ($isListNode(child)){
-                for ( let listchild of child.getChildren()){
-                    this.paragraphs.push({key:listchild.getKey(),text:listchild.getTextContent()})
-                }
-            } else {
-                this.paragraphs.push({key:child.getKey(),text:child.getTextContent()})
+    onSelectionUpdate = (params:EditorEvents["selectionUpdate"]) =>{
+        const {editor, transaction} = params;
+        console.debug("selection");
+        console.debug('docChanged',transaction.docChanged,transaction.steps);
+        if (!this.operationsService.isInOperation){
+            this.cursorService.cursorUpdate(editor, transaction);
+            if (!transaction.docChanged) {
+                this.sentencesService.highlightCurrentSentence(
+                    editor,
+                    transaction
+                );
             }
         }
+    };
 
+    onFocus = (params:EditorEvents["focus"]) => {
+        const {editor,event,transaction} = params;
 
-    }
+        console.debug('focus',event);
+        editor
+        .chain()
+        .command(({editor,tr,dispatch})=>{
+            if (dispatch){
+                const selection = tr.selection;
+                const selectionMark = editor.schema.mark('selection-mark');
+                tr.setMeta("addToHistory",false)
+                tr.setMeta("preventUpdate",true)
+                const range = editor.$doc.range;
+                tr.removeMark(range.from+1,range.to -2,selectionMark);
+            }
+            return true
+        })
+        .run()
+    
+        // editor.commands.unsetAllMarks();
+    };
+
+    onBlur = (params:EditorEvents["blur"]) => {
+        const {editor,event,transaction} = params;
+        console.debug('blur',event);
+
+        editor
+        .chain()
+        .command(({tr,dispatch})=>{
+            if (dispatch){
+                const selection = tr.selection;
+                const selectionMark = editor.schema.mark('selection-mark');
+                tr.setMeta("addToHistory",false)
+                tr.setMeta("preventUpdate",true)
+                tr.addMark(selection.from,selection.to,selectionMark);
+            }
+            return true
+        })
+        .run()
+    };
 
     onDisconnect() {
-        this.richtextCallback();
-        this.historyCallback();
-        this.markdownCallback();
-        // disconnect listeners.
-        for (let listener of this.editorListeners) {
-            listener();
-        }
-
-        this.editor.setRootElement(null);
-        this.editor.blur();
+        this.editor.off("update", this.onTextUpdate);
+        this.editor.off("selectionUpdate", this.onSelectionUpdate);
+        this.editor.off('focus',this.onFocus)
+        this.editor.off('blur',this.onBlur)
+        this.editor.destroy();
     }
 
-    lastSnapshot!: SerializedEditorState;
+    lastSnapshot!: JSONContent;
     private readonly snapshotDebounce = 750;
     private lastSetSnapshotTime = 0;
     nextChangeTriggersUndoSnapshot = false;
@@ -203,57 +197,103 @@ export class TextEditorService extends Service {
         }
     }
 
-    private editorStateForInitialization: SerializedEditorState | null = null;
-    initializeFromLocalStorage(editorState: SerializedEditorState | null) {
+    private editorStateForInitialization: JSONContent | null = null;
+    initializeFromLocalStorage(editorState: JSONContent | null) {
         this.editorStateForInitialization = editorState;
     }
 
-    getStateSnapshot(): SerializedEditorState {
-        return this.editor.getEditorState().toJSON();
+    getStateSnapshot(): JSONContent {
+        return this.editor.getJSON();
     }
 
-    setStateFromSnapshot(editorState:SerializedEditorState){
-        const parsedEditorState = this.editor.parseEditorState(editorState);
-        this.editor.setEditorState(parsedEditorState);
+    setStateFromSnapshot(editorState: JSONContent) {
+        // const parsedEditorState = this.editor.parseEditorState(editorState);
+        this.editor.commands.setContent(editorState);
+        
     }
 
     private readonly updateCallbacks = new Set<() => void>();
     onUpdate(updateCallback: () => void) {
-      this.updateCallbacks.add(updateCallback);
-      return () => void this.updateCallbacks.delete(updateCallback);
+        this.updateCallbacks.add(updateCallback);
+        return () => void this.updateCallbacks.delete(updateCallback);
     }
     triggerUpdateCallbacks() {
-      for (const callback of this.updateCallbacks.values()) {
-        callback();
-      }
+        for (const callback of this.updateCallbacks.values()) {
+            callback();
+        }
     }
-  
+
 
     plainText: string = "";
+    paragraphs: Paragraphs[] = [];
+    private updatePlainText(editor: Editor, tr: Transaction) {
+        // Adding the condition where i check for changes actually makes the highlight selection lag.
+        // if(this.plainText === editor.getText({blockSeparator:'\n\n'})) return;
+        this.plainText = editor.getText({ blockSeparator: "\n" });
+        // console.debug(this.editor.getJSON());
+        this.paragraphs = [];
+
+        const headingNodes = editor.$doc.querySelectorAll("heading");
+        const paragraphNodes = editor.$doc.querySelectorAll("paragraph");
+        
+        const nodesList = [...headingNodes, ...paragraphNodes];
+
+        nodesList.sort((a, b) => a.pos - b.pos);
+        this.paragraphs = nodesList.map((node) => {
+            return { offset: node.pos, text: node.textContent };
+        });
+
+        this.sentencesService.processText();
+    }
 
     getPlainText(): string {
         return this.plainText;
     }
 
-    
-    getParagraphs():NodeText[] {
+    getMarkdownText(){
+      const docRange = this.editor.$doc.range;
+      return this.getMarkdownFromRange({from:docRange.from+1,to:docRange.to-2});
+    }
+
+    getParagraphs(): Paragraphs[] {
         return this.paragraphs;
     }
 
     isEnabled = true;
     disableEditor() {
         this.editor.setEditable(false);
-        this.isEnabled = false;
+        this.editor.setOptions({editorProps:{attributes:{class:"tap-editor disabled"}}})
+        runInAction(()=>{
+            this.isEnabled = false;
+        })
     }
 
     enableEditor() {
         this.editor.setEditable(true);
-        this.isEnabled = true;
+        this.editor.setOptions({editorProps:{attributes:{class:"tap-editor"}}})
+        runInAction(()=>{
+            this.isEnabled = true;
+        })
+        this.editor
+            .chain()
+            .command(({ editor, tr }) => {
+                this.cursorService.cursorUpdate(editor, tr);
+                return true;
+            })
+            .run();
+    }
+
+    restoreFocusAfterCancel(serializedCursor:SerializedCursor){
+        this.editor
+            .chain()
+            .focus()
+            .setTextSelection(serializedCursor)
+            .run()
     }
 
     get isEmpty(): boolean {
-        const text = this.plainText;
-        return text.trim().length === 0;
+        // const text = this.plainText;
+        return this.editor.isEmpty;
     }
 
     get wordCount(): number {
@@ -261,31 +301,24 @@ export class TextEditorService extends Service {
             .length;
     }
 
-    getStartOfDocument():ElementNode|null{
-        let startOfDocument:ElementNode|null = null;
-        this.editor.getEditorState().read(()=>{
-            const root = $getRoot();
-            const element:ElementNode|null= root.getFirstChild();
-            if (element){
-                startOfDocument = element.getFirstChild();
-            }
-        })
-
-        return startOfDocument;
-
+    get selectedWordCount():number{
+        return this.cursorService.selectedPlainText.split(" ").filter((word)=> word.length > 0).length;
     }
 
-    getEndOfDocument():ElementNode|null{
-        let endOfDocument:ElementNode|null = null
-        this.editor.getEditorState().read(()=>{
-            const root = $getRoot();
-            const element:ElementNode|null= root.getLastChild();
-            if (element){
-                endOfDocument = element.getLastChild();
-            }
-        })
-        return endOfDocument;
+    getStartOfDocument(): NodePos | null {
+        return this.editor.$doc.firstChild;
+    }
 
+    getEndOfDocument(): NodePos | null {
+        return this.editor.$doc.lastChild;
+    }
+
+    getEndOfCurrentNode(cursorPosition:SerializedCursor):SerializedCursor{
+      const $nodePos = this.editor.$pos(cursorPosition.to);
+      return {
+        from:$nodePos.to-1,
+        to:$nodePos.to-1,
+      }
     }
 
     // Actions
@@ -293,185 +326,253 @@ export class TextEditorService extends Service {
         // console.debug(generatedOutline);
         const htmlstring = `
         <h1>${generatedOutline?.title}</h1>
+        <h2>Introduction</h2>
         <p>${generatedOutline?.introduction}</p>
+        <h2>Supplies</h2>
         <p>Materials:</p>
         <ul>
-            ${generatedOutline?.materials.map((val) => {
-                return `<li>${val}</li>`;
-            })}
+            ${generatedOutline?.materials
+                .map((val) => {
+                    return `<li>${val}</li>`;
+                })
+                .join("")}
         </ul>
         <p>Tools:</p>
         <ul>
-            ${generatedOutline?.tools.map((val) => {
-                return `<li>${val}</li>`;
-            })}
+            ${generatedOutline?.tools
+                .map((val) => {
+                    return `<li>${val}</li>`;
+                })
+                .join("")}
         </ul>
         <p>Competences:</p>
         <ul>
-        ${generatedOutline?.competences.map((val) => {
-            return `<li>${val}</li>`;
-        })}
+        ${generatedOutline?.competences
+            .map((val) => {
+                return `<li>${val}</li>`;
+            })
+            .join("")}
         </ul>
         <p>Safety Instructions </p>
         <ol>
-            ${generatedOutline?.safety_instruction.map((val) => {
-                return `<li>${val}</li>`;
-            })}
+            ${generatedOutline?.safety_instruction
+                .map((val) => {
+                    return `<li>${val}</li>`;
+                })
+                .join("")}
         </ol>
-        ${generatedOutline?.steps.map((step) => {
-            return `
-                <h2>${step.title}</h2>
+        <h2>Steps</h2>
+        ${generatedOutline?.steps
+            .map((step) => {
+                return `
+                <h3>${step.title}</h3>
                 <p>Materials used in this step:</p>
                 <ul>
-                    ${step.materials_in_step.map((val) => {
-                        return `<li>${val}</li>`;
-                    })}
+                    ${step.materials_in_step
+                        .map((val) => {
+                            return `<li>${val}</li>`;
+                        })
+                        .join("")}
                 </ul>
                 <p>Tools used in this step:</p>
                 <ul>
-                    ${step.tools_in_step.map((val) => {
-                        return `<li>${val}</li>`;
-                    })}
+                    ${step.tools_in_step
+                        .map((val) => {
+                            return `<li>${val}</li>`;
+                        })
+                        .join("")}
                 </ul>
                 <p>Instructions:</p>
                 
-                ${step.instructions.map((val) => {
-                    return `<p>${val}</p>`;
-                })}
+                ${step.instructions
+                    .map((val) => {
+                        return `<p>${val}</p>`;
+                    })
+                    .join("")}
             `;
-        })}
+            })
+            .join("")}
         <h2>Conclusion</h2>
         <p>${generatedOutline?.conclusion.text}</p>`;
 
-        const dom = new DOMParser().parseFromString(htmlstring, "text/html");
-        this.editor.update(() => {
-            const nodes: LexicalNode[] = $generateNodesFromDOM(
-                this.editor,
-                dom
-            );
-            const root = $getRoot();
-            root.clear();
-            const filteredNodes = nodes.filter((node) => {
-                if (!$isTextNode(node)) {
-                    if ($isListNode(node)) {
-                        const list = node as ListNode;
-                        list.getChildren().filter((child) => {
-                            if (child.getTextContent() === ",") {
-                                child.remove();
-                            }
-                        });
-                    }
-                    return true;
-                }
-            });
-            root.append(...filteredNodes);
-            console.debug("Finished outline");
-        });
+        this.editor.commands.setContent(htmlstring);
     }
 
-
-
-    insertLoadingNode(position:{start:number,end:number}){
-        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
-        let nodes:LexicalNode[] = []
-        this.editor.update(()=>{
-            const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
-            if (!$isRangeSelection(selection)){
-                return;
-            }
-            const loadingNode = $createLoadingNode();
-            nodes.push(loadingNode);
-            selection.insertNodes([loadingNode]);
-        },{discrete:true})
-        return ()=> this.deleteAtPosition(nodes);
+    parseHTMLToNodes(htmlString: string): Fragment {
+        const parsedHTML = new DOMParser().parseFromString(
+            htmlString,
+            "text/html"
+        );
+        const container = document.createElement("div");
+        container.append(parsedHTML.childNodes.item(0));
+        const parsedNodes = TiptapParser.fromSchema(this.editor.schema).parse(
+            container
+        ).content;
+        // console.debug(parsedHTML);
+        // console.debug(parsedNodes);
+        return parsedNodes;
     }
 
-    insertChoiceNode(text:string,position:{start:number,end:number}){
-        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
-        let nodes:LexicalNode[] = []
-        this.editor.update(()=>{
-            const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
-            if (!$isRangeSelection(selection)){
-                return;
-            }
-            const choiceNode = $createChoiceNode(text);
-            nodes.push(choiceNode);
-            selection.insertNodes([choiceNode]);
-        },{discrete:true})
-        return ()=> this.deleteAtPosition(nodes);
+    getHTMLFromRange(range: SerializedCursor) {
+        const selection =
+            this.cursorService.makeSelectionFromSerializedCursorRange(range);
+        const slice = selection.content();
+        const serializer = TiptapSerializer.fromSchema(this.editor.schema);
+        const fragment = serializer.serializeFragment(slice.content);
+        const div = document.createElement("div");
+        div.appendChild(fragment);
+
+        return div.innerHTML;
     }
 
-    lastGeneratedText:string = "";
-    insertGeneratedText(text:string,position:{start:number,end:number}){
+    getMarkdownFromRange(range: SerializedCursor) {
+        let htmlString = this.getHTMLFromRange(range);
+        // const regex = /ab+c/;
+        const regex = /<mark .*>(.*)?<\/mark>/g;
+        htmlString = htmlString.replace(regex, "$1");
+        const markdownString = this.converter
+            .makeMarkdown(htmlString)
+            .replace(/<!-- -->/g, "");
+        return markdownString;
+    }
+
+    getPreandPostMarkdown(range:SerializedCursor):[string,string]{
+        const docRange = this.editor.$doc.range;
+        const preText = this.getMarkdownFromRange({from:docRange.from+1,to:range.from});
+        let postText = '';
+        if (range.to !== docRange.to -2){
+            postText = this.getMarkdownFromRange({from:range.to,to:docRange.to-2});
+        }
+        return [preText,postText];
+    }
+
+    insertLoadingNode(position: SerializedCursor) {
+        const loadingNode = this.editor.schema.node("loading-atom").toJSON();
+        this.editor
+            .chain()
+            .setMeta("addToHistory",false)
+            .setMeta("preventUpdate",true)
+            .insertContentAt(position, loadingNode, { updateSelection: true})
+            .run();
+
+    }
+
+    insertChoiceNode(text: string, position: SerializedCursor) {
+        const content = this.parseHTMLToNodes(text);
+
+        const choiceNode = this.editor.schema.node("choice-atom", {}, content);
+        console.debug("choiceNode", choiceNode);
+
+        this.editor
+            .chain()
+            .setMeta("addToHistory",false)
+            .setMeta("preventUpdate",true)
+            .insertContentAt(position, choiceNode.toJSON(), {
+                parseOptions: {
+                    preserveWhitespace: "full",
+                },
+                updateSelection: true,
+            })
+            .focus()
+            .run();
+
+    }
+
+    insertChoiceInline(text: string, position: SerializedCursor) {
+      // const content = this.parseHTMLToNodes(text);
+
+      const choiceNode = this.editor.schema.node("choice-text-atom", {},this.editor.schema.text(text));
+      console.debug("choiceNode", choiceNode);
+
+      this.editor
+          .chain()
+          .setMeta("addToHistory",false)
+          .setMeta("preventUpdate",true)
+          .insertContentAt(position, choiceNode.toJSON(), {
+              parseOptions: {
+                  preserveWhitespace: "full",
+              },
+              updateSelection: true,
+          })
+          .focus()
+          .run();
+
+    }
+
+    lastGeneratedText: string = "";
+    insertGeneratedText(text: string, position: SerializedCursor) {
         this.lastGeneratedText = text;
-        // const selection = this.cursorService.makeSelectionFromSerializedLexicalRange(serializedOperatingPoint);
-        this.editor.update(()=>{
-            let generatedNodes:LexicalNode[] = [];
-            // $convertFromMarkdownString(text,TRANSFORMERS,{append:(...appendNodes)=>{generatedNodes = appendNodes;}}as ElementNode);
-            const selection = this.cursorService.offsetView.createSelectionFromOffsets(position.start,position.end);
-            if (!$isRangeSelection(selection)){
-                return;
-            }
-            const textParagraphs = text.split('\n');
-            textParagraphs.map((lineText)=>{
-                const paragraph = $createParagraphNode();
-                const textNode = $createTextNode(lineText);
-                paragraph.append(textNode);
-                generatedNodes.push(paragraph);    
-            });
-            
-            selection.insertNodes(generatedNodes);
-        },{discrete:true})
+        const content = this.parseHTMLToNodes(text);
+        console.debug("insertGenerated Content");
+        console.debug(content.toJSON());
+        this.editor
+            .chain()
+            .insertContentAt(position, content.toJSON(), {
+                updateSelection: true,
+            })
+            .focus()
+            .run();
+
     }
 
-    deleteAtPosition(nodes:LexicalNode[]){
-        this.editor.update(()=>{
-            for(let node of nodes){
-                node.remove();
-            }
-        },{discrete:true});
+    insertGeneratedTextInline(text: string, position: SerializedCursor) {
+      this.lastGeneratedText = text;
+      this.editor
+          .chain()
+          .insertContentAt(position, text, {
+              updateSelection: true,
+          })
+          .focus()
+          .run();
+
     }
 
+    insertSelectionMark(position:SerializedCursor){
+        this.editor
+            .chain()
+            .command(({editor,tr,dispatch})=>{
+                if (dispatch){
+                    const selection = tr.selection;
+                    const selectionMark = editor.schema.mark('selection-mark');
+                    tr.setMeta("addToHistory",false)
+                    tr.setMeta("preventUpdate",true)
+                    tr.addMark(selection.from,selection.to,selectionMark);
+                }
+                return true
+            })
+            .run()
+    }
 
+    insertSelectionMarkAtPosition(position:SerializedCursor){
+        this.editor
+        .chain()
+        .command(({editor,tr,dispatch})=>{
+            if (dispatch){
+                const selectionMark = editor.schema.mark('selection-mark');
+                tr.setMeta("addToHistory",false)
+                tr.setMeta("preventUpdate",true)
+                tr.addMark(position.from,position.to,selectionMark);
+            }
+            return true
+        })
+        .run()
+    }
+
+    deleteAtPosition(position: SerializedCursor) {
+        // const nodePos = this.editor.$pos(position.from);
+        // const nodeAfterthis = nodePos.after;
+        // console.debug("deleteAtPosition Called");
+        // this.editor.commands.deleteSelection();
+        // this.editor.update(()=>{
+        //     for(let node of nodes){
+        //         node.remove();
+        //     }
+        // },{discrete:true});
+    }
 }
 
 /**
  * Easier and more ergonomic keyboard shortcuts... just arranged on the right
  * side of the keyboard.
  */
-export const commandKeys = ['j', 'k', 'l', 'u', 'i', 'o', 'p', 'h', 'n', 'm'];
-
-/**
- * We need to hack the window.getSelection method to use the shadow DOM,
- * since the mobiledoc editor internals need to get the selection to detect
- * cursor changes. First, we walk down into the shadow DOM to find the
- * actual focused element. Then, we get the root node of the active element
- * (either the shadow root or the document itself) and call that root's
- * getSelection method.
- */
-export function patchGetSelection() {
-    const oldGetSelection = window.getSelection.bind(window);
-    window.getSelection = (useOld: boolean = false) => {
-        const activeElement = findActiveElementWithinShadow();
-        const shadowRootOrDocument: ShadowRoot | Document = activeElement
-            ? (activeElement.getRootNode() as ShadowRoot | Document)
-            : document;
-        const selection = (shadowRootOrDocument as any).getSelection();
-
-        if (!selection || useOld) return oldGetSelection();
-        return selection;
-    };
-}
-
-/**
- * Recursively walks down the DOM tree to find the active element within any
- * shadow DOM that it might be contained in.
- */
-function findActiveElementWithinShadow(
-    element: Element | null = document.activeElement
-): Element | null {
-    if (element?.shadowRoot) {
-        return findActiveElementWithinShadow(element.shadowRoot.activeElement);
-    }
-    return element;
-}
+export const commandKeys = ["j", "k", "l", "u", "i", "o", "p", "h", "n", "m"];

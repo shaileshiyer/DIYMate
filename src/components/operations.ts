@@ -79,7 +79,8 @@ export class OperationsComponent extends MobxLitElement {
         const renderedOperations = availableOperations.map(
             (operationClass, index) => {
                 const buttonLabel = operationClass.getButtonLabel();
-                const keyCommand = new KeyCommand(commandKeys[index], true);
+                const keyCommand = new KeyCommand(commandKeys[index], false,false,true);
+                this.operationsService.setKeyTriggerOperation(commandKeys[index],operationClass);
 
                 return html`
                     <div class="operation-row">

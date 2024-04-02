@@ -1,7 +1,7 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { diymateCore } from "@core/diymate_core";
 import { Operation } from "@core/operations";
-import { ChoiceStep, ControlsStep, LoadingStep } from "@core/operations/steps";
+import { ChoiceStep, ControlsStep, LoadingStep, ReviewStep } from "@core/operations/steps";
 import { OperationsService } from "@core/services/operations_service";
 import { PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
@@ -10,6 +10,7 @@ import "@material/web/progress/circular-progress";
 import { KeyCommand } from "@core/shared/keyboard";
 import "./choices";
 import "./controls/key_command_small";
+import "./review_step";
 
 /**
  * A component that displays the current Operation in the sidebar
@@ -20,9 +21,9 @@ export class CurrentOperationComponent extends MobxLitElement {
         const style = css`
             .controls-step-title {
                 font-weight: 700;
-                color: var(--blue);
+                color: var(--md-sys-color-primary);
                 margin-bottom: 20px;
-                border-bottom: 2px solid var(--blue);
+                border-bottom: 2px solid var(--md-sys-color-primary);
                 padding: 10px 0;
             }
 
@@ -90,6 +91,10 @@ export class CurrentOperationComponent extends MobxLitElement {
             return this.renderControlsStep(currentStep);
         }
 
+        if (currentStep instanceof ReviewStep) {
+            return html`<dm-review-step .reviewStep=${currentStep}></dm-review-step>`;
+        }
+
         return html``;
     }
 
@@ -135,20 +140,12 @@ export class CurrentOperationComponent extends MobxLitElement {
                 .onEnter=${() => {
                     currentStep.finish();
                 }}
-                autofocus></dm-operation-controls>
+                tofocus></dm-operation-controls>
         `;
     }
 
     renderButtons(operation: Operation) {
         const actions = {
-            go: {
-                message: "go",
-                keyCommand: new KeyCommand("Enter"),
-                keyLabel: "enter",
-                action: () => {
-                    operation.currentStep.finish();
-                },
-            },
             cancel: {
                 message: "cancel",
                 keyCommand: new KeyCommand("Escape"),
@@ -157,11 +154,19 @@ export class CurrentOperationComponent extends MobxLitElement {
                     operation.cancel();
                 },
             },
+            go: {
+                message: "go",
+                keyCommand: new KeyCommand("Enter"),
+                keyLabel: "enter",
+                action: () => {
+                    operation.currentStep.finish();
+                },
+            },
         };
 
         return [
-            this.renderKeyCommand(actions.go),
             this.renderKeyCommand(actions.cancel),
+            this.renderKeyCommand(actions.go),
         ];
     }
 

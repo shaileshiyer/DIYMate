@@ -7,6 +7,7 @@ import { customElement, property } from "lit/decorators.js";
 
 import { TextareaControl } from "@core/operations/operation_controls";
 import controlStyles from "./control_styles";
+import { runInAction } from "mobx";
 /**
  * A component that displays an input text area control for an operation
  */
@@ -40,8 +41,7 @@ export class TextareaControlComponent extends MobxLitElement {
                     ${control.getPrefix()} :
                 </div>
                 <div class="operation-control-input">
-                    <md-filled-text-field
-                        type="textarea"
+                    <textarea
                         placeholder=${control.placeholder}
                         class="textarea-control"
                         @keydown=${(e: KeyboardEvent) => {
@@ -55,14 +55,18 @@ export class TextareaControlComponent extends MobxLitElement {
                         }}
                         @input=${
                             // tslint:disable-next-line:no-any
-                            (e: any) => (control.value = e.target.value)
+                            (e: any) => {
+                                runInAction(()=>{
+                                    control.value = e.target.value
+                                }) ;
+                            }
                         }
-                        value=${control.value}
+                        .value=${control.value}
                         @mouseenter=${() => void this.onHover(hoverTooltip)}
                         @mouseleave=${() => void this.onHover("")}
                         @copy=${(e: ClipboardEvent) => {
                             this.onCopy(e);
-                        }}></md-filled-text-field>
+                        }}></textarea>
                     ${this.renderHelperOperationButton()}
                 </div>
             </div>

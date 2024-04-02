@@ -10,7 +10,7 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
         
         const suffix = 'Continue the Tutorial:';
         return [
-            { role: 'system', content: 'You are a DIY Tutorial Assistant helping the user write a DIY tutorial.' },
+            { role: 'system', content: 'You are a DIY Tutorial Assistant helping the user to continue write a DIY tutorial.' },
             { role: 'user', content: `${model.getPrefix()} ${model.wrap(text)}\n ${suffix}` },
         ];
     }
@@ -22,7 +22,7 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
         const modelParams: Partial<ModelParams> = {
             n:5,
             response_format:{type:"text"},
-            max_tokens:50,
+            max_tokens:256,
             stop_sequence:'',
             temperature:1,
             top_p:1,

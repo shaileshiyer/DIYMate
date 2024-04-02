@@ -35,7 +35,7 @@ export class OperationControlsComponent extends MobxLitElement {
 
     @property({ type: Object }) controls!: OperationControls;
     @property({ type: Object }) onEnter = () => {};
-    @property({ type: Boolean }) override autofocus = false;
+    @property({ type: Boolean }) tofocus = false;
 
     private renderControl(control: OperationControl) {
         const onHover = (tooltip: string | TemplateResult) => {
@@ -58,7 +58,7 @@ export class OperationControlsComponent extends MobxLitElement {
                     .control=${control}
                     .onEnter=${() => void this.onEnter()}
                     .onHover=${onHover}
-                    ?autofocus=${this.autofocus}>
+                    ?tofocus=${this.tofocus}>
                 </dm-text-input-control>
             `;
         } else if (control instanceof StepSliderControl){
@@ -85,7 +85,7 @@ export class OperationControlsComponent extends MobxLitElement {
                     .control=${control}
                     .onEnter=${() => void this.onEnter()}
                     .onHover=${onHover}
-                    ?autofocus=${this.autofocus}>
+                    ?tofocus=${this.tofocus}>
                 </dm-textarea-control>
             `;
         }

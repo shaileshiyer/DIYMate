@@ -1,4 +1,4 @@
-import { flow, makeObservable, observable } from "mobx";
+import { action, flow, makeObservable, observable } from "mobx";
 import { Service } from "./service";
 import { LocalStorageService } from "./local_storage_service";
 
@@ -41,6 +41,8 @@ export class SessionService extends Service {
         makeObservable(this,{
             sessionInfo:observable,
             isSessionActive:observable,
+            reset:action,
+            restoreSession:action,
             startSession:flow,
             endSession:flow,
         });
@@ -54,6 +56,11 @@ export class SessionService extends Service {
     reset(){
         this.isSessionActive = false;
         this.sessionInfo = defaultSession;
+    }
+
+    restoreSession(sessionInfo:SessionInformation){
+        this.isSessionActive = true;
+        this.sessionInfo = sessionInfo;
     }
 
     private get localStorageService():LocalStorageService{

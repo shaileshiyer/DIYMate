@@ -7,6 +7,7 @@ import { LocalStorageService } from "@core/services/local_storage_service";
 import { DocumentStoreService } from "@core/services/document_store_service";
 import "@material/web/progress/circular-progress";
 import "@material/web/icon/icon";
+import "../components/tap-editor";
 
 @customElement("diymate-home")
 class DIYMateHome extends MobxLitElement {
@@ -135,6 +136,7 @@ class DIYMateHome extends MobxLitElement {
                 </md-filled-button>
                 <hr />
                 ${this.renderSavedTutorials()}
+                <!-- <tap-editor></tap-editor> -->
             </div>
         `;
     }
