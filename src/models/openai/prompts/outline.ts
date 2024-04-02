@@ -21,6 +21,7 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext) {
         "introduction": "Introduction to the DIY Project",
         "materials":["material 1","material 2"],
         "tools":["tool 1","tool 2"],
+        "estimated_time":"Estimated time to finish the project",
         "competences":["competence 1","competences 2"],
         "safety_instruction":["safety 1","safety 2","safety 3"],
         "steps":[

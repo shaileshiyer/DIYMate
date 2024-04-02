@@ -262,7 +262,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         const onClick = () => {
             this.initializationService.reset();
         };
-        return this.renderLinkButton("Main Menu","go to the main menu",onClick);
+        return this.renderLinkButton("Main Menu","Back to Main Menu",onClick);
     }
 
     renderSaveButton(): TemplateResult {

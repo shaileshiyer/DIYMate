@@ -8,6 +8,7 @@ import "@material/web/button/text-button";
 import "@material/web/progress/circular-progress";
 import "@material/web/button/outlined-button";
 import "@material/web/button/filled-tonal-button";
+import "@material/web/button/filled-button";
 import { diymateCore } from "@core/diymate_core";
 import { SessionService } from "@core/services/session_service";
 import {
@@ -128,6 +129,7 @@ export class NewDIYPage extends MobxLitElement {
         },
         onComplete: (val) => {
             this.generatedOutline = JSON.parse(val[0].content);
+            
             this.isLoading = false;
             this.showOutline = true;
         },
@@ -214,7 +216,7 @@ export class NewDIYPage extends MobxLitElement {
         const currentDIY: CurrentDIY = {
             description: this.description,
             outlinePrompt: this.outlinePrompt,
-            generatedOutline: this.textEditorService.getPlainText(),
+            generatedOutline: this.textEditorService.getEditor.getHTML(),
         };
         this.localStorageService.setCurrentDIY(currentDIY);
     }

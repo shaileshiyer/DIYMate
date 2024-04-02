@@ -151,8 +151,8 @@ export class DialogService extends Service {
 
     getPendingSuggestionsMessage() {
         return html`
-            You can't edit your DIY with pending choices.<br />
-            Please choose a choice from the sidebar, or hit cancel.
+            You can't edit your DIY with pending operation<br />
+            Please either finish the operation from the sidebar, or hit cancel.
         `;
     }
 

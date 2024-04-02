@@ -137,6 +137,14 @@ export class ReviewStepComponent extends MobxLitElement {
                     operation.restart();
                 },
             },
+            finish: {
+                message: "finish",
+                keyCommand: new KeyCommand("Enter"),
+                keyLabel: "Enter",
+                action: () => {
+                    operation.finish();
+                },
+            },
 
         };
 
@@ -144,6 +152,7 @@ export class ReviewStepComponent extends MobxLitElement {
             <div class="actions-container">
                 ${this.renderAction(actions.cancel)}
                 ${this.renderAction(actions.refresh)}
+                ${this.renderAction(actions.finish)}
             </div>
         `;
     }

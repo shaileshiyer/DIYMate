@@ -23,16 +23,16 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
         
         const prefix = model.getPrefix();
         const blank = model.getBlank();
-        const DIYWithBlank = `${preText} ${blank} ${postText}`;
+        const DIYWithBlank = `${preText}<replace>${blank}</replace>${postText}`;
         const blankedSentIndex = parseSentences(preText).length - 1;
         const sentenceBeforeBlank = parseSentences(DIYWithBlank)[blankedSentIndex];
     
         const wordinessText = nWordsToWordiness(nWords).text;
-        const content = `${prefix} ${model.wrap(DIYWithBlank)}\n Sentence before ${blank}: ${sentenceBeforeBlank}\n Fill in the Blank ${blank} with ${wordinessText.text}:\n `;
+        const content = `${prefix} ${model.wrap(DIYWithBlank)}\n Sentence before <replace>${blank}</replace>: ${sentenceBeforeBlank}\n Fill in the Blank given by <replace>${blank}</replace> with ${wordinessText.text}:\n `;
 
         
         return [
-            { role: 'system', content: `You are a DIY Tutorial assistant helping the user with filling in the blanks in their tutorial. Respond ONLY with text that fits the ${blank}. Omit any introductory or conclusionary text.` },
+            { role: 'system', content: `You are a DIY Tutorial assistant helping the user with filling in the blanks in their tutorial. Respond ONLY with text that fits the <replace>${blank}</replace>. Omit any introductory or conclusionary text.` },
             { role: 'user', content: content },
         ];
     }

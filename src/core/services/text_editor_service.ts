@@ -325,13 +325,14 @@ export class TextEditorService extends Service {
     insertOutline(generatedOutline: DIYStructureJSON) {
         // console.debug(generatedOutline);
         const htmlstring = `
-        <h1>${generatedOutline?.title}</h1>
+        <h1>${generatedOutline.title}</h1>
         <h2>Introduction</h2>
-        <p>${generatedOutline?.introduction}</p>
+        <p>${generatedOutline.introduction}</p>
         <h2>Supplies</h2>
+        <p>Estimated Time:${generatedOutline.estimated_time}</p>
         <p>Materials:</p>
         <ul>
-            ${generatedOutline?.materials
+            ${generatedOutline.materials
                 .map((val) => {
                     return `<li>${val}</li>`;
                 })
@@ -339,7 +340,7 @@ export class TextEditorService extends Service {
         </ul>
         <p>Tools:</p>
         <ul>
-            ${generatedOutline?.tools
+            ${generatedOutline.tools
                 .map((val) => {
                     return `<li>${val}</li>`;
                 })
@@ -347,7 +348,7 @@ export class TextEditorService extends Service {
         </ul>
         <p>Competences:</p>
         <ul>
-        ${generatedOutline?.competences
+        ${generatedOutline.competences
             .map((val) => {
                 return `<li>${val}</li>`;
             })
@@ -355,17 +356,17 @@ export class TextEditorService extends Service {
         </ul>
         <p>Safety Instructions </p>
         <ol>
-            ${generatedOutline?.safety_instruction
+            ${generatedOutline.safety_instruction
                 .map((val) => {
                     return `<li>${val}</li>`;
                 })
                 .join("")}
         </ol>
         <h2>Steps</h2>
-        ${generatedOutline?.steps
-            .map((step) => {
+        ${generatedOutline.steps
+            .map((step,index) => {
                 return `
-                <h3>${step.title}</h3>
+                <h3>Step ${index+1}: ${step.title}</h3>
                 <p>Materials used in this step:</p>
                 <ul>
                     ${step.materials_in_step
@@ -393,7 +394,7 @@ export class TextEditorService extends Service {
             })
             .join("")}
         <h2>Conclusion</h2>
-        <p>${generatedOutline?.conclusion.text}</p>`;
+        <p>${generatedOutline.conclusion.text}</p>`;
 
         this.editor.commands.setContent(htmlstring);
     }

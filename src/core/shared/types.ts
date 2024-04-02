@@ -119,6 +119,7 @@ export interface DIYStructureJSON {
   tools: string[],
   competences: string[],
   safety_instruction: string[],
+  estimated_time:string,
   steps: DIYStep[],
   conclusion: {
     final_image_alt_text: string,

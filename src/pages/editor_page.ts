@@ -37,7 +37,7 @@ export class EditorPage extends MobxLitElement {
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
     ): void {
-        // this.dialogService.openWelcomeDialog();
+        this.dialogService.openWelcomeDialog();
 
     }
     connectedCallback(): void {

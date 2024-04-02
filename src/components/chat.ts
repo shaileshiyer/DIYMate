@@ -285,7 +285,7 @@ export class Chat extends MobxLitElement {
                         placeholder="Say something to DIYMate..."></md-outlined-text-field>
                     <div class="buttons-container">
                         <md-filled-tonal-icon-button
-                        ${tooltip("Send Message")}
+                        ${tooltip("Send message")}
                         @click=${()=>{this.chatService.sendMessage()}}
                         ?disabled=${isSendButtonDisabled}
                         >
@@ -296,7 +296,7 @@ export class Chat extends MobxLitElement {
                             </md-icon>
                         </md-filled-tonal-icon-button>
                         <md-filled-tonal-icon-button
-                        ${tooltip("Send current DIY Tutorial")}
+                        ${tooltip("Send current DIY")}
                         ?disabled=${isLoading}
                         @click=${()=>{this.chatService.sendCurrentDIYTutorial()}}
                         >

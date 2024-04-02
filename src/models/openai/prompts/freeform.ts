@@ -29,7 +29,7 @@ export function makePromptHandler(model: OpenAIModel, context: DIYMateContext){
         const modelParams: Partial<ModelParams> = {
             n:5,
             response_format:{type:"text"},
-            max_tokens:256,
+            max_tokens:512,
             stop_sequence:'',
             temperature:1,
             top_p:1,

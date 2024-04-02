@@ -15,6 +15,7 @@ import { CursorService } from "@core/services/cursor_service";
 import "./simple_tooltip";
 import { tooltip } from "./simple_tooltip";
 import { DialogService } from "@core/services/dialog_service";
+import { classMap } from "lit/directives/class-map.js";
 
 @customElement("diymate-editor")
 export class DIYMateEditor extends MobxLitElement {
@@ -81,6 +82,10 @@ export class DIYMateEditor extends MobxLitElement {
                 flex-direction: row;
             }
 
+            .editor-toolbar.disabled {
+                cursor: not-allowed;
+            }
+
             .divider {
                 width: 1px;
                 background-color: var(--md-sys-color-outline-variant);
@@ -130,26 +135,34 @@ export class DIYMateEditor extends MobxLitElement {
     }
 
     renderToolbar(): TemplateResult {
+        const toolbarClasses = classMap({
+            "editor-toolbar": true,
+            disabled: !this.textEditorService.isEnabled,
+        })
         return html`
-            <div class="editor-toolbar">
+            <div class=${toolbarClasses}>
                 <md-outlined-icon-button
-                    ${tooltip("undo")}
+                    ${tooltip("Undo")}
                     @click=${() =>
                         this.textEditorService.getEditor
                             .chain()
                             .focus()
                             .undo()
-                            .run()}>
+                            .run()}
+                    ?disabled=${!this.textEditorService.isEnabled}    
+                    >
                     <md-icon>undo</md-icon>
                 </md-outlined-icon-button>
                 <md-outlined-icon-button
-                    ${tooltip("redo")}
+                    ${tooltip("Redo")}
                     @click=${() =>
                         this.textEditorService.getEditor
                             .chain()
                             .focus()
                             .redo()
-                            .run()}>
+                            .run()}
+                    ?disabled=${!this.textEditorService.isEnabled}
+                    >
                     <md-icon>redo</md-icon>
                 </md-outlined-icon-button>
                 <div class="divider"></div>
@@ -166,64 +179,78 @@ export class DIYMateEditor extends MobxLitElement {
                             .chain()
                             .focus()
                             .clearNodes()
-                            .run()}>
+                            .run()}
+                            ?disabled=${!this.textEditorService.isEnabled}
+                            >
                     <md-icon>format_paragraph</md-icon>
                 </md-outlined-icon-button>
                 <md-outlined-icon-button
-                    ${tooltip("toggle Title format")}
+                    ${tooltip("Toggle Title format")}
                     @click=${() =>
                         this.textEditorService.getEditor
                             .chain()
                             .focus()
                             .toggleHeading({ level: 1 })
-                            .run()}>
+                            .run()}
+                            ?disabled=${!this.textEditorService.isEnabled}
+                            >
                     <md-icon>format_h1</md-icon>
                 </md-outlined-icon-button>
                 <md-outlined-icon-button
-                    ${tooltip("toggle Section title format")}
+                    ${tooltip("Toggle Section title format")}
                     @click=${() =>
                         this.textEditorService.getEditor
                             .chain()
                             .focus()
                             .toggleHeading({ level: 2 })
-                            .run()}>
+                            .run()}
+                            ?disabled=${!this.textEditorService.isEnabled}
+                            >
                     <md-icon>format_h2</md-icon>
                 </md-outlined-icon-button>
                 <md-outlined-icon-button
-                    ${tooltip("toggle Step title format")}
+                    ${tooltip("Toggle Step title format")}
                     @click=${() =>
                         this.textEditorService.getEditor
                             .chain()
                             .focus()
                             .toggleHeading({ level: 3 })
-                            .run()}>
+                            .run()}
+                            ?disabled=${!this.textEditorService.isEnabled}
+                            >
                     <md-icon>format_h3</md-icon>
                 </md-outlined-icon-button>
                 <div class="divider"></div>
                 <md-outlined-icon-button
-                    ${tooltip("toggle bullet list")}
+                    ${tooltip("Toggle bullet list")}
                     @click=${() =>
                         this.textEditorService.getEditor
                             .chain()
                             .focus()
                             .toggleBulletList()
-                            .run()}>
+                            .run()}
+                            ?disabled=${!this.textEditorService.isEnabled}
+                            >
                     <md-icon>format_list_bulleted</md-icon>
                 </md-outlined-icon-button>
                 <md-outlined-icon-button
-                    ${tooltip("toggle numbered list")}
+                    ${tooltip("Toggle numbered list")}
                     @click=${() =>
                         this.textEditorService.getEditor
                             .chain()
                             .focus()
                             .toggleOrderedList()
-                            .run()}>
+                            .run()}
+                            ?disabled=${!this.textEditorService.isEnabled}
+                            >
                     <md-icon>format_list_numbered</md-icon>
                 </md-outlined-icon-button>
                 <div class="divider"></div>
                 <md-outlined-icon-button
                     ${tooltip("Insert an Image")}
-                    @click=${() => this.dialogService.openImageDialog() }>
+                    @click=${() => this.dialogService.openImageDialog() }
+                    ?disabled=${!this.textEditorService.isEnabled}
+                    >
                     <md-icon>image</md-icon>
                 </md-outlined-icon-button>
             </div>
@@ -243,9 +270,16 @@ export class DIYMateEditor extends MobxLitElement {
         `;
     }
 
+    isDisabledListener(event: MouseEvent){
+        if (!this.textEditorService.isEnabled){
+            this.dialogService.openPendingChoiceSnackbar();
+            event.preventDefault()
+        }
+    }
+
     override render(): TemplateResult {
         return html`
-            <div id="diymate-editor-container">
+            <div id="diymate-editor-container" @click=${this.isDisabledListener}>
                 ${this.renderToolbar()}
                 <div
                     id="diymate-editor"

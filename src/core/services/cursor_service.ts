@@ -98,12 +98,12 @@ export class CursorService extends Service {
                 to: range.to,
             });
         }
-        // Get current head type and attrs
-        if (editor.state.selection.from === editor.state.selection.to){
-            // const nodeSelection = new NodeSelection();
-            const head = editor.state.selection.$head.parent;
-            console.debug(head,head.type.name,head.attrs);
-        }
+        // // Get current head type and attrs
+        // if (editor.state.selection.from === editor.state.selection.to){
+        //     // const nodeSelection = new NodeSelection();
+        //     const head = editor.state.selection.$head.parent;
+        //     console.debug(head,head.type.name,head.attrs);
+        // }
 
     }
 
