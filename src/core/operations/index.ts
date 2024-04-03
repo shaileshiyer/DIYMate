@@ -12,6 +12,7 @@ import { GenerateIntroductionOperation } from "./generate_introduction_operation
 import { GenerateConclusionOperation } from "./generate_conclusion_operation";
 import { ReviewDIYOperation } from "./review_diy_operation";
 import { ReviewDIYSelectionOperation } from "./review_diy_selection_operation";
+import { FreeFormStepOperation } from "./freeform_step_operation";
 
 export {ChoiceOperation,Operation,ReviewOperation};
 export {
@@ -26,4 +27,5 @@ export {
     GenerateConclusionOperation,
     ReviewDIYOperation,
     ReviewDIYSelectionOperation,
+    FreeFormStepOperation
 };

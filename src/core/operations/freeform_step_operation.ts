@@ -30,11 +30,11 @@ import { computed, makeObservable } from "mobx";
 /**
  * Custom prompt from the user.
  */
-export class FreeFormOperation extends ChoiceOperation {
+export class FreeFormStepOperation extends ChoiceOperation {
     
     static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
-            (operationSite === OperationSite.EMPTY_SECTION || operationSite === OperationSite.END_OF_SECTION ) && documentSite !== OperationSite.DIY_STEP
+            (operationSite === OperationSite.EMPTY_SECTION || operationSite === OperationSite.END_OF_SECTION ) && documentSite === OperationSite.DIY_STEP
         );
     }
 
@@ -61,11 +61,11 @@ export class FreeFormOperation extends ChoiceOperation {
     }
 
     static override getButtonLabel(...params: any[]): string | TemplateResult {
-        return 'custom prompt';    
+        return 'custom prompt for step';    
     }
 
     static override getDescription(...params: any[]): string | TemplateResult {
-        return 'Generate Text with your own Prompt';    
+        return 'Generate Text for this step with your own Prompt';    
     }
 
     private getOperatingPosition():SerializedCursor{
@@ -74,12 +74,13 @@ export class FreeFormOperation extends ChoiceOperation {
     }
 
     get instruction(){
-        // return this.instantiatedWithPromptText? this.instanceControls.instruction.value: FreeFormOperation.controls.instruction.value;
+        // return this.instantiatedWithPromptText? this.instanceControls.instruction.value: FreeFormStepOperation.controls.instruction.value;
         return this.instanceControls.instruction.value;
     }
 
     private getParams(operationData:OperationData):FreeformPromptParams{
-        const markdownText = this.textEditorService.getMarkdownText();
+        const currentStepRange = this.cursorService.getCurrentStepRange({from:operationData.cursorStart,to:operationData.cursorEnd});
+        const markdownText = this.textEditorService.getMarkdownFromRange(currentStepRange);
         return{
             text:markdownText,
             instruction:this.instruction,
@@ -132,16 +133,16 @@ export class FreeFormOperation extends ChoiceOperation {
     override instanceControls = {
         instruction: new TextInputControl({
             prefix:'prompt',
-            description:'A custom prompt to generate custom text.',
-            value: FreeFormOperation.controls.instruction.value,
+            description:'A custom prompt to generate custom text for this step.',
+            value: FreeFormStepOperation.controls.instruction.value,
         })
     };
 
     static override controls = {
         instruction: new TextInputControl({
             prefix:'prompt',
-            description:'A custom prompt to generate custom text.',
-            value:'Continue the DIY.',
+            description:'A custom prompt to generate custom text for this step.',
+            value:'Continue this step.',
         })
     };
 }

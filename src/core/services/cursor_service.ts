@@ -178,6 +178,34 @@ export class CursorService extends Service {
         return {from,to};
     }
 
+    getCurrentStepRange(pos:SerializedCursor):SerializedCursor{
+        const stepHeadings = this.textEditorService.getEditor.$nodes('heading',{level:3});
+        let from = pos.from;
+        let to = pos.to;
+        if (stepHeadings){
+            const previousHeadingNodePos = this.previousHeadingSiblings[this.previousHeadingSiblings.length -1];
+            from = previousHeadingNodePos.to+1;
+            const nextHeadingPos = this.nextHeadingSiblings[0];
+            to = nextHeadingPos.from-2;
+            const previousStepHeadings = stepHeadings.filter(np=> np.to < pos.from);
+            const nextStepHeadings = stepHeadings.filter(np=> np.from > pos.to);
+
+            if (previousStepHeadings.length > 0){
+                const previousStepHeadingNodePos = previousStepHeadings[previousStepHeadings.length -1];
+                from = previousStepHeadingNodePos.from;
+            }
+    
+            if (nextStepHeadings.length > 0){
+                const nextStepHeading = nextStepHeadings[0];
+                to = nextStepHeading.from-2;
+            }
+        }
+
+
+        return {from,to};
+    }
+
+
     get isCursorCollapsed() {
         return this.serializedRange.from === this.serializedRange.to;
     }
