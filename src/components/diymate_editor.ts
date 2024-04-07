@@ -50,6 +50,11 @@ export class DIYMateEditor extends MobxLitElement {
                 overflow-y: scroll;
             }
 
+            #diymate-editor .tap-editor img{
+                max-width:600px;
+                width:auto;
+                height:auto;
+            }
             #diymate-editor-container::-webkit-scrollbar {
                 display: none;
             }

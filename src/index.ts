@@ -24,7 +24,8 @@ operationService.registerOperations(
   Operations.GenerateConclusionOperation,
   Operations.ReviewDIYOperation,
   Operations.ReviewDIYSelectionOperation,
-  Operations.FreeFormStepOperation
+  Operations.FreeFormStepOperation,
+  Operations.OutlineOperation,
 )
 
 

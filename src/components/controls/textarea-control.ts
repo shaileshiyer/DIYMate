@@ -44,6 +44,8 @@ export class TextareaControlComponent extends MobxLitElement {
                     <textarea
                         placeholder=${control.placeholder}
                         class="textarea-control"
+                        autocomplete="off"
+                        spellcheck="false"
                         @keydown=${(e: KeyboardEvent) => {
                             if (e.key === "Enter") {
                                 e.preventDefault();

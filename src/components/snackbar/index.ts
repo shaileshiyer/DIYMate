@@ -41,7 +41,7 @@ export class SnackbarComponent extends Snackbar {
 
   @property({type: Boolean, reflect: true}) override open = false;
   @property({type: Boolean}) isWarning = false;
-  @property({type: Number}) override timeoutMs = 5000;
+  @property({type: Number}) override timeoutMs = 10000;
   @property({type: Boolean}) override closeOnEscape = false;
 
   @property({type: Object}) content: TemplateResult = html``;

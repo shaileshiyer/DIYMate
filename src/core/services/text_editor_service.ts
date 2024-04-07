@@ -321,9 +321,7 @@ export class TextEditorService extends Service {
       }
     }
 
-    // Actions
-    insertOutline(generatedOutline: DIYStructureJSON) {
-        // console.debug(generatedOutline);
+    generateOutlineHtmlString(generatedOutline:DIYStructureJSON):string{
         const htmlstring = `
         <h1>${generatedOutline.title}</h1>
         <h2>Introduction</h2>
@@ -396,6 +394,14 @@ export class TextEditorService extends Service {
         <h2>Conclusion</h2>
         <p>${generatedOutline.conclusion.text}</p>`;
 
+        return htmlstring;
+    }
+
+    // Actions
+    insertOutline(generatedOutline: DIYStructureJSON) {
+        // console.debug(generatedOutline);
+        
+        const htmlstring = this.generateOutlineHtmlString(generatedOutline);
         this.editor.commands.setContent(htmlstring);
     }
 
