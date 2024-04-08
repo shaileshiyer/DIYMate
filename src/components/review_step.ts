@@ -137,12 +137,12 @@ export class ReviewStepComponent extends MobxLitElement {
                     operation.restart();
                 },
             },
-            finish: {
-                message: "finish",
+            save: {
+                message: "save",
                 keyCommand: new KeyCommand("Enter"),
                 keyLabel: "Enter",
                 action: () => {
-                    operation.finish();
+                    this.reviewStep.saveReview();
                 },
             },
 
@@ -152,7 +152,7 @@ export class ReviewStepComponent extends MobxLitElement {
             <div class="actions-container">
                 ${this.renderAction(actions.cancel)}
                 ${this.renderAction(actions.refresh)}
-                ${this.renderAction(actions.finish)}
+                ${this.renderAction(actions.save)}
             </div>
         `;
     }

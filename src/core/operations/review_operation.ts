@@ -26,6 +26,13 @@ export abstract class ReviewOperation extends Operation {
         );
         this.setCurrentStep(reviewStep);
 
+        reviewStep.setOnSaveReviewCallback((currentReview)=>{
+            if (this.shouldReset) {
+                this.resetTextEditor();
+            }
+            this.finish(true,currentReview);
+        })
+
         reviewStep.onRestart(()=>{
             this.restart();
         })

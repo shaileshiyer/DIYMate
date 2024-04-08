@@ -30,7 +30,7 @@ export class OutlineOperation extends ChoiceOperation {
         return operationSite === OperationSite.EMPTY_DOCUMENT;
     }
 
-    static override id = OperationType.OUTLINE;
+    static id = OperationType.OUTLINE;
     static operationType = OperationType.OUTLINE;
 
     instantiatedWithParams = false;

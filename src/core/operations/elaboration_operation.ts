@@ -15,7 +15,7 @@ export class ElaborationOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.ELABORATE;
+    static id = OperationType.ELABORATE;
     static operationType = OperationType.ELABORATE;
 
     protected getLoadingMessage(): string | TemplateResult {

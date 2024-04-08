@@ -14,6 +14,7 @@ import { KeyboardService } from "@core/services/keyboard_service";
 import { DocumentStoreService } from "@core/services/document_store_service";
 import { ReviewsService } from "@core/services/reviews_service";
 import { DialogService } from "@core/services/dialog_service";
+import { LoggingService } from "@core/services/logging_service";
 
 export function makeServiceProvider(self:DIYMateCore) {
     const serviceProvider = {
@@ -60,7 +61,10 @@ export function makeServiceProvider(self:DIYMateCore) {
             return self.getService(ReviewsService);
         },
         get dialogService(){
-            return self.getService(DialogService)
+            return self.getService(DialogService);
+        },
+        get loggingService(){
+            return self.getService(LoggingService);
         }
         
     }

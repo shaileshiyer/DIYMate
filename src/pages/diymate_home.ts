@@ -3,16 +3,15 @@ import { MobxLitElement } from "@adobe/lit-mobx";
 import "@material/web/button/filled-button";
 import { customElement, property } from "lit/decorators.js";
 import { diymateCore } from "@core/diymate_core";
-import { LocalStorageService } from "@core/services/local_storage_service";
 import { DocumentStoreService } from "@core/services/document_store_service";
 import "@material/web/progress/circular-progress";
 import "@material/web/icon/icon";
-import "../components/tap-editor";
+import { LoggingService } from "@core/services/logging_service";
 
 @customElement("diymate-home")
 class DIYMateHome extends MobxLitElement {
-    private localStorageService = diymateCore.getService(LocalStorageService);
     private documentStoreService = diymateCore.getService(DocumentStoreService);
+    private loggingService = diymateCore.getService(LoggingService);
 
     static override get styles() {
         const style = css`
@@ -29,6 +28,14 @@ class DIYMateHome extends MobxLitElement {
             .diy-tutorials-list {
                 display: flex;
                 flex-wrap: wrap;
+            }
+
+            .text{
+                font-size:20px;
+            }
+
+            .space-top{
+                margin-top:2em;
             }
 
             .diy-preview {
@@ -69,13 +76,16 @@ class DIYMateHome extends MobxLitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
+        this.loggingService.addLog('PAGE_NAVIGATE',{page:'home'});
         this.documentStoreService.loadUserDocuments();
     }
 
-    renderSavedTutorials() {
+    renderSavedTutorials(toRender:boolean) {
         const { isLoading, userDocuments } = this.documentStoreService;
         let contents = html``;
-
+        if (!toRender){
+            return html`<div class="text space-top"> Thank you for volunteering your time. Consider getting something to eat and drink before starting with the study.</div>`;
+        }
         if (isLoading) {
             contents = html`
                 <md-circular-progress
@@ -127,16 +137,15 @@ class DIYMateHome extends MobxLitElement {
     protected render(): TemplateResult {
         return html`
             <div id="home">
-                <h1>DIY-Tutorial-Mate</h1>
-                <p>
+                <h1>DIY-Tutorial-Mate✂️🐘</h1>
+                <p class="text">
                     An LLM-powered Text editor to help you write a DIY tutorial
                 </p>
-                <md-filled-button href="/new">
-                    Start DIY Tutorial
+                <md-filled-button href="/pretask">
+                    Start Study
                 </md-filled-button>
                 <hr />
-                ${this.renderSavedTutorials()}
-                <!-- <tap-editor></tap-editor> -->
+                ${this.renderSavedTutorials(false)}
             </div>
         `;
     }

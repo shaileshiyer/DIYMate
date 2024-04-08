@@ -39,10 +39,15 @@ export abstract class ChoiceOperation extends Operation {
         this.setCurrentStep(choiceStep);
         // this.textEditorService.getEditor.setOptions({editorProps:{attributes:{class:"tap-editor"}}})
 
+        this.loggingService.updateCounter(`${this.id}_CHOICES_SET`);
+        this.loggingService.addLog(`${this.id}_CHOICES_SET`,{choices});
+
         choiceStep.onPendingChoice((choice, index) => {
             if (this.shouldReset) {
                 this.resetTextEditor();
             }
+            this.loggingService.updateCounter(`${this.id}_PENDING_CHOICE`);
+            this.loggingService.addLog(`${this.id}_PENDING_CHOICE`,{choice});
             this.onPendingChoice(choice, index);
         });
 
@@ -55,6 +60,8 @@ export abstract class ChoiceOperation extends Operation {
         });
 
         choiceStep.onRemoveChoice((choice, index) => {
+            this.loggingService.updateCounter(`${this.id}_REMOVE_CHOICE`);
+            this.loggingService.addLog(`${this.id}_REMOVE_CHOICE`,{choice});
             this.onRemoveChoice(choice, index);
         });
 

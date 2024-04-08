@@ -149,6 +149,11 @@ export class LocalStorageService extends Service {
         return Object.keys(savedDocuments).map((key)=> savedDocuments[key]);
     }
 
+    loadDocument(documentId:string){
+        const savedDocuments = this.getData<SavedDocuments>(SAVED_DOCUMENTS_KEY, {});
+        return savedDocuments[documentId];
+    }
+
 
     setLog(log: string) {
         this.setState(LOG_KEY, log);

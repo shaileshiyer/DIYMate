@@ -15,7 +15,7 @@ export class ContinueOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.CONTINUE;
+    static id = OperationType.CONTINUE;
     static operationType = OperationType.CONTINUE;
 
     protected getLoadingMessage(): string | TemplateResult {

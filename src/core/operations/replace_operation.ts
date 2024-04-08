@@ -32,16 +32,16 @@ export class ReplaceOperation extends ChoiceOperation {
         })
       }
 
-    static override id = OperationType.REPLACE;
+    static id = OperationType.REPLACE;
     static operationType = OperationType.REPLACE;
 
     get nWords() {
-        const index = ReplaceOperation.controls.nWords.value;
+        const index = this.instanceControls.nWords.value;
         return wordinessOptions[index].max;
     }
     
       get nWordsMessage() {
-        return ReplaceOperation.controls.nWords.getStepValue();
+        return this.instanceControls.nWords.getStepValue();
     }
     
 
@@ -64,7 +64,7 @@ export class ReplaceOperation extends ChoiceOperation {
     
         const controlsStep = new ControlsStep(
           this.serviceProvider,
-          ReplaceOperation.controls,
+          this.instanceControls,
           'Replace the text'
         );
         this.setCurrentStep(controlsStep);
@@ -127,5 +127,18 @@ export class ReplaceOperation extends ChoiceOperation {
         steps: ReplaceOperation.nWordsChoices,
       }),
     };
+
+    override instanceControls = {
+        nWords: new StepSliderControl<string>({
+          prefix: 'replace with',
+          suffix: (control) => {
+            const stepControl = control as StepSliderControl<string>;
+            return stepControl.getStepValue();
+          },
+          description: 'How long the suggestions should be.',
+          value: ReplaceOperation.controls.nWords.value,
+          steps: ReplaceOperation.controls.nWords.steps,
+        }),
+      };
 
 }

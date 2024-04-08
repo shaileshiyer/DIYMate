@@ -39,7 +39,7 @@ export class RewriteSelectionOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.REWRITE_SELECTION;
+    static id = OperationType.REWRITE_SELECTION;
     static operationType = OperationType.REWRITE_SELECTION;
 
     instantiatedWithHowToRewrite = false;

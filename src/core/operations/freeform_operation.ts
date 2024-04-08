@@ -38,7 +38,7 @@ export class FreeFormOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.FREEFORM;
+    static id = OperationType.FREEFORM;
     static operationType = OperationType.FREEFORM;
 
     instantiatedWithPromptText = false;

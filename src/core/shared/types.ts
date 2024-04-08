@@ -37,6 +37,7 @@ export const enum OperationType {
   GENERATE_INTRODUCTION = 'GENERATE_INTRODUCTION',
   GENERATE_CONCLUSION = 'GENERATE_CONCLUSION',
   REVIEW_DIY = 'REVIEW_DIY',
+  REVIEW_DIY_SELECTION = 'REVIEW_DIY_SELECTION',
   // Default to NONE
   NONE = 'NONE',
 }
@@ -126,4 +127,44 @@ export interface DIYStructureJSON {
     final_image_alt_text: string,
     text: string,
   }
+}
+
+
+function isDIYStep(obj:Object):obj is DIYStep {
+  return obj.hasOwnProperty('index') && 
+  obj.hasOwnProperty('title') &&
+  obj.hasOwnProperty('image_alt_text') &&
+  obj.hasOwnProperty('materials_in_step') &&
+  obj.hasOwnProperty('tools_in_step') &&
+  obj.hasOwnProperty('instructions');
+}
+
+export function isDIYStructureJSON(obj:object):obj is DIYStructureJSON {
+  if (!obj.hasOwnProperty('title') || 
+  !obj.hasOwnProperty('heroshot_alt_text') ||
+  !obj.hasOwnProperty('introduction') ||
+  !obj.hasOwnProperty('materials') ||
+  !obj.hasOwnProperty('tools') ||
+  !obj.hasOwnProperty('competences') ||
+  !obj.hasOwnProperty('safety_instruction') ||
+  !obj.hasOwnProperty('estimated_time')){
+    return false;
+  }
+  if (obj.hasOwnProperty('steps')){
+    // @ts-ignore
+    const steps:Array<object> = obj['steps']|| [];
+    const areaAllDIYStep = steps.every((val,index,arr)=> isDIYStep(val));
+    if (!areaAllDIYStep){
+      return false;
+    }
+  }
+
+  if (obj.hasOwnProperty('conclusion')){
+    // @ts-ignore
+    const conclusion = obj['conclusion']||{};
+    if (!conclusion.hasOwnProperty('final_image_alt_text') || !conclusion.hasOwnProperty('text')){
+      return false;
+    }
+  }
+  return true;
 }

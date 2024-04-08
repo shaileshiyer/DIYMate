@@ -16,7 +16,7 @@ export class GenerateConclusionOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.GENERATE_CONCLUSION;
+    static id = OperationType.GENERATE_CONCLUSION;
     static operationType = OperationType.GENERATE_CONCLUSION;
 
     protected getLoadingMessage(): string | TemplateResult {

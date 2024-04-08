@@ -5,12 +5,14 @@ import '@material/web/progress/circular-progress'
 import { diymateCore } from "@core/diymate_core";
 import { RouterService } from "@core/services/router_service";
 import { SessionService } from "@core/services/session_service";
+import { LoggingService } from "@core/services/logging_service";
 
 @customElement('loading-page')
 export class LoadingPage extends LitElement{
 
     private routerService = diymateCore.getService(RouterService);
     private sessionService = diymateCore.getService(SessionService);
+    private loggingService = diymateCore.getService(LoggingService);
 
     private messageTimeout:number = -1;
 
@@ -41,6 +43,7 @@ export class LoadingPage extends LitElement{
 
     connectedCallback(): void {
         super.connectedCallback();
+        this.loggingService.addLog('PAGE_NAVIGATE',{page:'loading-page'});
         this.messageTimeout = window.setTimeout(()=>{
             const sessionId = this.sessionService.sessionInfo.session_id;
             this.routerService.getRouter().render(`/editor/${sessionId}`,true);

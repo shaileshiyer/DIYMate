@@ -16,7 +16,7 @@ export class NextSentenceOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.NEXT_SENTENCE;
+    static id = OperationType.NEXT_SENTENCE;
     static operationType = OperationType.NEXT_SENTENCE;
 
     protected getLoadingMessage(): string | TemplateResult {

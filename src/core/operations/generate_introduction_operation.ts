@@ -16,7 +16,7 @@ export class GenerateIntroductionOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.GENERATE_INTRODUCTION;
+    static id = OperationType.GENERATE_INTRODUCTION;
     static operationType = OperationType.GENERATE_INTRODUCTION;
 
     protected getLoadingMessage(): string | TemplateResult {

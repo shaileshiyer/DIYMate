@@ -23,17 +23,21 @@ import "./operations";
 import "./current_operation";
 import "./reviews";
 import {tooltip} from './simple_tooltip';
+import { LoggingService } from "@core/services/logging_service";
+import { DialogService } from "@core/services/dialog_service";
+import { RouterService } from "@core/services/router_service";
 
 @customElement("diymate-editor-sidebar")
 export class DIYMateEditorSidebar extends MobxLitElement {
-    private cursorService = diymateCore.getService(CursorService);
-    private textEditorService = diymateCore.getService(TextEditorService);
-    private sentencesService = diymateCore.getService(SentencesService);
-    private operationsService = diymateCore.getService(OperationsService);
-    private documentStoreService = diymateCore.getService(DocumentStoreService);
-    private initializationService = diymateCore.getService(
-        InitializationService
-    );
+    private readonly cursorService = diymateCore.getService(CursorService);
+    private readonly textEditorService = diymateCore.getService(TextEditorService);
+    private readonly sentencesService = diymateCore.getService(SentencesService);
+    private readonly operationsService = diymateCore.getService(OperationsService);
+    private readonly documentStoreService = diymateCore.getService(DocumentStoreService);
+    private readonly initializationService = diymateCore.getService(InitializationService);
+    private readonly loggingService = diymateCore.getService(LoggingService);
+    private readonly dialogService = diymateCore.getService(DialogService);
+    private readonly routerService = diymateCore.getService(RouterService);
 
     @property({ type: Number })
     activeTab: number = 0;
@@ -259,11 +263,32 @@ export class DIYMateEditorSidebar extends MobxLitElement {
     }
 
     renderMainMenuButton(): TemplateResult {
-        const onClick = () => {
-            this.initializationService.reset();
+        const onClick = async () => {
+            
+            const confirm = await this.dialogService.openConfirmDialog("Do you want to save and go back to main menu?","End Task");
+            if (confirm){
+                console.debug('confirmed',confirm);
+                this.initializationService.reset();
+            }
         };
         return this.renderLinkButton("Main Menu","Back to Main Menu",onClick);
     }
+
+    renderFinishDIYButton(): TemplateResult {
+        const onClick = async () => {
+            
+            const confirm = await this.dialogService.openConfirmDialog("Have you finished writing your DIY tutorial?","End Task");
+            if (confirm){
+                await this.documentStoreService.saveDocument();
+                await this.loggingService.addLog("TASK_END", {
+                    info: "The diy task has ended.",
+                });
+                this.routerService.getRouter().render('/endtask',true);
+            }
+        };
+        return this.renderLinkButton("Finish DIY","End DIY Tutorial",onClick);
+    }
+
 
     renderSaveButton(): TemplateResult {
         if (this.documentStoreService.isSaving) {
@@ -271,6 +296,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
         }
 
         const onClick = () => {
+            this.loggingService.addLog('DOCUMENT_SAVED',{info:'save was clicked'});
             this.documentStoreService.saveDocument();
         };
         return this.renderLinkButton("Save DIY","Saving DIY", onClick);
@@ -308,7 +334,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             
 
             const documentRow = html`
-                ${this.renderMainMenuButton()} ${this.renderSaveButton()}
+                ${this.renderFinishDIYButton()} ${this.renderSaveButton()}
             `;
 
             bottom = html`<div class="sidebar-bottom-links">
@@ -330,18 +356,24 @@ export class DIYMateEditorSidebar extends MobxLitElement {
 
     private renderSidebarContent(): TemplateResult {
         switch (this.activeTab) {
-            case 0:
+            case 0:{
                 return html`${this.renderControls()}`;
-            case 1:
+            }
+            case 1:{
                 return html`<diymate-chat></diymate-chat>`;
-            case 2:
+            }
+            case 2:{
                 return html`<dm-review-tab></dm-review-tab>`
-            case 3:
+            }
+            case 3:{
                 return html`${this.renderDebug()}`;
+            }
         }
 
         return html``;
     }
+
+    private tabNames = ['CONTROLS_TAB','CHAT_TAB','REVIEWS_TAB','DEBUG_TAB'];
 
     protected render(): TemplateResult {
         return html`
@@ -349,12 +381,16 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                 <div id="sidebar">
                     <md-tabs
                         active-tab-index=${this.activeTab}
-                        @change=${(event) =>
-                            this.setActiveIndex(event.target.activeTabIndex)}>
+                        @change=${(event) =>{
+                            const changedToTab = this.tabNames[event.target.activeTabIndex];
+                            this.loggingService.updateCounter(changedToTab);
+                            this.loggingService.addLog('TAB_CHANGED',{tab:changedToTab});
+                            this.setActiveIndex(event.target.activeTabIndex)
+                            }}>
                         <md-secondary-tab> Controls</md-secondary-tab>
                         <md-secondary-tab> Chat </md-secondary-tab>
                         <md-secondary-tab> Reviews </md-secondary-tab>
-                        <md-secondary-tab> Debug </md-secondary-tab>
+                        <!-- <md-secondary-tab> Debug </md-secondary-tab> -->
                     </md-tabs>
                     <div id="sidebar-content">
                         ${this.renderSidebarContent()}

@@ -33,7 +33,7 @@ import { RewriteSelectionPromptParams } from '@core/shared/interfaces';
 export class RewriteChoiceOperation extends ChoiceOperation {
   override isHelperOperation = true;
   choiceToRewrite = '';
-  static override id = OperationType.REWRITE_CHOICE;
+  static id = OperationType.REWRITE_CHOICE;
 
   initialize(choiceToRewrite: string) {
     this.choiceToRewrite = choiceToRewrite;

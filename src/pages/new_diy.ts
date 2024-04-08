@@ -1,7 +1,7 @@
 import { MobxLitElement } from "@adobe/lit-mobx";
 import { LitElement, PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import { DIYStructureJSON, HTMLElementEvent } from "../core/shared/types.ts";
+import { DIYStructureJSON, HTMLElementEvent, isDIYStructureJSON } from "../core/shared/types.ts";
 
 import "@material/web/textfield/filled-text-field";
 import "@material/web/button/text-button";
@@ -21,6 +21,7 @@ import { defaultOutlineDescription } from "@models/openai/prompts/outline";
 import "../components/outline_editor.ts";
 import { TextEditorService } from "@core/services/text_editor_service.ts";
 import { InitializationService } from "@core/services/initialization_service.ts";
+import { LoggingService } from "@core/services/logging_service.ts";
 
 @customElement("diymate-new-diy")
 export class NewDIYPage extends MobxLitElement {
@@ -91,6 +92,7 @@ export class NewDIYPage extends MobxLitElement {
     private initializationService = diymateCore.getService(
         InitializationService
     );
+    private readonly loggingService = diymateCore.getService(LoggingService);
 
     constructor() {
         super();
@@ -99,6 +101,7 @@ export class NewDIYPage extends MobxLitElement {
 
     override connectedCallback(): void {
         super.connectedCallback();
+        this.loggingService.addLog('PAGE_NAVIGATE',{page:'diy-outline-page'});
         const currentDIY = this.localStorageService.getCurrentDIY();
         if (currentDIY !== null) {
             this.description = currentDIY.description;
@@ -106,9 +109,11 @@ export class NewDIYPage extends MobxLitElement {
         }
     }
 
-    resetValues() {
+    async resetValues() {
         this.description = "";
         this.outlinePrompt = defaultOutlineDescription;
+        await this.loggingService.updateCounter('OUTLINE_FORM_RESET');
+        await this.loggingService.addLog('OUTLINE_FORM_RESET',{info:'new diy form was reset to default values.'});
     }
 
     private _generateOutlineTask = new Task(this, {
@@ -118,18 +123,27 @@ export class NewDIYPage extends MobxLitElement {
                 await this.sessionService.startSession(signal);
             }
             // return sessionInfo
-            const response = await this.modelService.getModel().outline({
+            const data = {
                 description: this.description,
                 outlineDescription: this.outlinePrompt,
-            });
-            return response;
+            };
+            await this.loggingService.addLog('DIY_OUTLINE_OPERATION_STARTED',data);
+            const response = await this.modelService.getModel().outline(data);
+
+            const outlineJSON = JSON.parse(response[0].content);
+            if (!isDIYStructureJSON(outlineJSON)){
+                console.debug(outlineJSON);
+                throw Error('Parse Error: Outline does not conform to schema');
+            }
+            return outlineJSON;
         },
         onError: (err) => {
             this.isLoading = false;
         },
-        onComplete: (val) => {
-            this.generatedOutline = JSON.parse(val[0].content);
-            
+        onComplete: async (val) => {
+            this.generatedOutline = val;
+            await this.loggingService.updateCounter('DIY_OUTLINE_GENERATED');
+            await this.loggingService.addLog('DIY_OUTLINE_GENERATED',this.generatedOutline)
             this.isLoading = false;
             this.showOutline = true;
         },
@@ -143,6 +157,7 @@ export class NewDIYPage extends MobxLitElement {
             outlinePrompt: this.outlinePrompt,
         };
         this.localStorageService.setCurrentDIY(currentDIY);
+
         this._generateOutlineTask.run();
     }
 
@@ -212,24 +227,38 @@ export class NewDIYPage extends MobxLitElement {
         });
     }
 
-    private saveNewDIYInfo() {
+    private async saveNewDIYInfo() {
         const currentDIY: CurrentDIY = {
             description: this.description,
             outlinePrompt: this.outlinePrompt,
             generatedOutline: this.textEditorService.getEditor.getHTML(),
         };
+        await this.loggingService.updateCounter('CONFIRM_OUTLINE');
+        await this.loggingService.addLog('CONFIRM_OUTLINE',currentDIY);
         this.localStorageService.setCurrentDIY(currentDIY);
     }
 
     protected renderActionButtons(): TemplateResult {
+
+        const onClickGenerate = async ()=>{
+            await this.loggingService.updateCounter('GENERATE_OUTLINE');
+            this.generateOutline();
+        }
+
+        const onClickRegenerate = async ()=>{
+            await this.loggingService.updateCounter('REGENERATE_OUTLINE');
+            this.generateOutline();
+        }
+
+
         return !this.showOutline
             ? html`<md-filled-button
-                  @click=${this.generateOutline}
+                  @click=${onClickGenerate}
                   ?disabled=${this.isLoading}>
                   Generate Outline
               </md-filled-button>`
             : html`<md-filled-tonal-button
-                      @click=${this.generateOutline}
+                      @click=${onClickRegenerate}
                       ?disabled=${this.isLoading}>
                       Regenerate Outline
                   </md-filled-tonal-button>
@@ -246,7 +275,8 @@ export class NewDIYPage extends MobxLitElement {
     }
 
     protected renderBackButton(): TemplateResult {
-        const onBackClick = () => {
+        const onBackClick = async () => {
+            await this.loggingService.addLog('SESSION_ABANDONED',{info:'session was abandoned.'});
             this.initializationService.reset(false);
         };
 
@@ -298,3 +328,5 @@ declare global {
         "diymate-new-diy": NewDIYPage;
     }
 }
+
+

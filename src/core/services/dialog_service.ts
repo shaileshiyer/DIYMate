@@ -1,4 +1,4 @@
-import { makeObservable, observable } from "mobx";
+import { makeObservable, observable, runInAction } from "mobx";
 import { KeyboardService, KeyboardServiceHelper } from "./keyboard_service";
 import { LocalStorageService } from "./local_storage_service";
 import { Service } from "./service";
@@ -8,11 +8,13 @@ import { SnackbarComponent } from "@components/snackbar";
 
 import { TemplateResult, html } from "lit";
 import { WelcomeDialog } from "@components/welcome_dialog";
+import { LoggingService } from "./logging_service";
 
 interface ServiceProvider {
     keyboardService: KeyboardService;
     localStorageService: LocalStorageService;
     textEditorService: TextEditorService;
+    loggingService:LoggingService;
 }
 
 export class DialogService extends Service {
@@ -42,6 +44,10 @@ export class DialogService extends Service {
         return this.serviceProvider.textEditorService;
     }
 
+    get loggingService(){
+        return this.serviceProvider.loggingService;
+    }
+
     initialize() {
         const {keyboardService} = this.serviceProvider;
         this.keyboardServiceHelper = keyboardService.makeHelper('dialogs');
@@ -65,6 +71,7 @@ export class DialogService extends Service {
     closeImageDialog() {
         const dialog = this.dialogs.get("image-dialog");
         if (dialog) {
+            this.loggingService.addLog('IMAGE_DIALOG_CLOSED',{info:'image dialog closed'});
             dialog.close();
         }
     }
@@ -72,6 +79,7 @@ export class DialogService extends Service {
     openImageDialog() {
         const dialog = this.dialogs.get("image-dialog");
         if (dialog instanceof Dialog) {
+            this.loggingService.addLog('IMAGE_DIALOG_SHOWN',{info:'image dialog shown'});
             this.openDialog(dialog);
         }
     }
@@ -92,9 +100,12 @@ export class DialogService extends Service {
 
     async openConfirmDialog(
         messageBody: string | TemplateResult,
-        messageHeader = ""
+        messageHeader: string,
     ): Promise<boolean> {
-        this.messageBody = messageBody;
+        runInAction(()=>{
+            this.messageHeader = messageHeader
+            this.messageBody = messageBody;
+        })
         const dialog = this.dialogs.get("confirm");
         if (dialog instanceof Dialog) {
             this.openDialog(dialog);
@@ -130,11 +141,12 @@ export class DialogService extends Service {
             welcomeComponent.hasbeenWelcomed = hasBeenWelcomed;
             
             dialog.addEventListener('closed', () => {
+                this.loggingService.addLog('WELCOME_DIALOG_CLOSED',{info:'welcome dialog was closed.showing do not trust bot snackbar.'});
                 this.localStorageService.setHasBeenWelcomed();
                 this.openDoNotTrustTheBotSnackbar();
                 this.textEditorService.getEditor.commands.focus();
               });
-
+            this.loggingService.addLog('WELCOME_DIALOG_SHOWN',{info:'welcome dialog shown'});
             this.openDialog(dialog)
         }
     }
@@ -150,6 +162,7 @@ export class DialogService extends Service {
     }
 
     getPendingSuggestionsMessage() {
+        this.loggingService.addLog('PENDING_EDITS_MESSAGE',{info:'pending edits message is shown.'});
         return html`
             You can't edit your DIY with pending operation<br />
             Please either finish the operation from the sidebar, or hit cancel.

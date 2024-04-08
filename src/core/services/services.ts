@@ -13,6 +13,7 @@ import { InitializationService } from "./initialization_service";
 import { DocumentStoreService } from "./document_store_service";
 import { ReviewsService } from "./reviews_service";
 import { DialogService } from "./dialog_service";
+import { LoggingService } from "./logging_service";
 
 export {
     RouterService,
@@ -30,4 +31,5 @@ export {
     DocumentStoreService,
     ReviewsService,
     DialogService,
+    LoggingService,
 };

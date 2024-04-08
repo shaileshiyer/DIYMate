@@ -18,6 +18,7 @@ import { CancelOperationError, CancelStepError } from "@lib/errors";
 import { KeyboardService } from "@core/services/keyboard_service";
 import { ReviewsService } from "@core/services/reviews_service";
 import { DialogModel } from "@models/dialog_model";
+import { LoggingService } from "@core/services/logging_service";
 
 export interface ServiceProvider {
     routerService: RouterService;
@@ -28,6 +29,7 @@ export interface ServiceProvider {
     keyboardService: KeyboardService;
     modelService: ModelService;
     reviewsService:ReviewsService;
+    loggingService:LoggingService;
 }
 
 export abstract class Operation {
@@ -70,6 +72,10 @@ export abstract class Operation {
 
     protected get reviewService() {
         return this.serviceProvider.reviewsService;
+    }
+    
+    protected get loggingService() {
+        return this.serviceProvider.loggingService;
     }
 
     private operationData!: OperationData;
@@ -176,6 +182,11 @@ export abstract class Operation {
     async restart(shouldResetTextEditor = true): Promise<void> {
         try {
             await this.onRestart();
+            await this.loggingService.updateCounter(`${this.id}_RESTARTED`);
+            const controls:{[key:string]:any} = {};
+            const controlKeys = Object.keys(this.instanceControls);
+            controlKeys.map((key)=> controls[key]=this.instanceControls[key].value);
+            await this.loggingService.addLog(`${this.id}_RESTARTED`,{info:'operation was restarted',controls});
             if (shouldResetTextEditor) {
                 this.resetTextEditor();
             }
@@ -189,6 +200,8 @@ export abstract class Operation {
     async cancel(shouldResetTextEditor = true): Promise<void> {
         this.currentStep.cancelPromise();
         await this.onCancel();
+        await this.loggingService.updateCounter(`${this.id}_CANCELLED`);
+        await this.loggingService.addLog(`${this.id}_CANCELLED`,{info:'operation was cancelled'});
         if (shouldResetTextEditor) {
             this.resetTextEditor();
         }
@@ -218,6 +231,8 @@ export abstract class Operation {
         if (!this.currentStep.isFinished) {
             this.currentStep.finish();
         }
+        await this.loggingService.updateCounter(`${this.id}_FINISHED`);
+        await this.loggingService.addLog(`${this.id}_FINISHED`,{info:'operation was completed',wasSuccess,result:result||{}});
         this.resolve(result);
     }
 
@@ -240,7 +255,7 @@ export abstract class Operation {
         });
     }
 
-    static id: OperationType = OperationType.NONE;
+    id: OperationType = OperationType.NONE;
     static controls: OperationControls = {};
     static globalControls = {};
 

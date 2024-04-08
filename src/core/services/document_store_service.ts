@@ -10,6 +10,7 @@ import { Reviews, ReviewsService } from "./reviews_service";
 import { DialogMessage } from "@models/dialog_model";
 import { ChatService } from "./chat_service";
 import { OperationsService } from "./operations_service";
+import { LoggingService } from "./logging_service";
 
 export interface SavedDocument {
     id:string;
@@ -30,6 +31,7 @@ interface ServiceProvider {
     reviewsService: ReviewsService;
     chatService:ChatService;
     operationsService:OperationsService;
+    loggingService:LoggingService;
 }
 
 /**
@@ -80,6 +82,10 @@ export class DocumentStoreService extends Service {
 
     get chatService(){
         return this.serviceProvider.chatService;
+    }
+
+    get loggingService(){
+        return this.serviceProvider.loggingService;
     }
 
 
@@ -208,6 +214,7 @@ export class DocumentStoreService extends Service {
         const documentId = this.localStorageService.saveDocument(documentData,documentData.sessionInfo.session_id);
         this.documentId = documentId;
         this.localStorageService.setDocumentId(documentId);
+        this.loggingService.updateCounter('DOCUMENT_SAVED');
         runInAction(()=>{
             this.isSaving = false;
         })
@@ -218,6 +225,7 @@ export class DocumentStoreService extends Service {
             const text = this.textEditorService.getPlainText();
             const isInOperation = this.operationsService.isInOperation;
             if (text !== this.lastSavedText && !isInOperation){
+                this.loggingService.addLog('DOCUMENT_SAVED',{info:'document was autosaved'});
                 this.saveDocument();
             }
         },10000);

@@ -1,4 +1,4 @@
-import { OperationSite } from "@core/shared/types";
+import { OperationSite, OperationType } from "@core/shared/types";
 import { ReviewOperation } from ".";
 import { TemplateResult, html } from "lit";
 import { OperationData, ReviewDIYPromptParams, ReviewDIYSelectionPromptParams } from "@core/shared/interfaces";
@@ -8,6 +8,9 @@ export class ReviewDIYSelectionOperation extends ReviewOperation {
     static override isAvailable(operationSite: OperationSite, documentSite?: OperationSite | undefined): boolean {
         return operationSite === OperationSite.SELECTION;
     }
+
+    static id = OperationType.REVIEW_DIY_SELECTION;
+    static operationType = OperationType.REVIEW_DIY_SELECTION;
 
     protected getLoadingMessage(): string | TemplateResult {
         return 'Reviewing Selection...'

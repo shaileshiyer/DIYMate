@@ -5,6 +5,7 @@ import "../components/diymate_editor";
 import "../components/sidebar";
 import { diymateCore } from "@core/diymate_core";
 import { DialogService } from "@core/services/dialog_service";
+import { LoggingService } from "@core/services/logging_service";
 
 @customElement("editor-page")
 export class EditorPage extends MobxLitElement {
@@ -33,6 +34,7 @@ export class EditorPage extends MobxLitElement {
     }
 
     private readonly dialogService = diymateCore.getService(DialogService);
+    private readonly loggingService = diymateCore.getService(LoggingService);
 
     protected firstUpdated(
         _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
@@ -42,6 +44,7 @@ export class EditorPage extends MobxLitElement {
     }
     connectedCallback(): void {
         super.connectedCallback();
+        this.loggingService.addLog('PAGE_NAVIGATE',{page:'diy-editor-page'});
     }
 
     disconnectedCallback(): void {

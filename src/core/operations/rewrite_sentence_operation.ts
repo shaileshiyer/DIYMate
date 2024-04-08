@@ -39,7 +39,7 @@ export class RewriteSentenceOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.REWRITE_SENTENCE;
+    static id = OperationType.REWRITE_SENTENCE;
     static operationType = OperationType.REWRITE_SENTENCE;
 
     instantiatedWithHowToRewrite = false;

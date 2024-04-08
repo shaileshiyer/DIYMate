@@ -52,7 +52,7 @@ export class FreeFormStepOperation extends ChoiceOperation {
         );
     }
 
-    static override id = OperationType.FREEFORM_STEP;
+    static id = OperationType.FREEFORM_STEP;
     static operationType = OperationType.FREEFORM_STEP;
 
     instantiatedWithPromptText = false;

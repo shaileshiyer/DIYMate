@@ -5,6 +5,7 @@ import { TextEditorService } from "./text_editor_service";
 import { DialogMessage, DialogParams } from "@models/dialog_model";
 import { LocalStorageService } from "./local_storage_service";
 import { DocumentStoreService } from "./document_store_service";
+import { LoggingService } from "./logging_service";
 
 
 interface ServiceProvider{
@@ -12,6 +13,7 @@ interface ServiceProvider{
     textEditorService: TextEditorService;
     localStorageService: LocalStorageService;
     documentStoreService: DocumentStoreService;
+    loggingService:LoggingService;
 }
 
 export class ChatService extends Service {
@@ -54,6 +56,10 @@ export class ChatService extends Service {
         return this.serviceProvider.documentStoreService;
     }
 
+    get loggingService(){
+        return this.serviceProvider.loggingService;
+    }
+
 
     private getInitialMessage():DialogMessage{
         return {role:'assistant',content:"Hello, I am DIYMate, your tutorial writing assistant. What would you like me to help with?"};
@@ -80,6 +86,8 @@ export class ChatService extends Service {
         try {
             this.isLoading = true;
             const response:DialogMessage[] = yield this.modelService.getDialogModel().query({messages:[dialogMessage]});
+            yield this.loggingService.updateCounter('CHAT_CURRENT_DIY_SENT');
+            yield this.loggingService.addLog('CHAT_CURRENT_DIY_SENT',{message});
             this.isLoading = false;
             this.documentStoreService.saveDocument();
         } catch (error) {
@@ -105,9 +113,12 @@ export class ChatService extends Service {
             }
             const response:DialogMessage[] = yield this.modelService.getDialogModel().query(dialogParams);
             this.messages.push(...response);
+            yield this.loggingService.updateCounter('CHAT_MESSAGE_SENT');
+            yield this.loggingService.addLog('CHAT_MESSAGE_SENT',{message:this.currentMessage,modelResponse:response[0].content||response});
             this.currentMessage = '';
             this.isLoading = false;
             this.documentStoreService.saveDocument();
+
         } catch(error){
             console.error(error);
             this.isLoading = false;

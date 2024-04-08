@@ -16,6 +16,7 @@ import {
     ModelResult,
     OperationSite,
     OperationTrigger,
+    OperationType,
 } from "@core/shared/types";
 import { OperationClass, OperationData } from "@core/shared/interfaces";
 import { Operation } from "@core/operations/operation";
@@ -30,12 +31,14 @@ import { CancelOperationError } from "@lib/errors";
 import { RewriteChoiceOperation } from "@core/operations/rewrite_choice_operation";
 import { ReviewOperation } from "@core/operations";
 import { ReviewStep } from "@core/operations/steps";
+import { LoggingService } from "./logging_service";
 
 export interface ServiceProvider {
     cursorService: CursorService;
     sentencesService: SentencesService;
     textEditorService: TextEditorService;
     sessionService: SessionService;
+    loggingService: LoggingService;
 }
 
 type OperationFactory = () => Operation;
@@ -92,6 +95,10 @@ export class OperationsService extends Service {
 
     private get sessionService() {
         return this.serviceProvider.sessionService;
+    }
+
+    private get loggingService(){
+        return this.serviceProvider.loggingService;
     }
 
     getOperationsSite(): OperationSite {
@@ -255,7 +262,16 @@ export class OperationsService extends Service {
         operationClass: OperationClass,
         trigger: OperationTrigger
     ): OperationFactory {
-        return () => new operationClass(this.serviceProvider, trigger);
+        // Log Operation started
+        this.loggingService.updateCounter(`${operationClass.id}_TRIGGERED`);
+
+        const controls:{[key:string]:any} = {};
+        const controlKeys = Object.keys(operationClass.controls);
+        controlKeys.map((key)=> controls[key]=operationClass.controls[key].value);
+        this.loggingService.addLog(`${operationClass.id}_TRIGGERED`,{trigger,operationSite:this.getOperationsSite(),documentSite:this.getLocationInDocumentStructure(),controls});
+        const operation = new operationClass(this.serviceProvider, trigger);
+        operation.id = operationClass.id as OperationType ; 
+        return () => operation;
     }
 
     buildOperation<T extends Operation>(
@@ -278,7 +294,12 @@ export class OperationsService extends Service {
         trigger = OperationTrigger.APP
     ) {
         const factory: OperationFactory = () => {
-            return new operationClass(this.serviceProvider, trigger, params);
+            const operation =  new operationClass(this.serviceProvider, trigger, params);
+            this.loggingService.updateCounter(`${operationClass.id}_STARTED_WITH_PARAMS`);
+            this.loggingService.addLog(`${operationClass.id}_STARTED_WITH_PARAMS`,{trigger,operationSite:this.getOperationsSite(),documentSite:this.getLocationInDocumentStructure(),params});
+    
+            operation.id = operationClass.id as OperationType;
+            return operation; 
         };
         return this.startOperation(factory);
     }
@@ -293,7 +314,8 @@ export class OperationsService extends Service {
                   trigger
               )
             : (factoryOrClass as OperationFactory);
-
+        
+        
         // Ensure that we get initial state before the text editor is disabled,
         // because we need to make sure the cursor position is captured.
         const initialState = this.textEditorService.getStateSnapshot();
@@ -312,6 +334,7 @@ export class OperationsService extends Service {
         }
 
         const operation = factory();
+
 
         const cursorOffset = this.cursorService.getOffsetRange();
         const operationData: OperationData = {
@@ -358,9 +381,12 @@ export class OperationsService extends Service {
         try {
             currentOperation.setInitialState(initialState);
             const operationPromise = currentOperation.start();
-            
+            yield this.loggingService.updateCounter(`${currentOperation.id}_STARTED`)
+            yield this.loggingService.addLog(`${currentOperation.id}_STARTED`,{operationData});
             result = yield operationPromise;
         } catch (err: any) {
+            yield this.loggingService.updateCounter(`${currentOperation.id}_ERRORED`)
+            yield this.loggingService.addLog(`${currentOperation.id}_ERRORED`,{ err});
             // Reset all pending state in the TextEditor
             currentOperation.resetTextEditor();
             currentOperation.finish();

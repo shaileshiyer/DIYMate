@@ -7,6 +7,8 @@ interface ServiceProvider {
     reviewsService:ReviewsService;
 }
 
+type ReviewCallback = (review:DialogMessage|null)=> void;
+
 export class ReviewStep extends Step {
     
     review:DialogMessage|null = null;
@@ -17,7 +19,7 @@ export class ReviewStep extends Step {
     ){
         super();
         makeObservable(this,{
-            review:observable,
+            review:observable.ref,
         })
         this.review = review;
     }
@@ -28,7 +30,7 @@ export class ReviewStep extends Step {
     }
 
     override setup(){
-        this.setReview();
+
     }
 
     override cleanup(){
@@ -40,9 +42,15 @@ export class ReviewStep extends Step {
 
     private exitReview = ()=>{ }
 
-    setReview(){
+    private onSaveReviewCallback:ReviewCallback= ()=>{ };
+    setOnSaveReviewCallback(callback:ReviewCallback){
+        this.onSaveReviewCallback = callback;
+    }
+    
+    saveReview(){
         if (this.review){
             this.reviewsService.addReview(this.review);
         }
+        this.onSaveReviewCallback(this.review);
     }
 }
