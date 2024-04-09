@@ -99,6 +99,7 @@ export class LoggingService extends Service {
         if (navigator.storage && navigator.storage.persist) {
             const storageEstimate = await navigator.storage.estimate();
             const isPersisted = await navigator.storage.persist();
+            // @ts-ignore
             const storageUsed = storageEstimate.usage/storageEstimate.quota*100;
             console.debug(`Persisted storage: ${isPersisted}\nStorage Use estimated: ${storageUsed}%`);
         }

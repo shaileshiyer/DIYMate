@@ -1,6 +1,6 @@
 import { ModelMessage, ModelResults } from 'types';
 import { Model } from '../model';
-import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, MetaPromptPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
 import {
     createModelResults,
@@ -21,6 +21,7 @@ import { makePromptHandler as rewriteSelection } from './prompts/rewrite_selecti
 import { makePromptHandler as rewriteSentence } from './prompts/rewrite_sentence';
 import { makePromptHandler as generateIntroduction } from './prompts/generate_introduction';
 import { makePromptHandler as generateConclusion } from './prompts/generate_conclusion';
+import { makePromptHandler as metaPrompt } from './prompts/meta_prompt';
 
 
 const D0 = '{';
@@ -146,5 +147,7 @@ export class OpenAIModel extends Model {
     override generateIntroduction:(params:GenerateIntroductionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(generateIntroduction);
     
     override generateConclusion:(params:GenerateConclusionPromptParams)=> Promise<ModelResults> = this.makePromptHandler(generateConclusion);
+    
+    override metaPrompt:(params:MetaPromptPromptParams)=> Promise<ModelResults> = this.makePromptHandler(metaPrompt);
 
 }

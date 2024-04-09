@@ -17,25 +17,29 @@ import { TextInputControl } from "./operation_controls";
 import { ServiceProvider } from "./operation";
 import { ControlsStep } from "./steps";
 import { computed, makeObservable } from "mobx";
+import { MetaPromptOperation } from "./meta_prompt_operation";
 
-// class FreeformMetaPromptOperation extends MetaPromptOperation {
-//     async onSelectChoice(choice: ModelResult) {
-//       // When the user selects a prompt, we're going to trigger a new freeform
-//       // prompt operation using the selected prompt. We'll do this by running
-//       // a new operation on the resolution of this operation's promise.
-//       this.onFinish(() => {
-//         this.operationsService.startOperation(
-//           () =>
-//             new FreeformOperation(
-//               this.serviceProvider,
-//               OperationTrigger.OPERATION,
-//               choice.text
-//             ),
-//           OperationTrigger.OPERATION
-//         );
-//       });
-//     }
-//   }
+class FreeFormStepMetaPromptOperation extends MetaPromptOperation {
+    async onSelectChoice(choice: ModelResult) {
+      // When the user selects a prompt, we're going to trigger a new freeform
+      // prompt operation using the selected prompt. We'll do this by running
+      // a new operation on the resolution of this operation's promise.
+      this.onFinish(() => {
+        this.operationsService.startOperation(
+          () =>{
+            const operation = new FreeFormStepOperation(
+              this.serviceProvider,
+              OperationTrigger.OPERATION,
+              choice.content
+            );
+            operation.id = FreeFormStepOperation.id;
+            return operation;
+        },
+          OperationTrigger.OPERATION
+        );
+      });
+    }
+  }
 
 /**
  * Custom prompt from the user.
@@ -171,7 +175,8 @@ export class FreeFormStepOperation extends ChoiceOperation {
             prefix: "prompt",
             description:
                 "A custom prompt to generate custom text for this step.",
-            value: "Continue this step.",
+            value: "Create next Step",
+            helperOperation: FreeFormStepMetaPromptOperation,
         }),
     };
 }

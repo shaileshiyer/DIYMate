@@ -34,6 +34,7 @@ export class RewriteChoiceOperation extends ChoiceOperation {
   override isHelperOperation = true;
   choiceToRewrite = '';
   static id = OperationType.REWRITE_CHOICE;
+  static operationType = OperationType.REWRITE_CHOICE;
 
   initialize(choiceToRewrite: string) {
     this.choiceToRewrite = choiceToRewrite;

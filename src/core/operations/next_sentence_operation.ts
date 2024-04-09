@@ -13,6 +13,10 @@ export class NextSentenceOperation extends ChoiceOperation {
         return (
             operationSite === OperationSite.END_OF_SECTION ||
             operationSite === OperationSite.BETWEEN_SENTENCES
+        ) && (
+            documentSite !== OperationSite.DIY_TITLE &&
+            documentSite !== OperationSite.DIY_SECTION_TITLE &&
+            documentSite !== OperationSite.DIY_STEP_TITLE
         );
     }
 

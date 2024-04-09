@@ -421,6 +421,7 @@ export class OperationsService extends Service {
                     serviceProvider,
                     OperationTrigger.OPERATION
                 );
+                rewriteChoiceOperation.id = RewriteChoiceOperation.id;
                 rewriteChoiceOperation.initialize(choiceToRewrite.content);
                 rewriteChoiceOperation.onPendingChoice = (
                     choice: ModelResult

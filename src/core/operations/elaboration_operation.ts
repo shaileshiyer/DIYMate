@@ -12,6 +12,10 @@ export class ElaborationOperation extends ChoiceOperation {
     static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
             operationSite === OperationSite.SELECTION
+        ) && (
+            documentSite !== OperationSite.DIY_TITLE &&
+            documentSite !== OperationSite.DIY_SECTION_TITLE &&
+            documentSite !== OperationSite.DIY_STEP_TITLE
         );
     }
 
