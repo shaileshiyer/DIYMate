@@ -31,5 +31,8 @@ export default defineConfig({
       '@operations':resolveDir('./src/core/operations'),
       '@context':resolveDir('./src/context')
     }
+  },
+  build:{
+    assetsDir:"static"
   }
 })

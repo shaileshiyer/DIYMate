@@ -6,7 +6,7 @@ import os
 import gc
 from time import sleep,time
 from argparse import ArgumentParser
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
 from openai import NotFoundError, OpenAI
@@ -36,7 +36,7 @@ SESSIONS = dict()
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-app = Flask(__name__)
+app = Flask(__name__,static_folder='../dist/static',template_folder='../dist',static_url_path="/static")
 CORS(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -312,7 +312,11 @@ def download_file(dirname,name):
     dir_path = os.path.join(rootdir,app.config["UPLOAD_FOLDER"],dirname)
     print(dir_path,name)
     return send_from_directory(dir_path, name)
-                
+
+@app.route('/')
+@cross_origin(origin="*")
+def diymate_app():
+    return render_template("index.html")    
 
 if __name__ == "__main__":
     app.logger.debug("Server is started")

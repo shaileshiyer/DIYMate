@@ -145,7 +145,7 @@ class DIYMateHome extends MobxLitElement {
                     Start Study
                 </md-filled-button>
                 <hr />
-                ${this.renderSavedTutorials(true)}
+                ${this.renderSavedTutorials(false)}
             </div>
         `;
     }
