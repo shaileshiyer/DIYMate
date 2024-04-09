@@ -33,7 +33,6 @@ const CURRENT_DIY_KEY = STATE_PREFIX + '@current-diy';
 const EDITOR_STATE_KEY = STATE_PREFIX + '@editor-state';
 const DOCUMENT_ID_KEY = STATE_PREFIX + '@document-id';
 const SAVED_DOCUMENTS_KEY = STATE_PREFIX + '@saved-documents';
-const LOG_KEY = STATE_PREFIX + '@log';
 const REVIEWS_KEY = STATE_PREFIX + '@reviews';
 
 
@@ -75,7 +74,6 @@ export class LocalStorageService extends Service {
             EDITOR_STATE_KEY,
             DOCUMENT_ID_KEY,
             // SAVED_DOCUMENTS_KEY,
-            LOG_KEY,
         ]
         for (const key of keysToRemove){
             window.localStorage.removeItem(key);
@@ -155,9 +153,6 @@ export class LocalStorageService extends Service {
     }
 
 
-    setLog(log: string) {
-        this.setState(LOG_KEY, log);
-    }
 
 
     getState(): LocalStorageState {
