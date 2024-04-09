@@ -96,17 +96,18 @@ export class LoggingService extends Service {
     async databaseInit(){
 
         // Request persistent storage for site
-        if (navigator.storage && navigator.storage.persist) {
-            const storageEstimate = await navigator.storage.estimate();
-            const isPersisted = await navigator.storage.persist();
-            // @ts-ignore
-            const storageUsed = storageEstimate.usage/storageEstimate.quota*100;
-            console.debug(`Persisted storage: ${isPersisted}\nStorage Use estimated: ${storageUsed}%`);
-        }
+        // if (navigator.storage && navigator.storage.persist) {
+        //     const storageEstimate = await navigator.storage.estimate();
+        //     const isPersisted = await navigator.storage.persist();
+        //     // @ts-ignore
+        //     const storageUsed = storageEstimate.usage/storageEstimate.quota*100;
+        //     console.debug(`Persisted storage: ${isPersisted}\nStorage Use estimated: ${storageUsed}%`);
+        // }
         
 
         const dbPromise = await openDB<DIYMateDB>(DATABASE_NAME,CURRENT_VERSION,{
             upgrade(database, oldVersion, newVersion, transaction, event) {
+                console.debug(database,oldVersion,newVersion,transaction,event);
                 switch(oldVersion){
                     case 0:{
                         console.debug(database.objectStoreNames);

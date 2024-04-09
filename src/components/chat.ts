@@ -150,8 +150,8 @@ export class Chat extends MobxLitElement {
                 width: 10px;
                 height: 10px;
                 border-radius: 5px;
-                background-color: var(--blue);
-                color: var(--blue);
+                background-color: var(--md-sys-color-primary);
+                color: var(--md-sys-color-primary);
                 animation: dotFlashing 1s infinite linear alternate;
                 animation-delay: 0.5s;
             }
@@ -169,8 +169,8 @@ export class Chat extends MobxLitElement {
                 width: 10px;
                 height: 10px;
                 border-radius: 5px;
-                background-color: var(--blue);
-                color: var(--blue);
+                background-color: var(--md-sys-color-primary);
+                color: var(--md-sys-color-primary);
                 animation: dotFlashing 1s infinite alternate;
                 animation-delay: 0s;
             }
@@ -180,8 +180,8 @@ export class Chat extends MobxLitElement {
                 width: 10px;
                 height: 10px;
                 border-radius: 5px;
-                background-color: var(--blue);
-                color: var(--blue);
+                background-color: var(--md-sys-color-primary);
+                color: var(--md-sys-color-primary);
                 animation: dotFlashing 1s infinite alternate;
                 animation-delay: 1s;
             }

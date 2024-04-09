@@ -84,7 +84,7 @@ class DIYMateHome extends MobxLitElement {
         const { isLoading, userDocuments } = this.documentStoreService;
         let contents = html``;
         if (!toRender){
-            return html`<div class="text space-top"> Thank you for volunteering your time. Consider getting something to eat and drink before starting with the study.</div>`;
+            return html`<div class="text space-top"> Thank you for volunteering your time. Consider getting something to eat and drink🫖 before starting with the study.</div>`;
         }
         if (isLoading) {
             contents = html`
