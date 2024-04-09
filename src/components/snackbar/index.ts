@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @license
  *
@@ -28,6 +29,7 @@ import {style} from './snackbar_styles';
  * or html template results in as the content.
  */
 @customElement('diymate-snackbar')
+
 export class SnackbarComponent extends Snackbar {
   static override get styles(){
     return [

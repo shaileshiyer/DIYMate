@@ -1,8 +1,9 @@
 import { Choices } from "@lib/choices";
-import { OperationsService } from "@core/services/operation_service";
+
 import { ModelResult, StepLifecycle } from "@core/shared/types";
 import { Step } from "./step";
 import { reaction } from "mobx";
+import { OperationsService } from "@core/services/operations_service";
 
 
 export type ChoiceCallback = (choice:ModelResult,index:number)=> void;

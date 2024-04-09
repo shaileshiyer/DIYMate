@@ -1,4 +1,4 @@
-import { ModelMessage, ModelResults } from 'types';
+import { ModelMessage,ModelResults } from '@core/shared/types';
 import { Model } from '../model';
 import { ContinuePromptParams, ElaboratePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, MetaPromptPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams } from "@core/shared/interfaces";
 import { ModelParams, UserPrompt, callTextModel } from './api';
@@ -94,7 +94,7 @@ export class OpenAIModel extends Model {
                 // aren't any special delimiters present in the text (usually a
                 // sign of a bug)
                 const textExists = !!result.content;
-                const noSpecialCharacters = !textContainsSpecialCharacters(result.text);
+                const noSpecialCharacters = !textContainsSpecialCharacters(result.content);
                 return textExists && noSpecialCharacters;
             });
 

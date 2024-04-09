@@ -4,7 +4,6 @@ import { LocalStorageService } from "@core/services/local_storage_service";
 import {
     TextEditorService,
 } from "@core/services/text_editor_service";
-import { getLexicalConfig } from "@lib/lexical";
 
 import { PropertyValueMap, TemplateResult, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";

@@ -24,6 +24,11 @@ from reader import update_metadata
 
 load_dotenv(override=True)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+CONFIG_DIR=os.getenv("CONFIG_DIR")
+LOG_DIR=os.getenv("LOG_DIR")
+PORT=os.getenv("PORT")
+PROJ_NAME=os.getenv("PROJ_NAME")
+
 # OPEN_AI_MODEL = "gpt-3.5-turbo-1106"
 OPEN_AI_MODEL = "gpt-4-1106-preview"
 
