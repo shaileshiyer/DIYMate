@@ -7,11 +7,17 @@ import { DocumentStoreService } from "@core/services/document_store_service";
 import "@material/web/progress/circular-progress";
 import "@material/web/icon/icon";
 import { LoggingService } from "@core/services/logging_service";
+import { RouterService } from "@core/services/router_service";
 
 @customElement("diymate-home")
 class DIYMateHome extends MobxLitElement {
     private documentStoreService = diymateCore.getService(DocumentStoreService);
     private loggingService = diymateCore.getService(LoggingService);
+    private readonly routerService = diymateCore.getService(RouterService)
+
+    private params = new URL(location.toString()).searchParams;
+    @property({type:Boolean})
+    showTutorial:boolean = this.params.has('admin') || false;
 
     static override get styles() {
         const style = css`
@@ -78,6 +84,7 @@ class DIYMateHome extends MobxLitElement {
         super.connectedCallback();
         this.loggingService.addLog('PAGE_NAVIGATE',{page:'home'});
         this.documentStoreService.loadUserDocuments();
+        console.debug(this.params,this.showTutorial,location.toString());
     }
 
     renderSavedTutorials(toRender:boolean) {
@@ -145,7 +152,7 @@ class DIYMateHome extends MobxLitElement {
                     Start Study
                 </md-filled-button>
                 <hr />
-                ${this.renderSavedTutorials(false)}
+                ${this.renderSavedTutorials(this.showTutorial)}
             </div>
         `;
     }
