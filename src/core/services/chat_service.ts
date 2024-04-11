@@ -36,6 +36,7 @@ export class ChatService extends Service {
             sendCurrentDIYTutorial:flow,
             sendMessage:flow,
             setCurrentMessage:action,
+            setShouldIncludeDIY:action,
             initializeFromStorage:action,
         });
     }
@@ -77,23 +78,28 @@ export class ChatService extends Service {
         this.currentMessage = currentMessage;
     }
 
+    setShouldIncludeDIY(value:boolean){
+        this.shouldIncludeDIY = value;
+    }
+
     *sendCurrentDIYTutorial(){
         const currentDIY = this.localStorageService.getCurrentDIY();
         const diyMdText = this.textEditorService.getMarkdownText();
         const message = `Here is the description of the DIY Tutorial:\n ${currentDIY?.description}\n Here is the DIY Tutorial so far:\n ${diyMdText}`
         const dialogMessage:DialogMessage = {role:'user',content:message};
-        this.messages.push(dialogMessage);
+        // this.messages.push(dialogMessage);
         try {
-            this.isLoading = true;
+            // this.isLoading = true;
             const response:DialogMessage[] = yield this.modelService.getDialogModel().query({messages:[dialogMessage]});
             yield this.loggingService.updateCounter('CHAT_CURRENT_DIY_SENT');
             yield this.loggingService.addLog('CHAT_CURRENT_DIY_SENT',{message});
-            this.isLoading = false;
-            this.documentStoreService.saveDocument();
+            // this.isLoading = false;
+            // this.documentStoreService.saveDocument();
         } catch (error) {
             console.error(error);
-            this.isLoading = false;
-            this.messages.pop();
+            throw error;
+            // this.isLoading = false;
+            // this.messages.pop();
         }
     }
 
@@ -103,8 +109,13 @@ export class ChatService extends Service {
         }
         this.isLoading = true;
         this.messages.push({role:'user',content:this.currentMessage});
+
         
         try{
+            if (this.shouldIncludeDIY){
+                yield this.sendCurrentDIYTutorial();
+            }
+
             const dialogParams:DialogParams = {
                 messages:[
                     {role:"instruction",content:this.currentMessage},

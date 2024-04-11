@@ -17,12 +17,14 @@ import { CursorService, SerializedCursor } from "./cursor_service";
 import { SentencesService } from "./sentences_service";
 import { getEditorConfig } from "@lib/tiptap";
 import { OperationsService } from "./operations_service";
+import { LoggingService } from "./logging_service";
 
 interface ServiceProvider {
     localStorageService: LocalStorageService;
     cursorService: CursorService;
     sentencesService: SentencesService;
     operationsService: OperationsService;
+    loggingService: LoggingService;
 }
 
 interface Paragraphs {
@@ -56,6 +58,10 @@ export class TextEditorService extends Service {
 
     private get operationsService() {
         return this.serviceProvider.operationsService;
+    }
+
+    private get loggingService() {
+        return this.serviceProvider.loggingService;
     }
 
     get getEditor() {
@@ -506,12 +512,21 @@ export class TextEditorService extends Service {
 
     }
 
+    countInsertedWords(text:string){
+        const markdown = this.converter.makeMarkdown(text);
+        const wordscount = markdown.split(" ").filter((word) => word.length > 0)
+        .length;
+        this.loggingService.updateCounter('INSERTED_WORD_COUNT',wordscount);
+    }
+
     lastGeneratedText: string = "";
     insertGeneratedText(text: string, position: SerializedCursor) {
         this.lastGeneratedText = text;
+        this.countInsertedWords(text);
         const content = this.parseHTMLToNodes(text);
-        console.debug("insertGenerated Content");
-        console.debug(content.toJSON());
+        // console.debug("insertGenerated Content");
+        // console.debug(content.toJSON());
+
         this.editor
             .chain()
             .insertContentAt(position, content.toJSON(), {
@@ -524,6 +539,7 @@ export class TextEditorService extends Service {
 
     insertGeneratedTextInline(text: string, position: SerializedCursor) {
       this.lastGeneratedText = text;
+      this.countInsertedWords(text);
       this.editor
           .chain()
           .insertContentAt(position, text, {

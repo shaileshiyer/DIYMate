@@ -11,6 +11,8 @@ import { classMap } from "lit/directives/class-map.js";
 import { diymateCore } from "@core/diymate_core";
 import { ChatService } from "@core/services/chat_service";
 import { tooltip } from "./simple_tooltip";
+import "@material/web/switch/switch";
+import { runInAction } from "mobx";
 
 @customElement("diymate-chat")
 export class Chat extends MobxLitElement {
@@ -133,6 +135,7 @@ export class Chat extends MobxLitElement {
 
             .buttons-container {
                 margin-left: 1em;
+                padding-top:0.5em;
                 display: flex;
                 flex-direction: column;
             }
@@ -194,6 +197,17 @@ export class Chat extends MobxLitElement {
                 100% {
                     opacity: 0.3;
                 }
+            }
+
+            :host{
+                --md-switch-track-width: 44px;
+                --md-switch-track-height: 24px;
+                --md-switch-selected-handle-height: 16px;
+                --md-switch-selected-handle-width: 16px;
+            }
+
+            .label-pad {
+                padding-left:0.5em;
             }
         `;
 
@@ -295,7 +309,7 @@ export class Chat extends MobxLitElement {
                                 </span>
                             </md-icon>
                         </md-filled-tonal-icon-button>
-                        <md-filled-tonal-icon-button
+                        <!-- <md-filled-tonal-icon-button
                         ${tooltip("Send current DIY")}
                         ?disabled=${isLoading}
                         @click=${()=>{this.chatService.sendCurrentDIYTutorial()}}
@@ -305,8 +319,22 @@ export class Chat extends MobxLitElement {
                                     upload
                                 </span>
                             </md-icon>
-                        </md-filled-tonal-icon-button>
+                        </md-filled-tonal-icon-button> -->
                     </div>
+                </div>
+                <div class="row">
+                    <label class="label-pad">
+                    <md-switch 
+                        name="should_include_diy" 
+                        ?selected=${this.chatService.shouldIncludeDIY}
+                        @change=${(e:any)=>{
+                            this.chatService.setShouldIncludeDIY(e.target.selected);
+                        }}
+                        ?disabled=${isLoading}
+                        >
+                    </md-switch>
+                    Share current DIY with DIYmate.
+                    </label>
                 </div>
             </div>
         `;

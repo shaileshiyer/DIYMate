@@ -39,7 +39,7 @@ export class ToggleControlComponent extends MobxLitElement {
                     ?selected=${control.value === true}
                     @change=${(e: any) => {
                     runInAction(()=>{
-                        control.value = e.currentTarget.selected;
+                        control.value = e.target.selected;
                     }) ;
                 }}
                     @mouseenter=${() => void this.onHover(hoverTooltip)}

@@ -120,10 +120,6 @@ export class DemographicsPage extends MobxLitElement {
             <div class="demo">
                 <h1>Demographics - Pre-Task Questionnaire</h1>
                 <form id="demo-form" name="demo-form">
-                    <div>Age:</div>
-                    <md-filled-text-field required autocomplete="off" placeholder="23" name="age" type="text" ?disabled=${this.isLoading}></md-filled-text-field>
-                    <div class="space">Gender:</div>
-                    <md-filled-text-field required autocomplete="off" placeholder="M/F/D" name="gender" type="text" autocapitalize="characters" maxLength=1 ?disabled=${this.isLoading}></md-filled-text-field>
                     <div class="space">Current Occupation/Field of Study:</div>
                     <md-filled-text-field required autocomplete="off" placeholder="Computer Science/Electrical Engineer/..." name="occupation" type="text" ?disabled=${this.isLoading}></md-filled-text-field>
                     <div class="space">How long have you been in involved in DIY in terms of years?</div>
@@ -136,19 +132,15 @@ export class DemographicsPage extends MobxLitElement {
                         <md-select-option value="Every Couple of Months">Every Couple of Months</md-select-option>
                         <md-select-option value="Once a Year">Once a Year</md-select-option>
                     </md-filled-select>
-                    <div class="space">Have you written a DIY Tutorial before?</div>
-                    <md-filled-select required name="diy_tut_written_before">
-                        <md-select-option value="no">No</md-select-option>
-                        <md-select-option value="yes">Yes</md-select-option>
-                    </md-filled-select>
-                    <div class="space">How often have you written a DIY Tutorial for a DIY project before?</div>
+                    <div class="space"> How many tutorials have your written and published so far (estimate)? </div>
                     <md-filled-select required name="diy_tut_frequency">
-                        <md-select-option value="Almost Never">Almost Never</md-select-option>
-                        <md-select-option value="Rarely">Rarely</md-select-option>
-                        <md-select-option value="Occassionally">Occasionally</md-select-option>
-                        <md-select-option value="Often">Often</md-select-option>
-                        <md-select-option value="Very Often">Very Often</md-select-option>
-                        <md-select-option value="Almost Everytime">Almost Everytime</md-select-option>
+                        <md-select-option value="None">None</md-select-option>
+                        <md-select-option value="Atleast one">Atleast one</md-select-option>
+                        <md-select-option value="Atleast five">Atleast 5</md-select-option>
+                        <md-select-option value="Atleast 10">Atleast 10</md-select-option>
+                        <md-select-option value="Atleast 25">Atleast 25</md-select-option>
+                        <md-select-option value="Atleast 50">Atleast 50</md-select-option>
+                        <md-select-option value="More than 50">More than 50</md-select-option>
                     </md-filled-select>
                     <div>${this.submitFormTask()}</div>
                     <div class="bottom-bar">

@@ -16,12 +16,12 @@ const COUNT_STORE = "diymate-count-store"
 
 
 export interface DemographicsForm {
-    age :string;
-    gender:string;
+    age? :string;
+    gender?:string;
     occupation:string;
     diy_experience:string;
     diy_frequency:string;
-    diy_tut_written_before:string;
+    diy_tut_written_before?:string;
     diy_tut_frequency:string;
 }
 
@@ -38,12 +38,12 @@ interface DIYMateDB extends DBSchema {
     'diymate-form-store':{
         value:{
             session_id:string,
-            age :string,
-            gender:string,
+            age? :string,
+            gender?:string,
             occupation:string,
             diy_experience:string,
             diy_frequency:string,
-            diy_tut_written_before:string,
+            diy_tut_written_before?:string,
             diy_tut_frequency:string,
         }
         key: string;
@@ -196,7 +196,7 @@ export class LoggingService extends Service {
      * For the current session user.
      * @param counter_string: Name of the counter to update.
      */
-    async updateCounter(counter_string:string){
+    async updateCounter(counter_string:string,update_counter_by:number=1){
         try{
             const db = await openDB<DIYMateDB>(DATABASE_NAME,CURRENT_VERSION);
         
@@ -212,7 +212,7 @@ export class LoggingService extends Service {
             const val = (await store.get(session_id))|| newVal;
 
             val.counters[counter_string] = val.counters[counter_string] || 0;
-            val.counters[counter_string]+=1;
+            val.counters[counter_string]+=update_counter_by;
             await Promise.all([
                 store.put(val),
                 tx.done,

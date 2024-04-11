@@ -20,11 +20,16 @@ export class WelcomeDialog extends MobxLitElement {
                 color:var(--md-sys-color-on-primary-fixed);
             }
             :host{
-                --md-elevated-button-container-shape: 0px;
+                --md-outlined-button-container-shape: 0px;
             }
 
             .inline {
                 display: inline-block;
+            }
+            .align-content > *{
+                vertical-align: middle;
+                /* display: inline-flex; */
+                /* align-items:center; */
             }
             .get-started {
                 display:flex;
@@ -51,19 +56,19 @@ export class WelcomeDialog extends MobxLitElement {
 
         </div>
         <div class="content">
-            <p>Diymate is a text editor that enables collaborative writing with an powerful large language model.
-            with a suite of built-in controls: from generating and inserting text, to asking it to review portions of
-            DIY tutorial you are writing. 
+            <p>Diymate is a text editor that empowers collaborative writing with a powerful large language model.
+            It provides a suite of built-in controls, allowing you to generate and insert text, or ask the model 
+            to review sections of your DIY tutorial in progress.
             </p>
-            <p>
-                The controls are present on the right hand side of editor. The controls change depending on where your cursor
-                is, and whether you have selected any text. try clicking on <md-outlined-button class="inline">generate text</md-outlined-button> to insert text where the cursor is. 
+            <p class="align-content">
+            The controls are conveniently located on the right side of the editor. They dynamically change based on your cursor position and any selected text.
+            For instance, click on <md-outlined-button class="inline">generate sentence</md-outlined-button> to 
+            insert the next sentence at your current cursor location.
             </p>
-            <p>
-                If you select <span class="selection">some text</span> new controls appear on the right hand side. try them and see what happens. You can also,
-                chat with the language model about your DIY tutorial and discuss it with it. Lastly, there is the reviews tab where
-                reviews that are taken of the DIY tutorial are stored incase you need to see them again and make changes to 
-                your DIY tutorial accordingly.
+            <p> 
+                Selecting <span class="selection">some text</span> unlocks new controls on the right side. Experiment with them to discover their functionalities. 
+                You can also chat with the language model about your DIY tutorial, discussing specific aspects. 
+                Finally, the "Reviews" tab stores reviews of your tutorial, allowing you to revisit and make adjustments accordingly.
             </p>
             <p>❤️ - DIYmate</p>
         </div>

@@ -84,7 +84,6 @@ class DIYMateHome extends MobxLitElement {
         super.connectedCallback();
         this.loggingService.addLog('PAGE_NAVIGATE',{page:'home'});
         this.documentStoreService.loadUserDocuments();
-        console.debug(this.params,this.showTutorial,location.toString());
     }
 
     renderSavedTutorials(toRender:boolean) {

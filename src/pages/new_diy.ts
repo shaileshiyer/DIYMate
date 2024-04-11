@@ -22,6 +22,7 @@ import "../components/outline_editor.ts";
 import { TextEditorService } from "@core/services/text_editor_service.ts";
 import { InitializationService } from "@core/services/initialization_service.ts";
 import { LoggingService } from "@core/services/logging_service.ts";
+import "@material/web/icon/icon";
 
 @customElement("diymate-new-diy")
 export class NewDIYPage extends MobxLitElement {
@@ -64,6 +65,24 @@ export class NewDIYPage extends MobxLitElement {
                 display: flex;
                 justify-content: space-between;
                 margin: 1em 0;
+            }
+
+            .input-group {
+                /* margin: 0.5em 0; */
+                padding-top: 2em;
+
+            }
+
+            .error {
+                display:flex;
+                flex-direction:row;
+                color: var(--md-sys-color-error);
+                background-color: var(--md-sys-color-error-container);
+                padding:1em;
+                border-radius: 5px;
+            }
+            .error > span {
+                margin-left:0.5em;
             }
         `;
         return [elementStyle];
@@ -143,7 +162,9 @@ export class NewDIYPage extends MobxLitElement {
         onComplete: async (val) => {
             this.generatedOutline = val;
             await this.loggingService.updateCounter('DIY_OUTLINE_GENERATED');
-            await this.loggingService.addLog('DIY_OUTLINE_GENERATED',this.generatedOutline)
+            const diyOutlineHTML = this.textEditorService.generateOutlineHtmlString(this.generatedOutline);
+            const diyOutlineMarkdown = this.textEditorService.converter.makeMarkdown(diyOutlineHTML);
+            await this.loggingService.addLog('DIY_OUTLINE_GENERATED',{diyStructure:this.generatedOutline,diyOutlineHTML,diyOutlineMarkdown});
             this.isLoading = false;
             this.showOutline = true;
         },
@@ -164,6 +185,7 @@ export class NewDIYPage extends MobxLitElement {
     protected renderDescriptionAndPrompt(): TemplateResult {
         return html`
             <div class="input-container">
+                <div>
                 <p>Write a short description of your DIY tutorial:</p>
                 <md-filled-text-field
                     type="textarea"
@@ -175,6 +197,9 @@ export class NewDIYPage extends MobxLitElement {
                         (this.description = e.target.value)}
                     .value=${this.description}
                     ?disabled=${this.isLoading}></md-filled-text-field>
+
+                </div>
+                <div class="input-group">
                 <p>Give a description of your outline.</p>
                 <p>
                     Example: It should be brief and have short sentences. It
@@ -187,7 +212,31 @@ export class NewDIYPage extends MobxLitElement {
                     <li>What to emphasize and not emphasize.</li>
                     <li>...</li>
                 </ul>
-
+                <p>The generated outline would have the following basic structure:</p>
+                <pre>
+                # Title
+                
+                ## introduction
+                introductory paragraphs
+                
+                ## Supplies
+                est. time
+                list of materials
+                list of tools
+                list of competences to complete the project
+                list of safety instructions
+                
+                ## Steps
+                
+                // Each step in steps would have the template below
+                ### Step Number: Title
+                list of materials used in step
+                list of tools used in step
+                instructions
+                
+                ## Conclusion
+                conclusionary paragraphs
+                </pre>
                 <md-filled-text-field
                     type="textarea"
                     class="diy-textarea"
@@ -199,6 +248,8 @@ export class NewDIYPage extends MobxLitElement {
                     rows="5"
                     ?disabled=${this.isLoading}
                     spellcheck="false"></md-filled-text-field>
+                
+                </div>
             </div>
         `;
     }
@@ -223,7 +274,7 @@ export class NewDIYPage extends MobxLitElement {
             complete: (value) => {
                 return html``;
             },
-            error: (error) => html`<p>Something went wrong:${error}</p>`,
+            error: (error) => html`<div class="error"><md-icon>error</md-icon><span>${error}</span></div>`,
         });
     }
 

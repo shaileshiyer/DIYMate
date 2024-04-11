@@ -58,7 +58,7 @@ export class LoadingPage extends LitElement{
         return html`
         <div id="loading-wrapper">
             <div id="loading-message">Loading DIY Editor...</div>
-            <md-circular-progress class="four-color" indeterminate fourColor></md-circular-progress>
+            <md-circular-progress class="four-color" indeterminate fourColor></md-circular-progress>  
         </div>
         `;
     }   
