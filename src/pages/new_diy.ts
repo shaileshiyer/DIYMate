@@ -284,8 +284,10 @@ export class NewDIYPage extends MobxLitElement {
             outlinePrompt: this.outlinePrompt,
             generatedOutline: this.textEditorService.getEditor.getHTML(),
         };
+        // const diyOutlineHTML = this.textEditorService.generateOutlineHtmlString(currentDIY.generatedOutline);
+        const diyOutlineMarkdown = this.textEditorService.converter.makeMarkdown(currentDIY.generatedOutline);
         await this.loggingService.updateCounter('CONFIRM_OUTLINE');
-        await this.loggingService.addLog('CONFIRM_OUTLINE',currentDIY);
+        await this.loggingService.addLog('CONFIRM_OUTLINE',{currentDIY,diyOutlineMarkdown});
         this.localStorageService.setCurrentDIY(currentDIY);
     }
 

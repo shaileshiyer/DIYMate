@@ -104,6 +104,8 @@ export class OperationsService extends Service {
     getOperationsSite(): OperationSite {
         const {
             isCursorSelection,
+            isCursorImageNodeSelection,
+            isNodeSelection,
             isCursorAtStartOfNode,
             isCursorAtEndOfNode,
             isCurrentNodeEmpty,
@@ -115,8 +117,10 @@ export class OperationsService extends Service {
 
         if (isDocumentEmpty) {
             return OperationSite.EMPTY_DOCUMENT;
-        } else if (isCursorSelection) {
+        } else if (isCursorSelection && !isNodeSelection) {
             return OperationSite.SELECTION;
+        } else if (isNodeSelection && isCursorImageNodeSelection) {
+            return OperationSite.IMAGE_NODE_SELECTION;
         } else if (isCurrentNodeEmpty) {
             return OperationSite.EMPTY_SECTION;
         } else if (isCursorAtStartOfNode) {
@@ -348,6 +352,7 @@ export class OperationsService extends Service {
             postText:this.cursorService.postText,
             selectedText:this.cursorService.selectedText,
             mdText:this.textEditorService.getMarkdownText(),
+            nodeAttrs:this.cursorService.nodeSelection?.attrs,
         };
 
         operation.setOperationData(operationData);

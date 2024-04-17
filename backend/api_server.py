@@ -30,7 +30,7 @@ PORT=os.getenv("PORT")
 PROJ_NAME=os.getenv("PROJ_NAME")
 
 # OPEN_AI_MODEL = "gpt-3.5-turbo-1106"
-OPEN_AI_MODEL = "gpt-4-1106-preview"
+OPEN_AI_MODEL = "gpt-4-turbo"
 
 SESSIONS = dict()
 UPLOAD_FOLDER = './uploads'

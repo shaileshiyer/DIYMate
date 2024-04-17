@@ -15,6 +15,7 @@ import { ReviewDIYSelectionOperation } from "./review_diy_selection_operation";
 import { FreeFormStepOperation } from "./freeform_step_operation";
 import { OutlineOperation } from "./outline_operation";
 import { MetaPromptOperation } from "./meta_prompt_operation";
+import { ImageInstructionOperation } from "./image_instruction_operation";
 
 export {ChoiceOperation,Operation,ReviewOperation};
 export {
@@ -32,4 +33,5 @@ export {
     FreeFormStepOperation,
     OutlineOperation,
     MetaPromptOperation,
+    ImageInstructionOperation,
 };

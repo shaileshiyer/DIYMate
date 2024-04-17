@@ -1,5 +1,6 @@
 import { Operation } from "@core/operations/operation";
 import { OperationSite, OperationTrigger, StepLifecycle, TextType } from "@core/shared/types";
+import { Attrs } from "@tiptap/pm/model";
 import { TemplateResult } from "lit";
 
 export interface OutlinePromptParams {
@@ -94,6 +95,14 @@ export interface ReviewDIYSelectionPromptParams{
     post:string;
 }
 
+export interface ImageInstructionParams {
+    alt:string;
+    src:string;
+    title:string;
+    pre:string;
+    post:string;
+}
+
 type UUID = string;
 
 /**
@@ -112,6 +121,7 @@ export interface OperationData {
     postText:string;
     selectedText:string;
     mdText:string;
+    nodeAttrs:Attrs;
 }
 
 export interface OperationControl {

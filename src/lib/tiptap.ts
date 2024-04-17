@@ -49,6 +49,10 @@ export const tipTapStyles = css`
         background-color:var(--md-sys-color-primary-fixed-dim);    
         color:var(--md-sys-color-on-primary-fixed);
     }
+
+    img.ProseMirror-selectednode {
+        border: 5px dashed var(--md-sys-color-primary-fixed-dim);
+    }
 `;
 
 

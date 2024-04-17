@@ -38,6 +38,7 @@ export const enum OperationType {
   GENERATE_CONCLUSION = 'GENERATE_CONCLUSION',
   REVIEW_DIY = 'REVIEW_DIY',
   REVIEW_DIY_SELECTION = 'REVIEW_DIY_SELECTION',
+  IMAGE_DIY_INSTRUCTION = 'IMAGE_DIY_INSTRUCTION',
   // Default to NONE
   NONE = 'NONE',
 }
@@ -48,6 +49,7 @@ export const enum OperationType {
  */
 export const enum OperationSite {
   SELECTION = 'SELECTION',
+  IMAGE_NODE_SELECTION = 'IMAGE_NODE_SELECTION',
   EMPTY_DOCUMENT = 'EMPTY_DOCUMENT',
   EMPTY_SECTION = 'EMPTY_SECTION',
   START_OF_SECTION = 'START_OF_SECTION',
@@ -100,8 +102,19 @@ export interface ModelResult {
 
 export type ModelResults = ModelResult[];
 
+export type ContentMessage = {
+  type: "text"
+  text:string,
+} | {
+  type:"image_url"
+  image_url:{
+    url:string,
+    detail?: "low"|"high"|"auto"
+  }
+}
+
 export type ModelMessage = { role: 'system', content: string, name?: string } |
-{ role: 'user', content: string, name?: string } |
+{ role: 'user', content: string|ContentMessage[], name?: string } |
 { role: 'assistant', content: string | null, name?: string };
 
 

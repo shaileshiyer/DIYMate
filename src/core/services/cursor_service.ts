@@ -3,14 +3,13 @@ import { Service } from "./service";
 import { TextEditorService } from "./text_editor_service";
 
 import { SentencesService } from "./sentences_service";
-import { Editor, NodePos } from "@tiptap/core";
+import { Editor, NodePos, isNodeSelection } from "@tiptap/core";
 import {
-    NodeSelection,
     Selection,
-    SelectionRange,
     TextSelection,
     Transaction,
 } from "@tiptap/pm/state";
+import { Node } from "@tiptap/pm/model";
 
 interface ServiceProvider {
     textEditorService: TextEditorService;
@@ -32,6 +31,9 @@ export class CursorService extends Service {
     selectedText: string = "";
     preText: string = "";
     postText: string = "";
+    isNodeSelection:boolean = false;
+    nodeSelection:Node|null = null;
+
 
     previousHeadingSiblings: NodePos[] = [];
     nextHeadingSiblings: NodePos[] = [];
@@ -43,6 +45,8 @@ export class CursorService extends Service {
             selectedText: observable,
             serializedRange: observable,
             preText: observable,
+            isNodeSelection: observable,
+            nodeSelection:observable,
             postText: observable,
             cursorUpdate: action,
             setSerializedRange: action,
@@ -98,6 +102,14 @@ export class CursorService extends Service {
                 to: range.to,
             });
         }
+        
+        const selection = transaction.selection;
+        this.isNodeSelection = isNodeSelection(selection);
+        let selectedNode:Node|null = null;
+        if (isNodeSelection(selection)){
+            selectedNode = selection.node;
+        }
+        this.nodeSelection = selectedNode;
         // // Get current head type and attrs
         // if (editor.state.selection.from === editor.state.selection.to){
         //     // const nodeSelection = new NodeSelection();
@@ -203,6 +215,10 @@ export class CursorService extends Service {
 
 
         return {from,to};
+    }
+
+    get isCursorImageNodeSelection(){
+        return this.isNodeSelection && this.nodeSelection!==null && this.nodeSelection.type.name === 'image'
     }
 
 

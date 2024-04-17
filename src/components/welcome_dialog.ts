@@ -67,7 +67,7 @@ export class WelcomeDialog extends MobxLitElement {
             </p>
             <p> 
                 Selecting <span class="selection">some text</span> unlocks new controls on the right side. Experiment with them to discover their functionalities. 
-                You can also chat with the language model about your DIY tutorial, discussing specific aspects. 
+                You can also chat with the language model about your DIY tutorial, discussing specific aspects in the "Chat" tab.
                 Finally, the "Reviews" tab stores reviews of your tutorial, allowing you to revisit and make adjustments accordingly.
             </p>
             <p>❤️ - DIYmate</p>

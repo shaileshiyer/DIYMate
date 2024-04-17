@@ -26,6 +26,7 @@ operationService.registerOperations(
   Operations.ReviewDIYSelectionOperation,
   Operations.FreeFormStepOperation,
   Operations.OutlineOperation,
+  Operations.ImageInstructionOperation,
 )
 
 
