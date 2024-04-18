@@ -125,7 +125,7 @@ export class DemographicsPage extends MobxLitElement {
                     <div class="space">How long have you been in involved in DIY in terms of years?</div>
                     <md-filled-text-field required autocomplete="off" placeholder="2" name="diy_experience" type="text" ?disabled=${this.isLoading}></md-filled-text-field>
                     <div class="space">How often have you carried out a DIY project?</div>
-                    <md-filled-select required name="diy_frequency">
+                    <md-filled-select required name="diy_frequency" ?disabled=${this.isLoading}>
                         <md-select-option value="Almost Never">Almost Never</md-select-option>
                         <md-select-option value="Once a week">Once a Week</md-select-option>
                         <md-select-option value="Once a Month">Once a Month</md-select-option>
@@ -133,7 +133,7 @@ export class DemographicsPage extends MobxLitElement {
                         <md-select-option value="Once a Year">Once a Year</md-select-option>
                     </md-filled-select>
                     <div class="space"> How many tutorials have your written and published so far (estimate)? </div>
-                    <md-filled-select required name="diy_tut_frequency">
+                    <md-filled-select required name="diy_tut_frequency" ?disabled=${this.isLoading}>
                         <md-select-option value="None">None</md-select-option>
                         <md-select-option value="Atleast one">Atleast one</md-select-option>
                         <md-select-option value="Atleast five">Atleast 5</md-select-option>

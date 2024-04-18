@@ -26,6 +26,9 @@ export abstract class ReviewOperation extends Operation {
         );
         this.setCurrentStep(reviewStep);
 
+        this.loggingService.updateCounter(`${this.id}_REVIEW_SET`);
+        this.loggingService.addLog(`${this.id}_REVIEW_SET`,{review});
+
         reviewStep.setOnSaveReviewCallback((currentReview)=>{
             if (this.shouldReset) {
                 this.resetTextEditor();

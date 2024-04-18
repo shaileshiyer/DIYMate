@@ -12,6 +12,7 @@ export class GenerateConclusionOperation extends ChoiceOperation {
     
     static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
+            operationSite !== OperationSite.IMAGE_NODE_SELECTION &&
             documentSite === OperationSite.DIY_CONCLUSION
         );
     }

@@ -57,8 +57,8 @@ export class WelcomeDialog extends MobxLitElement {
         </div>
         <div class="content">
             <p>Diymate is a text editor that empowers collaborative writing with a powerful large language model.
-            It provides a suite of built-in controls, allowing you to generate and insert text, or ask the model 
-            to review sections of your DIY tutorial in progress.
+            It provides a suite of built-in controls, allowing you to generate and insert text, create DIY instruction 
+            from images or ask the model to review sections of your DIY tutorial in progress.
             </p>
             <p class="align-content">
             The controls are conveniently located on the right side of the editor. They dynamically change based on your cursor position and any selected text.

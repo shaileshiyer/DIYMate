@@ -12,7 +12,8 @@ export class GenerateIntroductionOperation extends ChoiceOperation {
     
     static override isAvailable( operationSite: OperationSite,documentSite: OperationSite) {
         return (
-            documentSite === OperationSite.DIY_INTRODUCTION
+            operationSite !== OperationSite.IMAGE_NODE_SELECTION &&
+            documentSite === OperationSite.DIY_INTRODUCTION 
         );
     }
 

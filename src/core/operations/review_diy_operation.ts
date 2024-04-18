@@ -6,7 +6,7 @@ import { OperationData, ReviewDIYPromptParams } from "@core/shared/interfaces";
 export class ReviewDIYOperation extends ReviewOperation {
     
     static override isAvailable(operationSite: OperationSite, documentSite?: OperationSite | undefined): boolean {
-        return operationSite !== OperationSite.SELECTION;
+        return operationSite !== OperationSite.SELECTION && operationSite !== OperationSite.IMAGE_NODE_SELECTION;
     }
 
     static id = OperationType.REVIEW_DIY;
