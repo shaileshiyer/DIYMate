@@ -103,6 +103,15 @@ export interface ImageInstructionParams {
     post:string;
 }
 
+export interface CustomImagePromptParams {
+    alt:string;
+    src:string;
+    title:string;
+    pre:string;
+    post:string;
+    instruction:string;
+}
+
 type UUID = string;
 
 /**

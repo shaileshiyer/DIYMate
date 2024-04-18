@@ -390,7 +390,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                         <md-secondary-tab> Controls</md-secondary-tab>
                         <md-secondary-tab> Chat </md-secondary-tab>
                         <md-secondary-tab> Reviews </md-secondary-tab>
-                        <md-secondary-tab> Debug </md-secondary-tab>
+                        <!-- <md-secondary-tab> Debug </md-secondary-tab> -->
                     </md-tabs>
                     <div id="sidebar-content">
                         ${this.renderSidebarContent()}

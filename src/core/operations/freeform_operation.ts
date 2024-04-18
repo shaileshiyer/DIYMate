@@ -2,7 +2,7 @@ import { ModelResult, OperationSite, OperationTrigger, OperationType } from "@co
 import { ChoiceOperation } from "./choice_operation";
 import { TemplateResult, html } from "lit";
 import { SerializedCursor } from "@core/services/cursor_service";
-import { ElaboratePromptParams, FreeformPromptParams, OperationControls, OperationData } from "@core/shared/interfaces";
+import { FreeformPromptParams, OperationData } from "@core/shared/interfaces";
 import { TextInputControl } from "./operation_controls";
 import { ServiceProvider } from "./operation";
 import { ControlsStep } from "./steps";

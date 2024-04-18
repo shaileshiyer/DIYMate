@@ -126,7 +126,7 @@ export class TextEditorService extends Service {
 
     onSelectionUpdate = (params:EditorEvents["selectionUpdate"]) =>{
         const {editor, transaction} = params;
-        console.debug("selection",transaction.selection);
+        console.debug("selection");
         console.debug('docChanged',transaction.docChanged,transaction.steps);
         if (!this.operationsService.isInOperation){
             this.cursorService.cursorUpdate(editor, transaction);

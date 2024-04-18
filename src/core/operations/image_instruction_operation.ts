@@ -1,7 +1,7 @@
 import { ModelResult, OperationSite, OperationType } from "@core/shared/types";
 import { ChoiceOperation } from "./choice_operation";
 import { TemplateResult } from "lit";
-import { ContinuePromptParams, ImageInstructionParams, OperationData } from "@core/shared/interfaces";
+import { ImageInstructionParams } from "@core/shared/interfaces";
 import { SerializedCursor } from "@core/services/cursor_service";
 
 /**
@@ -23,7 +23,7 @@ export class ImageInstructionOperation extends ChoiceOperation {
     }
 
     static override getButtonLabel(...params: any[]): string | TemplateResult {
-        return 'generate Instruction';    
+        return 'generate DIY instruction';    
     }
 
     static override getDescription(...params: any[]): string | TemplateResult {

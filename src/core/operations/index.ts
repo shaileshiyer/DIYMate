@@ -16,6 +16,7 @@ import { FreeFormStepOperation } from "./freeform_step_operation";
 import { OutlineOperation } from "./outline_operation";
 import { MetaPromptOperation } from "./meta_prompt_operation";
 import { ImageInstructionOperation } from "./image_instruction_operation";
+import { CustomImagePromptOperation } from "./custom_image_prompt_operation";
 
 export {ChoiceOperation,Operation,ReviewOperation};
 export {
@@ -34,4 +35,5 @@ export {
     OutlineOperation,
     MetaPromptOperation,
     ImageInstructionOperation,
+    CustomImagePromptOperation,
 };

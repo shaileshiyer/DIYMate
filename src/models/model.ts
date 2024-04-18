@@ -3,7 +3,7 @@ import { SessionService } from "@core/services/session_service";
 import { DIYMateContext } from "context";
 import { ModelMessage, ModelResults } from "@core/shared/types";
 import { dedupeResults } from "./utils";
-import { ContinuePromptParams, ElaboratePromptParams, FirstSentencePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, GenerateWithinSentencePromptParams, ImageInstructionParams, MetaPromptPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteEndOfSentencePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams, SuggestRewritePromptParams } from "@core/shared/interfaces";
+import { ContinuePromptParams, CustomImagePromptParams, ElaboratePromptParams, FirstSentencePromptParams, FreeformPromptParams, GenerateConclusionPromptParams, GenerateIntroductionPromptParams, GenerateWithinSentencePromptParams, ImageInstructionParams, MetaPromptPromptParams, NextSentencePromptParams, OutlinePromptParams, ReplacePromptParams, RewriteEndOfSentencePromptParams, RewriteSelectionPromptParams, RewriteSentencePromptParams, SuggestRewritePromptParams } from "@core/shared/interfaces";
 
 interface ServiceProvider {
     sessionService: SessionService;
@@ -124,6 +124,10 @@ export abstract class Model {
     }
 
     async imageInstruction(params:ImageInstructionParams):Promise<ModelResults>{
+        throw new Error('Not yet Implemented');
+    }
+
+    async customImagePrompt(params:CustomImagePromptParams):Promise<ModelResults>{
         throw new Error('Not yet Implemented');
     }
     

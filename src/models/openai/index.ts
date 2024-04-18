@@ -23,6 +23,7 @@ import { makePromptHandler as generateIntroduction } from './prompts/generate_in
 import { makePromptHandler as generateConclusion } from './prompts/generate_conclusion';
 import { makePromptHandler as metaPrompt } from './prompts/meta_prompt';
 import { makePromptHandler as imageInstruction } from './prompts/image_instruction';
+import { makePromptHandler as customImagePrompt } from './prompts/custom_image_prompt';
 
 
 const D0 = '{';
@@ -152,5 +153,6 @@ export class OpenAIModel extends Model {
     override metaPrompt:(params:MetaPromptPromptParams)=> Promise<ModelResults> = this.makePromptHandler(metaPrompt);
     
     override imageInstruction:(params:ImageInstructionParams)=> Promise<ModelResults> = this.makePromptHandler(imageInstruction);
-
+    
+    override customImagePrompt:(params:ImageInstructionParams)=> Promise<ModelResults> = this.makePromptHandler(customImagePrompt);
 }
