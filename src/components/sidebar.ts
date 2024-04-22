@@ -128,7 +128,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
 
             #sidebar-content {
                 justify-content: space-around;
-                height: 55em;
+                height: 90vh;
                 overflow: auto;
                 /* overflow-y: scroll; */
                 /* min-height:100%; */

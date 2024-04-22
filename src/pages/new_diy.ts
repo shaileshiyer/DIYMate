@@ -186,13 +186,13 @@ export class NewDIYPage extends MobxLitElement {
         return html`
             <div class="input-container">
                 <div>
-                <p>Write a short description of your DIY tutorial:</p>
+                <h3>1. Write a short description of your DIY Project:</h3>
                 <md-filled-text-field
                     type="textarea"
                     name="diy-description"
                     class="diy-textarea"
                     rows="5"
-                    placeholder="Describe your DIY tutorial in 200-250 words..."
+                    placeholder="Describe your DIY Project in 200-250 words..."
                     @input=${(e: HTMLElementEvent<HTMLTextAreaElement>) =>
                         (this.description = e.target.value)}
                     .value=${this.description}
@@ -200,7 +200,7 @@ export class NewDIYPage extends MobxLitElement {
 
                 </div>
                 <div class="input-group">
-                <p>Give a description of your outline.</p>
+                <h3>2. Give a description of your outline:</h3>
                 <p>
                     Example: It should be brief and have short sentences. It
                     should be divided into 5 steps. In the introduction
@@ -357,7 +357,7 @@ export class NewDIYPage extends MobxLitElement {
 
     protected renderOutlineEditor() {
         return !this.showOutline
-            ? html``
+            ? html`<h3>3. Generate an Outline by clicking "Generate Outline":</h3>`
             : html`<outline-editor
                   .outline=${this.generatedOutline}
                   ?disabled=${this.isLoading}></outline-editor>`;

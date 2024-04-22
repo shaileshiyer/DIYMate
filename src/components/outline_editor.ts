@@ -103,7 +103,7 @@ export class OutlineEditor extends MobxLitElement {
     protected render(): TemplateResult {
         return html`
             <div class="outline-container">
-                <p>Edit your DIY Outline:</p>
+                <h3>4. Edit your DIY Outline, Regenerate it if you are not satisfied and then click on Confirm once you are satisfied:</h3>
                 <div
                     id="outline-editor"
                     class=${classMap({disabled:this.disabled})}

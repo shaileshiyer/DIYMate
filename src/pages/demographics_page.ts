@@ -36,6 +36,10 @@ export class DemographicsPage extends MobxLitElement {
                 justify-content: space-between;
                 margin: 2em 0;
             }
+
+            md-filled-text-field {
+                width:100%;
+            }
         `;
 
         return [pageStyle];
