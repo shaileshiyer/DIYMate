@@ -313,10 +313,11 @@ def download_file(dirname,name):
     print(dir_path,name)
     return send_from_directory(dir_path, name)
 
-@app.route('/')
+@app.route('/',defaults={'path':''})
+@app.route('/<path:path>')
 @cross_origin(origin="*")
-def diymate_app():
-    return render_template("index.html")    
+def diymate_app(path):
+    return render_template("index.html")
 
 if __name__ == "__main__":
     app.logger.debug("Server is started")

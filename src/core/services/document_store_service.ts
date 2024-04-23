@@ -139,7 +139,7 @@ export class DocumentStoreService extends Service {
         this.lastSavedText = document.plainText;
 
         this.localStorageService.setDocumentId(document.id);
-        this.routerService.getRouter().render(`/editor/${document.id}`,true)
+        this.routerService.getRouter().render(`/editor/${document.id}?admin`,true)
     }
     
     async loadAllDocuments(): Promise<SavedDocument[]>{

@@ -39,6 +39,10 @@ export class DIYMateEditorSidebar extends MobxLitElement {
     private readonly dialogService = diymateCore.getService(DialogService);
     private readonly routerService = diymateCore.getService(RouterService);
 
+    private params = new URL(location.toString()).searchParams;
+    @property({type:Boolean})
+    isAdmin:boolean = this.params.has('admin') || false;
+
     @property({ type: Number })
     activeTab: number = 0;
 
@@ -271,6 +275,9 @@ export class DIYMateEditorSidebar extends MobxLitElement {
                 this.initializationService.reset();
             }
         };
+        if (!this.isAdmin){
+            return html``;
+        }
         return this.renderLinkButton("Main Menu","Back to Main Menu",onClick);
     }
 
@@ -334,7 +341,7 @@ export class DIYMateEditorSidebar extends MobxLitElement {
             
 
             const documentRow = html`
-                ${this.renderFinishDIYButton()} ${this.renderSaveButton()}
+                ${this.renderFinishDIYButton()} ${this.renderSaveButton()} ${this.renderMainMenuButton()}
             `;
 
             bottom = html`<div class="sidebar-bottom-links">

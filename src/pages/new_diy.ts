@@ -23,6 +23,7 @@ import { TextEditorService } from "@core/services/text_editor_service.ts";
 import { InitializationService } from "@core/services/initialization_service.ts";
 import { LoggingService } from "@core/services/logging_service.ts";
 import "@material/web/icon/icon";
+import { RouterService } from "@core/services/router_service.ts";
 
 @customElement("diymate-new-diy")
 export class NewDIYPage extends MobxLitElement {
@@ -112,6 +113,7 @@ export class NewDIYPage extends MobxLitElement {
         InitializationService
     );
     private readonly loggingService = diymateCore.getService(LoggingService);
+    private readonly routerService = diymateCore.getService(RouterService);
 
     constructor() {
         super();
@@ -289,6 +291,8 @@ export class NewDIYPage extends MobxLitElement {
         await this.loggingService.updateCounter('CONFIRM_OUTLINE');
         await this.loggingService.addLog('CONFIRM_OUTLINE',{currentDIY,diyOutlineMarkdown});
         this.localStorageService.setCurrentDIY(currentDIY);
+
+        this.routerService.getRouter().render('/loading',false);
     }
 
     protected renderActionButtons(): TemplateResult {
@@ -317,8 +321,7 @@ export class NewDIYPage extends MobxLitElement {
                   </md-filled-tonal-button>
                   <md-filled-button
                       ?disabled=${this.isLoading}
-                      @click=${this.saveNewDIYInfo}
-                      href="/loading">
+                      @click=${this.saveNewDIYInfo}>
                       Confirm Outline
                   </md-filled-button>`;
     }
