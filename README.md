@@ -1,30 +1,30 @@
-# React + TypeScript + Vite
+# DIYMate
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Author: Shailesh Iyer
 
-Currently, two official plugins are available:
+This is a master's thesis project that used to create a functional prototype to test how Large language models can be used to support the authorship of DIY (Do-It Yourself) Tutorials for Makers and DIYers.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The initial project was heavily inspired from [Wordcraft](https://github.com/PAIR-code/wordcraft) and extensive modifications were made to move from mobile-doc kit to Tiptap, and major version upgrades for lit-html and Mobx to accomodate the research goals and needs of this project.
 
-## Expanding the ESLint configuration
+## Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+The basic structure of the repository is the lit-html project in src/ and the python flask project as the backend/. 
 
-- Configure the top-level `parserOptions` property like this:
+## Build
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+Create a .env file with an OPENAI_API_KEY.
+Install the required packages 
+
+```bash
+pip install -r requirements.txt
+npm i
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+Start the backend and frontend using the following commands:
+
+```bash
+# backend
+python backend/api_server.py --config_dir './config' --log_dir './logs' --port 5555 --proj_name 'diy_mate' --debug
+# frontend
+npm run dev
+```
