@@ -6,6 +6,12 @@ This is a master's thesis project that used to create a functional prototype to 
 
 The initial project was heavily inspired from [Wordcraft](https://github.com/PAIR-code/wordcraft) and extensive modifications were made to move from mobile-doc kit to Tiptap, and major version upgrades for lit-html and Mobx to accomodate the research goals and needs of this project.
 
+![Outline creation](public/outline_1.png)
+![Confirm Creation](public/outline_4.png)
+![Editor](public/editor_1.png)
+![Editor with image](public/editor_5.png)
+
+
 ## Structure
 
 The basic structure of the repository is the lit-html project in src/ and the python flask project as the backend/. 
